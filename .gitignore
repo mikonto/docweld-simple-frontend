@@ -1,0 +1,57 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+docs
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.env
+
+# Firebase/API keys and configs
+firebase-debug.log
+.firebase/
+serviceAccountKey.json
+firebase-service-account.json
+
+# Security and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+config/secrets.js
+secrets/
+credentials/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# AI coding assistants
+.serena/
+.cursor/
+coverage/

@@ -1,0 +1,292 @@
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
+import { useDocuments } from '@/hooks/documents/useDocuments';
+import { useSections } from '@/hooks/documents/useSections';
+import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import { useFormDialog } from '@/hooks/useFormDialog';
+import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
+import { CardDialog } from '@/components/documents/cards';
+import { SectionDialog } from './SectionDialog';
+import { SectionHeader } from '../shared/SectionHeader';
+import { SectionContent } from './SectionContent';
+import {
+  UPLOAD_CONFIG,
+  SECTION_SIZE_CONFIG,
+} from '@/components/documents/constants';
+import * as operations from './sectionOperations';
+
+export function Section({
+  sectionData,
+  allDocuments,
+  index,
+  onMoveSection,
+  totalSections,
+  collectionType,
+  entityId,
+  showImportMenu = false,
+  onImportDocuments,
+}) {
+  const { t } = useTranslation();
+
+  // State
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [draggedDocuments, setDraggedDocuments] = useState(null);
+
+  const deleteDocumentDialog = useConfirmationDialog({});
+  const deleteSectionDialog = useConfirmationDialog({});
+  const renameDocumentDialog = useFormDialog();
+  const renameSectionDialog = useFormDialog();
+
+  // Toggle expand callback
+  const toggleExpand = useCallback(() => {
+    setIsExpanded(!isExpanded);
+  }, [isExpanded]);
+
+  const sectionsHook = useSections({
+    entityType: collectionType,
+    entityId: collectionType === 'project' ? entityId : entityId || 'main',
+  });
+
+  const documentsHook = useDocuments({
+    entityType: collectionType,
+    entityId: collectionType === 'project' ? entityId : entityId || 'main',
+    sectionId: sectionData.id,
+  });
+
+  // Extract operations from hooks
+  const { renameSection, deleteSection } = sectionsHook;
+  const {
+    uploadingFiles,
+    renameDocument,
+    deleteDocument,
+    handleUpload,
+
+    updateDocumentOrder,
+  } = documentsHook;
+
+  // Process documents for this section
+  const localDocuments = React.useMemo(() => {
+    // If we have dragged state, use that instead
+    if (draggedDocuments !== null) {
+      return draggedDocuments;
+    }
+
+    // Data comes via props now, ensure they are valid arrays
+    if (!sectionData || !Array.isArray(allDocuments)) {
+      return []; // Return empty if props are not ready/valid
+    }
+
+    // Filter documents by sectionId (flat structure)
+    const sectionDocuments = allDocuments.filter(
+      (doc) => doc.sectionId === sectionData.id
+    );
+
+    // Sort by order field descending (highest order first, matching Firestore query)
+    return sectionDocuments.sort((a, b) => (b.order || 0) - (a.order || 0));
+  }, [sectionData, allDocuments, draggedDocuments]); // Include draggedDocuments in deps
+
+  // Reset dragged state when props change
+  React.useEffect(() => {
+    setDraggedDocuments(null);
+  }, [sectionData, allDocuments]);
+
+  // Track previous document processing states to detect transitions
+  const prevDocumentStates = useRef({});
+
+  // Monitor document processing state changes
+  useEffect(() => {
+    // Check for documents that just completed processing
+    localDocuments.forEach((doc) => {
+      const prevState = prevDocumentStates.current[doc.id];
+      const currentState = doc.processingState;
+
+      // Document just finished processing successfully
+      if (prevState === 'pending' && currentState === 'completed') {
+        // Toast is already shown by useFirestoreOperations when upload completes
+        // No need for duplicate toast here
+      }
+
+      // Update tracked state for next comparison
+      if (currentState) {
+        prevDocumentStates.current[doc.id] = currentState;
+      }
+    });
+
+    // Clean up deleted documents from tracking
+    const currentIds = new Set(localDocuments.map((d) => d.id));
+    Object.keys(prevDocumentStates.current).forEach((id) => {
+      if (!currentIds.has(id)) {
+        delete prevDocumentStates.current[id];
+      }
+    });
+  }, [localDocuments, t]);
+
+  // Event handlers are now imported from operations file
+
+  return (
+    <>
+      <div className="w-full border-b">
+        {/* Section Header */}
+        <SectionHeader
+          sectionData={sectionData}
+          index={index}
+          totalSections={totalSections}
+          isExpanded={isExpanded}
+          toggleExpand={toggleExpand}
+          onMoveSection={onMoveSection}
+          onRenameSection={() => renameSectionDialog.open(sectionData)}
+          onDeleteSection={() =>
+            deleteSectionDialog.open('delete', sectionData, false)
+          }
+          showImportMenu={showImportMenu}
+          onImportDocuments={onImportDocuments}
+          documentsCount={localDocuments.length}
+        />
+
+        {/* Section Content with Expand/Collapse Animation */}
+        <div
+          className={`overflow-hidden transition-all ease-in-out ${
+            isExpanded ? 'max-h-[5000px]' : 'max-h-0'
+          }`}
+          style={{
+            transitionDuration: `${SECTION_SIZE_CONFIG.MULTI.ANIMATION_DURATION}ms`,
+          }}
+        >
+          <SectionContent
+            documents={localDocuments}
+            uploadingFiles={uploadingFiles}
+            onDragEnd={(event) =>
+              operations.handleDragEnd(
+                event,
+                localDocuments,
+                setDraggedDocuments,
+                updateDocumentOrder,
+                t
+              )
+            }
+            onUpload={(files) =>
+              operations.handleUploadFiles(files, handleUpload, t)
+            }
+            onRename={(docId, currentTitle) =>
+              operations.handleRename(renameDocumentDialog, docId, currentTitle)
+            }
+            onDelete={(docId, title) =>
+              operations.handleDelete(deleteDocumentDialog, docId, title)
+            }
+            maxFilesAllowed={UPLOAD_CONFIG.MAX_FILES}
+          />
+        </div>
+      </div>
+
+      {/* Dialogs - Using unified pattern like other features */}
+
+      {/* Document Rename Dialog */}
+      <CardDialog
+        document={renameDocumentDialog.entity}
+        open={renameDocumentDialog.isOpen}
+        onClose={renameDocumentDialog.close}
+        onSubmit={async (newTitle) => {
+          try {
+            await renameDocument(renameDocumentDialog.entity.id, newTitle);
+            // Success toast is already shown by useFirestoreOperations
+          } catch (error) {
+            // Show specific error messages only for known error codes
+            if (error.code === 'permission-denied') {
+              toast.error(t('documents.renamePermissionError'));
+            } else if (error.code === 'not-found') {
+              toast.error(t('documents.renameNotFoundError'));
+            }
+            // Generic errors are already handled by useFirestoreOperations
+          } finally {
+            renameDocumentDialog.close();
+          }
+        }}
+      />
+
+      {/* Section Rename Dialog */}
+      <SectionDialog
+        mode="edit"
+        section={renameSectionDialog.entity}
+        open={renameSectionDialog.isOpen}
+        onClose={renameSectionDialog.close}
+        onSubmit={async (newName) => {
+          try {
+            await renameSection(renameSectionDialog.entity.id, newName);
+            // Success toast is already shown by useFirestoreOperations
+          } catch (error) {
+            // Show specific error messages only for known error codes
+            if (error.code === 'permission-denied') {
+              toast.error(t('sections.renamePermissionError'));
+            } else if (error.code === 'not-found') {
+              toast.error(t('sections.renameNotFoundError'));
+            }
+            // Generic errors are already handled by useFirestoreOperations
+          } finally {
+            renameSectionDialog.close();
+          }
+        }}
+      />
+
+      {/* Delete Document Confirmation Dialog - Direct use like other features */}
+      <ConfirmationDialog
+        isOpen={deleteDocumentDialog.dialog.isOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) deleteDocumentDialog.close();
+        }}
+        onConfirm={() =>
+          operations.handleConfirmDocumentDelete(
+            deleteDocument,
+            deleteDocumentDialog
+          )
+        }
+        title={t('documents.deleteDocument')}
+        description={t('documents.confirmDeleteDocument', {
+          documentName: deleteDocumentDialog.dialog.data?.title || '',
+        })}
+        actionLabel={t('common.delete')}
+        actionVariant="destructive"
+      />
+
+      {/* Delete Section Confirmation Dialog - Direct use like other features */}
+      <ConfirmationDialog
+        isOpen={deleteSectionDialog.dialog.isOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) deleteSectionDialog.close();
+        }}
+        onConfirm={() =>
+          operations.handleConfirmSectionDelete(
+            deleteSection,
+            deleteSectionDialog,
+            sectionData.id,
+            t
+          )
+        }
+        title={t('documents.deleteSection')}
+        description={t('documents.deleteSectionWarning', {
+          name: sectionData.name,
+        })}
+        actionLabel={t('common.delete')}
+        actionVariant="destructive"
+      />
+    </>
+  );
+}
+
+Section.propTypes = {
+  sectionData: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    documentOrder: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  allDocuments: PropTypes.array.isRequired,
+  index: PropTypes.number.isRequired,
+  onMoveSection: PropTypes.func.isRequired,
+  totalSections: PropTypes.number.isRequired,
+  collectionType: PropTypes.oneOf(['project', 'library']).isRequired,
+  entityId: PropTypes.string, // Required for project, not needed for library
+  showImportMenu: PropTypes.bool,
+  onImportDocuments: PropTypes.func,
+};
