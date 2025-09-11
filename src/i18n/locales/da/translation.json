@@ -702,6 +702,7 @@
   },
   "theme": {
     "theme": "Tema",
+    "system": "System",
     "light": "Lys",
     "dark": "Mørk"
   },

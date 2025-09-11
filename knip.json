@@ -1,20 +1,18 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "src/main.jsx"
+    "src/main.tsx"
   ],
   "project": [
-    "src/**/*.{js,jsx,ts,tsx}!"
+    "src/**/*.{ts,tsx}!"
   ],
   "ignore": [
     "src/components/ui/**",
-    "**/*.test.{js,jsx}",
-    "**/*.i18n.test.{js,jsx}",
-    "**/*.migration.test.{js,jsx}",
-    "**/*.hook-migration.test.{js,jsx}",
-    "**/*.backup.js",
-    "**/*.original.jsx",
-    "**/*.refactored.test.jsx"
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "src/test/**",
+    "coverage/**",
+    "dist/**"
   ],
   "vite": true,
   "vitest": true,

@@ -1,0 +1,114 @@
+import React from 'react';
+import { Plus, Trash } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import { Card, CardContent } from '@/components/ui/card';
+import type { DocumentLibraryCollection } from '@/types/database';
+import type { ColumnDef } from '@tanstack/react-table';
+
+export interface DocumentLibraryTableProps {
+  documents: DocumentLibraryCollection[];
+  loading: boolean;
+  onEdit: (document: DocumentLibraryCollection) => void;
+  onCreateNew: () => void;
+  onConfirmAction: (
+    action: 'delete',
+    data: DocumentLibraryCollection | DocumentLibraryCollection[],
+    isBulk?: boolean
+  ) => void;
+  onRowClick: (document: DocumentLibraryCollection) => void;
+}
+
+// Main document library table component for displaying document collections
+export function DocumentLibraryTable({
+  documents,
+  loading,
+  onEdit,
+  onCreateNew,
+  onConfirmAction,
+  onRowClick,
+}: DocumentLibraryTableProps) {
+  const { t } = useTranslation();
+
+  // Define document columns
+  const documentColumns: ColumnDef<DocumentLibraryCollection>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.name')} />
+      ),
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue('name')}</div>
+      ),
+    },
+    {
+      accessorKey: 'description',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={t('common.description')}
+        />
+      ),
+    },
+  ];
+
+  // Get row action menu items
+  const getActionMenuItems = () => [
+    {
+      label: t('common.edit'),
+      action: (rowData: DocumentLibraryCollection) => onEdit(rowData),
+    },
+    {
+      label: t('common.delete'),
+      separator: true,
+      action: (rowData: DocumentLibraryCollection) => onConfirmAction('delete', rowData),
+    },
+  ];
+
+  // Create action buttons
+  const actionButtons = [
+    {
+      label: t('documentLibrary.addDocumentCollection'),
+      icon: <Plus className="h-4 w-4" />,
+      onClick: onCreateNew,
+      variant: 'default' as const,
+    },
+  ];
+
+  // Defines the bulk action buttons that appear when rows are selected
+  const bulkActionButtons = [
+    {
+      label: t('common.deleteSelected'),
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedRows: DocumentLibraryCollection[]) => {
+        onConfirmAction('delete', selectedRows, true);
+      },
+      variant: 'destructive' as const,
+    },
+  ];
+
+  // Create columns for the table
+  const columns = createColumns({
+    enableSelection: true,
+    enableRowActions: true,
+    rowMenuItems: getActionMenuItems(),
+    columns: documentColumns,
+  });
+
+  return (
+    <Card>
+      <CardContent>
+        <DataTable
+          title={t('documentLibrary.documentCollections')}
+          columns={columns}
+          data={documents}
+          loading={loading}
+          actionButtons={actionButtons}
+          bulkActionButtons={bulkActionButtons}
+          onRowClick={onRowClick}
+          tableKey="documentLibrary"
+        />
+      </CardContent>
+    </Card>
+  );
+}
