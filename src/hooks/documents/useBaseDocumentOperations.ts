@@ -11,6 +11,7 @@ import {
   getDocs,
   writeBatch,
   QueryConstraint,
+  FirestoreError,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
@@ -46,7 +47,7 @@ export interface UseBaseDocumentOperationsReturn {
   // From Firestore operations
   documents: DocumentData[];
   loading: boolean;
-  error: any;
+  error: FirestoreError | undefined;
 
   // Document-specific operations
   addDocument: (
@@ -57,8 +58,8 @@ export interface UseBaseDocumentOperationsReturn {
     fileSize?: number | null
   ) => Promise<BaseDocumentData>;
   renameDocument: (docId: string, newTitle: string) => Promise<void>;
-  deleteDocument: (docId: string) => Promise<{ success: boolean; error?: any }>;
-  updateDocumentOrder: (orderedDocIds: string[]) => Promise<{ success: boolean; error?: any }>;
+  deleteDocument: (docId: string) => Promise<{ success: boolean; error?: Error | unknown }>;
+  updateDocumentOrder: (orderedDocIds: string[]) => Promise<{ success: boolean; error?: Error | unknown }>;
   updateProcessingState: (docId: string, processingState: string) => Promise<void>;
 
   // File upload operations
@@ -179,7 +180,7 @@ export function useBaseDocumentOperations(
    * Soft delete a document
    */
   const deleteDocument = useCallback(
-    async (docId: string): Promise<{ success: boolean; error?: any }> => {
+    async (docId: string): Promise<{ success: boolean; error?: Error | unknown }> => {
       try {
         // Use the remove method from useFirestoreOperations with soft delete
         await firebaseOps.remove(docId, false); // false = soft delete
@@ -216,7 +217,7 @@ export function useBaseDocumentOperations(
    * Update document order using numeric values
    */
   const updateDocumentOrder = useCallback(
-    async (orderedDocIds: string[]): Promise<{ success: boolean; error?: any }> => {
+    async (orderedDocIds: string[]): Promise<{ success: boolean; error?: Error | unknown }> => {
       try {
         const batch = writeBatch(db);
 
