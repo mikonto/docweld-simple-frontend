@@ -18,27 +18,27 @@ export const UPLOAD_CONFIG = {
     '.heif',
     '.pdf',
   ] as const,
-} as const
+} as const;
 
 // const DOCUMENT_ASPECT_RATIO = 1.42 as const
 
-export const IMPORT_BROWSER_ASPECT_RATIO = 1.42 as const
+export const IMPORT_BROWSER_ASPECT_RATIO = 1.42 as const;
 
 export const PROCESSING_STATES = {
   PENDING: 'pending',
   COMPLETED: 'completed',
   FAILED: 'failed',
-} as const
+} as const;
 
 export const UPLOAD_STATES = {
   UPLOADING: 'uploading',
   COMPLETE: 'complete',
-} as const
+} as const;
 
 export const DND_ACTIVATION_CONSTRAINT = {
   delay: 250,
   tolerance: 5,
-} as const
+} as const;
 
 // Section sizing configuration
 // These can be adjusted independently for different visual behavior
@@ -59,10 +59,11 @@ export const SECTION_SIZE_CONFIG = {
     CARD_MIN_WIDTH: 140, // Minimum width for cards in grid
     CARD_HEIGHT_RATIO: 1.42, // Card height = width × 1.42 (portrait orientation)
   },
-} as const
+} as const;
 
 // Type definitions for the constants
-export type ProcessingState = (typeof PROCESSING_STATES)[keyof typeof PROCESSING_STATES]
+export type ProcessingState =
+  (typeof PROCESSING_STATES)[keyof typeof PROCESSING_STATES];
 // @unused - Types derived from constants, kept for future use
 // type UploadState = (typeof UPLOAD_STATES)[keyof typeof UPLOAD_STATES]
 // type AllowedFileType = (typeof UPLOAD_CONFIG.ALLOWED_TYPES)[number]

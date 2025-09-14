@@ -1,14 +1,14 @@
-import { render, screen, waitFor, act } from '@/test/utils/testUtils'
-import userEvent from '@testing-library/user-event'
-import { Welds } from './Welds'
-import { vi } from 'vitest'
-import type { Weld, Material } from '@/types/app'
-import type { Timestamp } from 'firebase/firestore'
+import { render, screen, waitFor, act } from '@/test/utils/testUtils';
+import userEvent from '@testing-library/user-event';
+import { Welds } from './Welds';
+import { vi } from 'vitest';
+import type { Weld, Material } from '@/types/app';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock react-i18next because the welds.* translation keys are missing from the translation files
 // TODO: Add proper translations for welds.* namespace to src/i18n/locales/*/translation.json
 vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>()
+  const actual = await importOriginal<typeof import('react-i18next')>();
   return {
     ...actual,
     useTranslation: () => ({
@@ -29,12 +29,12 @@ vi.mock('react-i18next', async (importOriginal) => {
           'common.loading': 'Loading...',
           'common.search': 'Search',
           'table.noResults': 'No results found',
-        }
-        return translations[key] || key
+        };
+        return translations[key] || key;
       },
     }),
-  }
-})
+  };
+});
 
 // Mock the useMaterials hook
 vi.mock('@/hooks/useMaterials', () => ({
@@ -56,10 +56,14 @@ vi.mock('@/hooks/useMaterials', () => ({
             alloyMaterial: 'Stainless Steel',
             name: 'Parent Material 2',
           },
-        ] as (Material & { type: string; dimensions: string; alloyMaterial: string })[],
+        ] as (Material & {
+          type: string;
+          dimensions: string;
+          alloyMaterial: string;
+        })[],
         false, // loading state
         null, // error state
-      ]
+      ];
     } else if (type === 'filler') {
       return [
         [
@@ -68,27 +72,18 @@ vi.mock('@/hooks/useMaterials', () => ({
         ] as Material[],
         false, // loading state
         null, // error state
-      ]
+      ];
     }
-    return [[], false, null]
+    return [[], false, null];
   }),
-}))
-
-const mockTimestamp: Timestamp = {
-  toDate: () => new Date('2024-01-01'),
-  toMillis: () => 1704067200000,
-  seconds: 1704067200,
-  nanoseconds: 0,
-  isEqual: vi.fn(),
-  valueOf: vi.fn(),
-}
+}));
 
 describe('Welds', () => {
   const mockWelds: (Weld & {
-    parentMaterials: string[]
-    fillerMaterials: string[]
-    heatTreatment: boolean
-    position: string
+    parentMaterials: string[];
+    fillerMaterials: string[];
+    heatTreatment: boolean;
+    position: string;
   })[] = [
     {
       id: '1',
@@ -118,7 +113,7 @@ describe('Welds', () => {
       type: 'production',
       createdAt: mockTimestamp,
     },
-  ]
+  ];
 
   const defaultProps = {
     welds: mockWelds,
@@ -128,28 +123,28 @@ describe('Welds', () => {
     onConfirmAction: vi.fn(),
     projectId: 'project-1',
     weldLogId: 'weld-log-1',
-  }
+  };
 
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   it('should display table with translated headers and action button', () => {
-    render(<Welds {...defaultProps} />)
+    render(<Welds {...defaultProps} />);
 
     // Table structure
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getByRole('table')).toBeInTheDocument();
 
     // Column headers
-    expect(screen.getByText('Weld Number')).toBeInTheDocument()
-    expect(screen.getByText('Position')).toBeInTheDocument()
-    expect(screen.getByText('Parent Materials')).toBeInTheDocument()
-    expect(screen.getByText('Filler Materials')).toBeInTheDocument()
-    expect(screen.getByText('Heat Treatment')).toBeInTheDocument()
+    expect(screen.getByText('Weld Number')).toBeInTheDocument();
+    expect(screen.getByText('Position')).toBeInTheDocument();
+    expect(screen.getByText('Parent Materials')).toBeInTheDocument();
+    expect(screen.getByText('Filler Materials')).toBeInTheDocument();
+    expect(screen.getByText('Heat Treatment')).toBeInTheDocument();
 
     // Action button
-    expect(screen.getByText('Add Weld')).toBeInTheDocument()
-  })
+    expect(screen.getByText('Add Weld')).toBeInTheDocument();
+  });
 
   // Test different data states using data-driven approach
   const dataStateTestCases = [
@@ -163,62 +158,62 @@ describe('Welds', () => {
       props: { ...defaultProps, welds: [] },
       expectedText: 'No results found.',
     },
-  ]
+  ];
 
   dataStateTestCases.forEach(({ name, props, expectedText }) => {
     it(`should display ${name}`, () => {
-      render(<Welds {...props} />)
-      expect(screen.getByText(expectedText)).toBeInTheDocument()
-    })
-  })
+      render(<Welds {...props} />);
+      expect(screen.getByText(expectedText)).toBeInTheDocument();
+    });
+  });
 
   it('should display formatted material data and heat treatment values', () => {
-    render(<Welds {...defaultProps} />)
+    render(<Welds {...defaultProps} />);
 
     // Since DataTable renders asynchronously, we check for the basic structure
     // The actual formatting happens inside DataTable which may not be fully rendered in tests
-    
+
     // Check that the table is rendered
-    expect(screen.getByRole('table')).toBeInTheDocument()
-    
+    expect(screen.getByRole('table')).toBeInTheDocument();
+
     // Check that weld numbers are displayed
-    expect(screen.getByText('W001')).toBeInTheDocument()
-    expect(screen.getByText('W002')).toBeInTheDocument()
-    
+    expect(screen.getByText('W001')).toBeInTheDocument();
+    expect(screen.getByText('W002')).toBeInTheDocument();
+
     // Check positions
-    expect(screen.getByText('1G')).toBeInTheDocument()
-    expect(screen.getByText('2G')).toBeInTheDocument()
-  })
+    expect(screen.getByText('1G')).toBeInTheDocument();
+    expect(screen.getByText('2G')).toBeInTheDocument();
+  });
 
   it('should handle user interactions', async () => {
-    const user = userEvent.setup()
-    render(<Welds {...defaultProps} />)
+    const user = userEvent.setup();
+    render(<Welds {...defaultProps} />);
 
     // Test create action
-    screen.getByText('Add Weld').click()
-    expect(defaultProps.onCreateNew).toHaveBeenCalledTimes(1)
+    screen.getByText('Add Weld').click();
+    expect(defaultProps.onCreateNew).toHaveBeenCalledTimes(1);
 
     // Test row actions menu
     await waitFor(() => {
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
-    })
+      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+    });
 
-    const actionButtons = screen.getAllByText('Open menu')
-    await user.click(actionButtons[0])
+    const actionButtons = screen.getAllByText('Open menu');
+    await user.click(actionButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText('Edit')).toBeInTheDocument()
-      expect(screen.getByText('Delete')).toBeInTheDocument()
-    })
+      expect(screen.getByText('Edit')).toBeInTheDocument();
+      expect(screen.getByText('Delete')).toBeInTheDocument();
+    });
 
     // Test bulk actions
-    const selectAllCheckbox = screen.getByLabelText(/select all/i)
+    const selectAllCheckbox = screen.getByLabelText(/select all/i);
     act(() => {
-      selectAllCheckbox.click()
-    })
+      selectAllCheckbox.click();
+    });
 
     await waitFor(() => {
-      expect(screen.getByText('Delete Selected')).toBeInTheDocument()
-    })
-  })
-})
+      expect(screen.getByText('Delete Selected')).toBeInTheDocument();
+    });
+  });
+});

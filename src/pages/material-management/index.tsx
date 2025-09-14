@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageHeader from '@/components/layouts/PageHeader';
 import { ErrorLoadingWrapper } from '@/components/shared/ErrorLoadingWrapper';
@@ -9,13 +9,16 @@ import { getConfirmationContent } from '@/utils/confirmationContent';
 import { useMaterials, useMaterialOperations } from '@/hooks/useMaterials';
 import { MaterialFormDialog } from './MaterialFormDialog';
 import { MaterialsTable } from './MaterialsTable';
-import type { Material } from '@/types/database';
+import type { Material, MaterialFormData } from '@/types';
+import type { IdentifiableEntity } from '@/hooks/useConfirmationDialog';
 
 export default function MaterialManagement() {
   const { t } = useTranslation();
 
   // State for active tab (parent, filler, or alloys)
-  const [activeTab, setActiveTab] = useState<'parent' | 'filler' | 'alloys'>('parent');
+  const [activeTab, setActiveTab] = useState<'parent' | 'filler' | 'alloy'>(
+    'parent'
+  );
 
   // Fetch materials based on active tab
   const [materials = [], loading, error] = useMaterials(activeTab);
@@ -32,9 +35,9 @@ export default function MaterialManagement() {
 
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
-  const count = isBulk ? (data as Material[])?.length : 1;
+  const count = isBulk && Array.isArray(data) ? data.length : 1;
   const confirmContent = getConfirmationContent(
-    type,
+    type || 'delete',
     isBulk,
     count,
     t,
@@ -47,14 +50,12 @@ export default function MaterialManagement() {
       // Check if we have an existing material to update
       const existingMaterial = formDialog.entity;
 
-      // Transform data based on material type (parent has additional fields)
-      const transformedData =
-        activeTab === 'parent' ? data : { name: data.name };
-
-      if (existingMaterial) {
-        await updateMaterial(activeTab, existingMaterial.id, transformedData);
+      if (existingMaterial && existingMaterial.id) {
+        // For updates, use Partial<Material>
+        await updateMaterial(activeTab, existingMaterial.id, data);
       } else {
-        await createMaterial(activeTab, transformedData);
+        // For creation, pass the data as MaterialFormData (they now have the same structure)
+        await createMaterial(activeTab, data as MaterialFormData);
       }
 
       // Close the dialog on success
@@ -70,7 +71,7 @@ export default function MaterialManagement() {
       <PageHeader title={t('navigation.materialManagement')} />
 
       <ErrorLoadingWrapper
-        error={error}
+        error={error || null}
         loading={loading}
         resourceName={t('navigation.materials').toLowerCase()}
       >
@@ -81,7 +82,13 @@ export default function MaterialManagement() {
           onTabChange={setActiveTab}
           onEdit={formDialog.open}
           onCreateNew={() => formDialog.open()}
-          onConfirmAction={confirmDialog.open}
+          onConfirmAction={(action, data, isBulk) =>
+            confirmDialog.open(
+              action,
+              data as unknown as IdentifiableEntity | IdentifiableEntity[],
+              isBulk
+            )
+          }
         />
       </ErrorLoadingWrapper>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -10,7 +10,6 @@ import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 import { getSystemNavigation } from '@/config/navigation';
-import { getUserInitials } from '@/utils/userInitials';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -72,7 +71,14 @@ export function SiteHeader() {
   const userAvatar = (
     <Avatar className="h-8 w-8">
       <AvatarFallback className="text-xs">
-        {getUserInitials(loggedInUser)}
+        {loggedInUser?.displayName
+          ? loggedInUser.displayName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
+          : '?'}
       </AvatarFallback>
     </Avatar>
   );

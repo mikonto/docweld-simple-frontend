@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlusIcon, MoreHorizontal, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +40,7 @@ export function SectionsList({
   showImportMenu = false,
 }: SectionsListProps) {
   const { t } = useTranslation();
-  
+
   if (isLoading) {
     return (
       <Card>

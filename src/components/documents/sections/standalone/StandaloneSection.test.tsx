@@ -2,9 +2,13 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { StandaloneSection } from './StandaloneSection';
-import type { StandaloneSectionProps, DropdownAction } from './StandaloneSection';
+import type {
+  StandaloneSectionProps,
+  DropdownAction,
+} from './StandaloneSection';
 import type { Document } from '@/types/database';
 import type { Timestamp } from 'firebase/firestore';
+import type { LucideIcon } from 'lucide-react';
 
 // Mock lucide icons
 vi.mock('lucide-react', () => ({
@@ -18,18 +22,27 @@ vi.mock('lucide-react', () => ({
 
 // Mock dropdown menu components
 vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) =>
-    asChild ? <>{children}</> : <div>{children}</div>,
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuItem: ({ 
-    children, 
-    onSelect, 
-    disabled 
-  }: { 
-    children: React.ReactNode; 
-    onSelect?: () => void; 
-    disabled?: boolean 
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuTrigger: ({
+    children,
+    asChild,
+  }: {
+    children: React.ReactNode;
+    asChild?: boolean;
+  }) => (asChild ? <>{children}</> : <div>{children}</div>),
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuItem: ({
+    children,
+    onSelect,
+    disabled,
+  }: {
+    children: React.ReactNode;
+    onSelect?: () => void;
+    disabled?: boolean;
   }) => (
     <div
       onClick={disabled ? undefined : onSelect}
@@ -49,7 +62,13 @@ vi.mock('./StandaloneSectionContent', () => ({
     onRename,
     onDelete,
     onDragEnd,
-  }: any) => (
+  }: {
+    documents: unknown[];
+    onUpload: (files: string[]) => void;
+    onRename: (id: string, name: string) => void;
+    onDelete: (id: string, title: string) => void;
+    onDragEnd: (event: { active: { id: string } }) => void;
+  }) => (
     <div data-testid="section-content-component">
       <div>Documents: {documents.length}</div>
       <button onClick={() => onUpload(['file'])}>Upload</button>
@@ -220,13 +239,13 @@ describe('StandaloneSection', () => {
     });
 
     it('should support actions with icons', () => {
-      const TestIcon = () => <span>📁</span>;
+      const TestIcon = (() => <span>📁</span>) as unknown as LucideIcon;
       const actions: DropdownAction[] = [
         {
           key: 'import',
           label: 'Import',
           onSelect: vi.fn(),
-          icon: TestIcon as any,
+          icon: TestIcon,
         },
       ];
 
@@ -358,7 +377,7 @@ describe('StandaloneSection', () => {
     });
 
     it('should handle undefined uploadingFiles', () => {
-      const props: StandaloneSectionProps = { 
+      const props: StandaloneSectionProps = {
         ...defaultProps,
         uploadingFiles: undefined,
       };

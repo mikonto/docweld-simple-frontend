@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export interface RowMenuItem<TData = any> {
+export interface RowMenuItem<TData = unknown> {
   label: string;
   action: (rowData: TData) => void;
   icon?: React.ReactNode;
@@ -18,13 +18,16 @@ export interface RowMenuItem<TData = any> {
   separator?: boolean;
 }
 
-interface ActionsCellProps<TData = any> {
+interface ActionsCellProps<TData = unknown> {
   row: Row<TData>;
   rowMenuItems: RowMenuItem<TData>[];
 }
 
 // Separate component for the actions cell to properly use hooks
-export function ActionsCell<TData = any>({ row, rowMenuItems }: ActionsCellProps<TData>) {
+export function ActionsCell<TData = unknown>({
+  row,
+  rowMenuItems,
+}: ActionsCellProps<TData>) {
   // Extract the original data object from the table row
   const rowData = row.original;
 

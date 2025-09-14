@@ -15,11 +15,17 @@
 
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
 import { useState } from 'react';
-import { ref, getDownloadURL, StorageError, UploadResult } from 'firebase/storage';
+import {
+  ref,
+  getDownloadURL,
+  StorageError,
+  UploadResult,
+} from 'firebase/storage';
 import { useUploadFile } from 'react-firebase-hooks/storage';
 import { storage } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { sanitizeFileName } from '@/utils/sanitizeFileName';
+import { convertToDate } from '@/utils/dateFormatting';
 import type { FirestoreError } from 'firebase/firestore';
 import type { Company, CompanyFormData } from '@/types';
 
@@ -28,7 +34,7 @@ const COMPANY_ID = 'company'; // Single document ID for company information
 /**
  * Transformed company information for component use
  */
-interface CompanyInformation {
+export interface CompanyInformation {
   id: string;
   companyName: string;
   address: string;
@@ -69,7 +75,8 @@ export const useCompanyInformation = (): UseCompanyInformationReturn => {
     useFirestoreOperations('company');
 
   // Since we're dealing with a singleton document, get the first (and only) document
-  const companyData = documents && documents.length > 0 ? documents[0] as Company : null;
+  const companyData =
+    documents && documents.length > 0 ? (documents[0] as Company) : null;
 
   // Transform the document data for component use
   const companyInformation: CompanyInformation | null = companyData
@@ -82,8 +89,12 @@ export const useCompanyInformation = (): UseCompanyInformationReturn => {
         contactEmail: companyData.contactPersonEmail || '',
         contactPhone: companyData.contactPersonPhone || '',
         logoUrl: companyData.logoUrl || '',
-        createdAt: companyData.createdAt,
-        updatedAt: companyData.updatedAt,
+        createdAt: companyData.createdAt
+          ? convertToDate(companyData.createdAt) || undefined
+          : undefined,
+        updatedAt: companyData.updatedAt
+          ? convertToDate(companyData.updatedAt) || undefined
+          : undefined,
       }
     : null;
 
@@ -91,7 +102,9 @@ export const useCompanyInformation = (): UseCompanyInformationReturn => {
    * Update company information in Firestore
    * @param data - Form data to update
    */
-  const updateCompanyInformation = async (data: CompanyFormData): Promise<void> => {
+  const updateCompanyInformation = async (
+    data: CompanyFormData
+  ): Promise<void> => {
     if (!loggedInUser) {
       throw new Error('User must be logged in to update company information');
     }
@@ -141,7 +154,10 @@ export const useCompanyInformation = (): UseCompanyInformationReturn => {
       const storageRef = ref(storage, `company/${sanitizedFilename}`);
 
       // Upload the file using the hook
-      const result: UploadResult | undefined = await uploadFile(storageRef, file);
+      const result: UploadResult | undefined = await uploadFile(
+        storageRef,
+        file
+      );
 
       if (!result) {
         throw new Error('Upload failed');

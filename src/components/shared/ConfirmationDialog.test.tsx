@@ -1,34 +1,22 @@
-import { describe, it, expect, vi, beforeEach, MockedFunction } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfirmationDialog } from './ConfirmationDialog';
-import { useTranslation } from 'react-i18next';
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
-  useTranslation: vi.fn(),
+  useTranslation: vi.fn().mockReturnValue({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'common.cancel': 'Cancel',
+        'common.confirm': 'Confirm',
+      };
+      return translations[key] || key;
+    },
+  }),
 }));
 
-const mockUseTranslation = useTranslation as MockedFunction<typeof useTranslation>;
-
 describe('ConfirmationDialog', () => {
-  beforeEach(() => {
-    mockUseTranslation.mockReturnValue({
-      t: (key: string) => {
-        const translations: Record<string, string> = {
-          'common.cancel': 'Cancel',
-          'common.confirm': 'Confirm',
-        };
-        return translations[key] || key;
-      },
-      i18n: {
-        language: 'en',
-        changeLanguage: vi.fn(),
-      } as any,
-      ready: true,
-    });
-  });
-
   const defaultProps = {
     isOpen: true,
     onOpenChange: vi.fn(),

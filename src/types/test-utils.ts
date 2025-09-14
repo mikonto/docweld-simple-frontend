@@ -1,6 +1,6 @@
 /**
  * Test Utility Types
- * 
+ *
  * Types for testing utilities and mock functions.
  * Helps maintain type safety in test files.
  */
@@ -10,8 +10,9 @@ import type { MockedFunction as VitestMock } from 'vitest';
 
 // ============== Render Utilities ==============
 
-export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
-  initialState?: Record<string, any>;
+export interface RenderWithProvidersOptions
+  extends Omit<RenderOptions, 'wrapper'> {
+  initialState?: Record<string, unknown>;
   route?: string;
   initialEntries?: string[];
 }
@@ -22,14 +23,15 @@ export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper
  * Vitest mock function type
  * Use this for typing mocked functions in tests
  */
-export type MockedFunction<T extends (...args: any[]) => any> = VitestMock<T>;
+export type MockedFunction<T extends (...args: unknown[]) => unknown> =
+  VitestMock<T>;
 
 /**
  * Mock return value for hooks
  * Helps type the return values of mocked hooks
  * @unused - Kept for future use
  */
-// type MockedHookReturn<T> = T extends (...args: any[]) => infer R ? R : never;
+// type MockedHookReturn<T> = T extends (...args: unknown[]) => infer R ? R : never;
 
 // ============== Firebase Mock Types ==============
 
@@ -43,7 +45,7 @@ export interface MockFirebaseUser {
 
 export interface MockFirestoreDocument {
   id: string;
-  data: () => Record<string, any>;
+  data: () => Record<string, unknown>;
   exists: () => boolean;
   ref: {
     id: string;
@@ -138,7 +140,7 @@ export interface MockFirestoreQuerySnapshot {
 // function createTestFactory<T>(defaults: T): TestDataFactory<T> {
 //   return {
 //     create: (overrides = {}) => ({ ...defaults, ...overrides }),
-//     createMany: (count, overrides = {}) => 
+//     createMany: (count, overrides = {}) =>
 //       Array.from({ length: count }, () => ({ ...defaults, ...overrides }))
 //   };
 // }

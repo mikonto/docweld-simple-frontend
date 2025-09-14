@@ -6,7 +6,8 @@ import { renderWithProviders } from '@/test/utils/testUtils';
 import { useApp } from '@/contexts/AppContext';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useProjects } from '@/hooks/useProjects';
-import type { Project, LoggedInUser } from '@/types';
+import type { Project } from '@/types';
+import type { Location } from 'react-router-dom';
 
 // Mock hooks
 vi.mock('@/contexts/AppContext', () => ({
@@ -30,52 +31,118 @@ vi.mock('@/hooks/useProjects', () => ({
 
 // Mock dropdown menu components
 vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children, open }: { children: React.ReactNode; open?: boolean }) => (
-    <div data-open={open}>{children}</div>
-  ),
-  DropdownMenuTrigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => {
+  DropdownMenu: ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode;
+    open?: boolean;
+  }) => <div data-open={open}>{children}</div>,
+  DropdownMenuTrigger: ({
+    children,
+    asChild,
+  }: {
+    children: React.ReactNode;
+    asChild?: boolean;
+  }) => {
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children);
     }
     return <button>{children}</button>;
   },
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onSelect }: { children: React.ReactNode; onSelect?: () => void }) => (
-    <div onClick={() => onSelect && onSelect()}>{children}</div>
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
   ),
-  DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuItem: ({
+    children,
+    onSelect,
+  }: {
+    children: React.ReactNode;
+    onSelect?: () => void;
+  }) => <div onClick={() => onSelect && onSelect()}>{children}</div>,
+  DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   DropdownMenuSeparator: () => <hr />,
 }));
 
 // Mock command components
 vi.mock('@/components/ui/command', () => ({
-  Command: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CommandInput: ({ placeholder }: { placeholder?: string }) => <input placeholder={placeholder} />,
-  CommandList: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CommandEmpty: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CommandGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CommandItem: ({ children, onSelect, value }: { children: React.ReactNode; onSelect?: (value: string) => void; value?: string }) => (
+  Command: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CommandInput: ({ placeholder }: { placeholder?: string }) => (
+    <input placeholder={placeholder} />
+  ),
+  CommandList: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CommandEmpty: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CommandGroup: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CommandItem: ({
+    children,
+    onSelect,
+    value,
+  }: {
+    children: React.ReactNode;
+    onSelect?: (value: string) => void;
+    value?: string;
+  }) => (
     <div onClick={() => onSelect && value && onSelect(value)}>{children}</div>
   ),
 }));
 
 // Mock sidebar UI components
 vi.mock('@/components/ui/sidebar', () => ({
-  Sidebar: ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => (
+  Sidebar: ({
+    children,
+    ...props
+  }: {
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
     <aside role="complementary" {...props}>
       {children}
     </aside>
   ),
-  SidebarContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarHeader: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
-  SidebarGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => <h3>{children}</h3>,
-  SidebarGroupContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SidebarContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  SidebarHeader: ({ children }: { children: React.ReactNode }) => (
+    <header>{children}</header>
+  ),
+  SidebarGroup: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => (
+    <h3>{children}</h3>
+  ),
+  SidebarGroupContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   SidebarSeparator: () => <hr />,
-  SidebarFooter: ({ children }: { children: React.ReactNode }) => <footer>{children}</footer>,
-  SidebarMenu: ({ children }: { children: React.ReactNode }) => <nav>{children}</nav>,
-  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarMenuButton: ({ children, asChild, ...props }: { children: React.ReactNode; asChild?: boolean; [key: string]: any }) => {
+  SidebarFooter: ({ children }: { children: React.ReactNode }) => (
+    <footer>{children}</footer>
+  ),
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => (
+    <nav>{children}</nav>
+  ),
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  SidebarMenuButton: ({
+    children,
+    asChild,
+    ...props
+  }: {
+    children: React.ReactNode;
+    asChild?: boolean;
+    [key: string]: unknown;
+  }) => {
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children, props);
     }
@@ -95,14 +162,24 @@ describe('AppSidebar', () => {
 
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(useParams).mockReturnValue({});
-    vi.mocked(useLocation).mockReturnValue({ pathname: '/' });
+    vi.mocked(useLocation).mockReturnValue({
+      pathname: '/',
+      search: '',
+      hash: '',
+      state: null,
+      key: 'default',
+    } as Location);
     vi.mocked(useApp).mockReturnValue({
       loggedInUser: {
+        uid: 'test-uid',
+        displayName: 'Test User',
         email: 'test@example.com',
         role: 'admin',
-      } as LoggedInUser,
-    });
-    vi.mocked(useProjects).mockReturnValue([mockProjects, false, null]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+    vi.mocked(useProjects).mockReturnValue([mockProjects, false, undefined]);
   });
 
   describe('Navigation Structure', () => {
@@ -144,7 +221,11 @@ describe('AppSidebar', () => {
       vi.mocked(useParams).mockReturnValue({ projectId: '123' });
       vi.mocked(useLocation).mockReturnValue({
         pathname: '/projects/123/overview',
-      });
+        search: '',
+        hash: '',
+        state: null,
+        key: 'default',
+      } as Location);
     });
 
     it('should always show project selector', () => {
@@ -175,10 +256,14 @@ describe('AppSidebar', () => {
     it('should hide admin sections for basic users in project context', () => {
       vi.mocked(useApp).mockReturnValue({
         loggedInUser: {
+          uid: 'basic-uid',
+          displayName: 'Basic User',
           email: 'basic@example.com',
           role: 'user',
-        } as LoggedInUser,
-      });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       renderWithProviders(<AppSidebar />);
 

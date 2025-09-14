@@ -1,6 +1,6 @@
 /**
  * Application Types - Core Business Logic Types
- * 
+ *
  * These types represent the application's domain models
  * and are used throughout the components and hooks.
  */
@@ -30,7 +30,7 @@ export type UserRole = 'admin' | 'manager' | 'welder' | 'viewer' | 'user';
 
 export interface Project {
   id: string;
-  projectName: string;  // Note: Firestore uses 'projectName', not 'name'
+  projectName: string; // Note: Firestore uses 'projectName', not 'name'
   projectNumber?: string;
   client?: string;
   customer?: string;
@@ -47,7 +47,12 @@ export interface Project {
   updatedAt: Timestamp;
 }
 
-type ProjectStatus = 'planning' | 'active' | 'completed' | 'archived' | 'on-hold';
+type ProjectStatus =
+  | 'planning'
+  | 'active'
+  | 'completed'
+  | 'archived'
+  | 'on-hold';
 
 export interface ProjectParticipant {
   userId: string;
@@ -58,9 +63,14 @@ export interface ProjectParticipant {
   permissions?: ProjectPermission[];
 }
 
-type ProjectRole = 'owner' | 'manager' | 'welder' | 'inspector' | 'viewer';
+export type ProjectRole =
+  | 'owner'
+  | 'manager'
+  | 'welder'
+  | 'inspector'
+  | 'viewer';
 
-type ProjectPermission = 
+export type ProjectPermission =
   | 'view'
   | 'edit'
   | 'delete'
@@ -81,6 +91,7 @@ export interface WeldLog {
   updatedAt: Timestamp;
   createdBy: string;
   welds?: string[];
+  [key: string]: unknown;
 }
 
 export interface Weld {
@@ -100,7 +111,13 @@ export interface Weld {
   notes?: string;
 }
 
-type WeldStatus = 'pending' | 'in-progress' | 'completed' | 'approved' | 'rejected' | 'repaired';
+type WeldStatus =
+  | 'pending'
+  | 'in-progress'
+  | 'completed'
+  | 'approved'
+  | 'rejected'
+  | 'repaired';
 type WeldType = 'production' | 'repair' | 'test';
 type WeldProcess = 'SMAW' | 'GMAW' | 'GTAW' | 'FCAW' | 'SAW';
 
@@ -108,36 +125,35 @@ type WeldProcess = 'SMAW' | 'GMAW' | 'GTAW' | 'FCAW' | 'SAW';
 
 export interface Material {
   id?: string;
-  name: string;
-  type: MaterialType;
+  // Common field for filler/alloy materials, or can be used for parent material name
+  name?: string;
+  // Parent material specific fields
+  type?: string; // Material type description (e.g., "Steel Grade A")
+  dimensions?: string;
+  thickness?: string;
+  alloyMaterial?: string;
+  // Optional fields for more detailed specifications
   grade?: string;
   specification?: string;
   heatNumber?: string;
-  thickness?: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
 
-type MaterialType = 'carbon-steel' | 'stainless-steel' | 'aluminum' | 'duplex' | 'other';
-
 // ============== Company Types ==============
 
-// @unused - CompanyInformation is defined in database.ts
-// interface CompanyInformation {
-//   id?: string;
-//   companyName: string;
-//   organizationNumber?: string;
-//   address?: string;
-//   city?: string;
-//   postalCode?: string;
-//   country?: string;
-//   phone?: string;
-//   email?: string;
-//   website?: string;
-//   logoUrl?: string;
-//   createdAt?: Timestamp;
-//   updatedAt?: Timestamp;
-// }
+export interface Company {
+  id: string;
+  companyName: string;
+  companyAddress?: string;
+  companyWebsite?: string;
+  contactPersonName?: string;
+  contactPersonEmail?: string;
+  contactPersonPhone?: string;
+  logoUrl?: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
 
 // ============== Form Types ==============
 
@@ -160,12 +176,17 @@ export interface ProjectFormData {
 }
 
 export interface MaterialFormData {
-  name: string;
-  type: MaterialType;
+  // Common field for all materials
+  name?: string;
+  // Parent material fields
+  type?: string;
+  dimensions?: string;
+  thickness?: string;
+  alloyMaterial?: string;
+  // Optional detailed fields
   grade?: string;
   specification?: string;
   heatNumber?: string;
-  thickness?: number;
 }
 
 export interface UserFormData {
@@ -183,6 +204,7 @@ export interface WeldLogFormData {
   name: string;
   description?: string;
   status?: 'active' | 'completed' | 'archived';
+  [key: string]: unknown;
 }
 
 export interface WeldFormData {
@@ -191,6 +213,22 @@ export interface WeldFormData {
   type?: WeldType;
   status?: WeldStatus;
   notes?: string;
+}
+
+export interface CompanyFormData {
+  companyName: string;
+  address?: string;
+  website?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+export interface ProjectParticipantFormData {
+  userId: string;
+  role: ProjectRole;
+  participatingAs?: string[];
+  permissions?: ProjectPermission[];
 }
 
 // ============== Context Types ==============

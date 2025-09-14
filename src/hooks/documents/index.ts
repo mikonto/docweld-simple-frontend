@@ -20,7 +20,7 @@
  *   sectionId: sectionId,   // optional - filter by section
  * });
  */
-export { useDocuments } from './useDocuments';;
+export { useDocuments } from './useDocuments';
 
 /**
  * useSections - Main hook for section CRUD operations
@@ -30,7 +30,7 @@ export { useDocuments } from './useDocuments';;
  *   entityId: projectId,
  * });
  */
-;;
+export { useSections } from './useSections';
 
 /**
  * useDocumentImport - Specialized hook for importing documents between entities
@@ -38,7 +38,7 @@ export { useDocuments } from './useDocuments';;
  * @example
  * const { importItems, isImporting } = useDocumentImport('project', projectId);
  */
-export { useDocumentImport } from './useDocumentImport';;
+export { useDocumentImport } from './useDocumentImport';
 
 // ============================================================================
 // UTILITY HOOKS - For specific UI needs
@@ -48,13 +48,13 @@ export { useDocumentImport } from './useDocumentImport';;
  * useDocumentDisplay - Handles document image/thumbnail display with loading states
  * Used by DocumentCard component
  */
-export { useDocumentDisplay } from './useDocumentDisplay';;
+export { useDocumentDisplay } from './useDocumentDisplay';
 
 /**
  * useDragAndDrop - Provides drag and drop functionality for file uploads
  * Used by DocumentUploadCard component
  */
-export { useDragAndDrop } from './useDragAndDrop';;
+export { useDragAndDrop } from './useDragAndDrop';
 
 // ============================================================================
 // IMPORT BROWSER HOOKS - For import dialog functionality
@@ -63,17 +63,18 @@ export { useDragAndDrop } from './useDragAndDrop';;
 /**
  * useImportBrowser - Main state management for import browser
  */
-;;
+export { default as useImportBrowser } from './useImportBrowser';
+export type { SelectedItem } from './useImportBrowser';
 
 /**
  * useImportDataFetching - Handles data fetching for import browser
  */
-;
+export { default as useImportDataFetching } from './useImportDataFetching';
 
 /**
  * useImportSelection - Manages selection logic in import browser
  */
-;;
+export { default as useImportSelection } from './useImportSelection';
 
 // ============================================================================
 // UTILITY FUNCTIONS - Not hooks, just helper functions

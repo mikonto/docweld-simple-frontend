@@ -2,6 +2,9 @@ import { renderHook } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, MockedFunction } from 'vitest';
 import { useDocuments } from './useDocuments';
 
+type UseDocumentsConfig = Parameters<typeof useDocuments>[0];
+type EntityType = UseDocumentsConfig['entityType'];
+
 // Mock dependencies
 vi.mock('./useBaseDocumentOperations');
 vi.mock('./useDocumentData');
@@ -9,8 +12,11 @@ vi.mock('./useDocumentData');
 import { useBaseDocumentOperations } from './useBaseDocumentOperations';
 import { useDocumentData } from './useDocumentData';
 
-const mockUseBaseDocumentOperations = useBaseDocumentOperations as MockedFunction<typeof useBaseDocumentOperations>;
-const mockUseDocumentData = useDocumentData as MockedFunction<typeof useDocumentData>;
+const mockUseBaseDocumentOperations =
+  useBaseDocumentOperations as MockedFunction<typeof useBaseDocumentOperations>;
+const mockUseDocumentData = useDocumentData as MockedFunction<
+  typeof useDocumentData
+>;
 
 describe('useDocuments', () => {
   const mockOperations = {
@@ -128,7 +134,7 @@ describe('useDocuments', () => {
         renderHook(() =>
           useDocuments({
             entityId: '123',
-          } as any)
+          } as unknown as UseDocumentsConfig)
         );
       }).toThrow('useDocuments requires entityType and entityId');
     });
@@ -138,7 +144,7 @@ describe('useDocuments', () => {
         renderHook(() =>
           useDocuments({
             entityType: 'project',
-          } as any)
+          } as unknown as UseDocumentsConfig)
         );
       }).toThrow('useDocuments requires entityType and entityId');
     });
@@ -147,7 +153,7 @@ describe('useDocuments', () => {
       expect(() => {
         renderHook(() =>
           useDocuments({
-            entityType: 'invalid' as any,
+            entityType: 'invalid' as unknown as EntityType,
             entityId: '123',
           })
         );

@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,7 +8,15 @@ import type { Timestamp } from 'firebase/firestore';
 
 // Mock child components to isolate testing
 vi.mock('../shared/SectionHeader', () => ({
-  SectionHeader: ({ sectionData, toggleExpand, documentsCount }: any) => (
+  SectionHeader: ({
+    sectionData,
+    toggleExpand,
+    documentsCount,
+  }: {
+    sectionData: { name: string };
+    toggleExpand: () => void;
+    documentsCount: number;
+  }) => (
     <div data-testid="section-header" onClick={toggleExpand}>
       <h3>{sectionData.name}</h3>
       <span>{documentsCount} documents</span>
@@ -18,9 +25,13 @@ vi.mock('../shared/SectionHeader', () => ({
 }));
 
 vi.mock('./SectionContent', () => ({
-  SectionContent: ({ documents }: any) => (
+  SectionContent: ({
+    documents,
+  }: {
+    documents: Array<{ id: string; title: string }>;
+  }) => (
     <div data-testid="section-content">
-      {documents.map((doc: any) => (
+      {documents.map((doc) => (
         <div key={doc.id} data-testid="document-item">
           {doc.title}
         </div>
@@ -92,10 +103,10 @@ describe('Section', () => {
   };
 
   const mockDocuments: Document[] = [
-    { 
-      id: 'doc-1', 
-      title: 'Technical Spec', 
-      sectionId: 'section-1', 
+    {
+      id: 'doc-1',
+      title: 'Technical Spec',
+      sectionId: 'section-1',
       order: 2,
       storageRef: 'ref1',
       thumbStorageRef: null,
@@ -108,10 +119,10 @@ describe('Section', () => {
       createdBy: 'user1',
       updatedBy: 'user1',
     },
-    { 
-      id: 'doc-2', 
-      title: 'User Guide', 
-      sectionId: 'section-1', 
+    {
+      id: 'doc-2',
+      title: 'User Guide',
+      sectionId: 'section-1',
       order: 1,
       storageRef: 'ref2',
       thumbStorageRef: null,
@@ -124,10 +135,10 @@ describe('Section', () => {
       createdBy: 'user1',
       updatedBy: 'user1',
     },
-    { 
-      id: 'doc-3', 
-      title: 'Other Doc', 
-      sectionId: 'section-2', 
+    {
+      id: 'doc-3',
+      title: 'Other Doc',
+      sectionId: 'section-2',
       order: 1,
       storageRef: 'ref3',
       thumbStorageRef: null,
@@ -201,7 +212,9 @@ describe('Section', () => {
       const header = screen.getByTestId('section-header');
 
       // Initially collapsed - look for max-h-0 class
-      let animatedDiv = container.querySelector('.overflow-hidden.transition-all');
+      let animatedDiv = container.querySelector(
+        '.overflow-hidden.transition-all'
+      );
       expect(animatedDiv).toHaveClass('max-h-0');
 
       // Click to expand
@@ -225,7 +238,7 @@ describe('Section', () => {
       renderWithProviders(<Section {...defaultProps} />);
 
       const documentItems = screen.getAllByTestId('document-item');
-      
+
       // Documents should be sorted by order desc (2, 1)
       expect(documentItems[0]).toHaveTextContent('Technical Spec'); // order: 2
       expect(documentItems[1]).toHaveTextContent('User Guide'); // order: 1

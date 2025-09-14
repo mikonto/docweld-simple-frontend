@@ -1,11 +1,10 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { CompanyProfileForm } from './CompanyProfileForm';
 import type { CompanyProfileFormProps } from './CompanyProfileForm';
-import type { CompanyInformation } from '@/types/database';
+import type { CompanyInformation } from '@/hooks/useCompanyInformation';
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
@@ -203,7 +202,9 @@ describe('CompanyProfileForm', () => {
 
     // Mock the hidden file input click
     const clickSpy = vi.fn();
-    const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+    const fileInput = document.getElementById(
+      'logo-upload'
+    ) as HTMLInputElement;
     fileInput.click = clickSpy;
 
     await user.click(uploadButton);

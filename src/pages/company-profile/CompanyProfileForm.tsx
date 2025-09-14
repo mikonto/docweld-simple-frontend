@@ -15,7 +15,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Upload } from 'lucide-react';
-import type { CompanyInformation } from '@/types/database';
+import type { CompanyInformation } from '@/hooks/useCompanyInformation';
+import type { CompanyFormData } from '@/types';
 import type { TFunction } from 'i18next';
 
 // Create the schema inside the component to use translations
@@ -46,7 +47,7 @@ export interface CompanyProfileFormProps {
   isSaving: boolean;
   logoPreview: string | null;
   handleLogoChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (data: Partial<CompanyInformation>) => Promise<void>;
+  onSubmit: (data: CompanyFormData) => Promise<void>;
 }
 
 export function CompanyProfileForm({
@@ -110,7 +111,9 @@ export function CompanyProfileForm({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => document.getElementById('logo-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById('logo-upload')?.click()
+                  }
                   disabled={isUploading}
                 >
                   <Upload className="mr-2 h-4 w-4" />

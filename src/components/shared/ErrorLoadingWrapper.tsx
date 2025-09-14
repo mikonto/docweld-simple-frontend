@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/custom/spinner";
+import { Card, CardContent } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/custom/spinner';
 
 interface ErrorLoadingWrapperProps {
   error: Error | null;
@@ -13,11 +13,11 @@ interface ErrorLoadingWrapperProps {
  * Wrapper component that handles error and loading states
  * Shows appropriate UI while loading or when errors occur
  */
-export function ErrorLoadingWrapper({ 
-  error, 
-  loading, 
-  resourceName = "data", 
-  children 
+export function ErrorLoadingWrapper({
+  error,
+  loading,
+  resourceName = 'data',
+  children,
 }: ErrorLoadingWrapperProps) {
   // Show error state
   if (error) {

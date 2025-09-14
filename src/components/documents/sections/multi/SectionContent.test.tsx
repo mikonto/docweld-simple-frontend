@@ -8,13 +8,19 @@ import type { Timestamp } from 'firebase/firestore';
 // Extend window interface for test
 declare global {
   interface Window {
-    testDragEnd?: (event: any) => void;
+    testDragEnd?: (event: unknown) => void;
   }
 }
 
 // Mock the dnd-kit components
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children, onDragEnd }: { children: React.ReactNode; onDragEnd: any }) => {
+  DndContext: ({
+    children,
+    onDragEnd,
+  }: {
+    children: React.ReactNode;
+    onDragEnd: (event: unknown) => void;
+  }) => {
     // Store onDragEnd for testing
     window.testDragEnd = onDragEnd;
     return <div data-testid="dnd-context">{children}</div>;
@@ -34,21 +40,39 @@ vi.mock('@dnd-kit/sortable', () => ({
 
 // Mock the card components
 vi.mock('@/components/documents/cards', () => ({
-  Card: ({ id, title, onRename, onDelete }: any) => (
+  Card: ({
+    id,
+    title,
+    onRename,
+    onDelete,
+  }: {
+    id: string;
+    title: string;
+    onRename: (id: string, title: string) => void;
+    onDelete: (id: string, title: string) => void;
+  }) => (
     <div data-testid={`card-${id}`}>
       <span>{title}</span>
       <button onClick={() => onRename(id, title)}>Rename</button>
       <button onClick={() => onDelete(id, title)}>Delete</button>
     </div>
   ),
-  UploadCard: ({ onUpload, maxFilesAllowed }: any) => (
+  UploadCard: ({
+    onUpload,
+    maxFilesAllowed,
+  }: {
+    onUpload: (files: string[]) => void;
+    maxFilesAllowed: number;
+  }) => (
     <div data-testid="upload-card">
       <button onClick={() => onUpload(['file1', 'file2'])}>
         Upload (max {maxFilesAllowed})
       </button>
     </div>
   ),
-  CardGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="card-grid">{children}</div>,
+  CardGrid: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="card-grid">{children}</div>
+  ),
 }));
 
 describe('SectionContent', () => {

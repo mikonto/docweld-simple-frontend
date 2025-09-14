@@ -11,12 +11,12 @@ interface ConfirmationContent {
 /**
  * Translation function type (from i18next)
  */
-type TFunction = (key: string, options?: Record<string, any>) => string;
+type TFunction = (key: string, options?: Record<string, unknown>) => string;
 
 /**
  * Operation types for confirmation dialogs
  */
-type ConfirmationOperationType = 
+type ConfirmationOperationType =
   | 'delete'
   | 'archive'
   | 'restore'

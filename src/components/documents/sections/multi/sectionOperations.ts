@@ -8,22 +8,24 @@ import type { Document } from '@/types/database';
  * Keeps the component focused on UI while operations handle the logic
  */
 
-interface DialogData {
+export interface DialogData {
   id: string;
   title: string;
 }
 
-interface Dialog<T = any> {
+export interface Dialog<T = unknown> {
   open: (data?: T) => void;
   close: () => void;
   dialog?: { data: T };
 }
 
-interface DeleteDialog extends Dialog<DialogData> {
+export interface DeleteDialog {
   open: (type: string, data: DialogData, confirm: boolean) => void;
+  close: () => void;
+  dialog?: { data: DialogData };
 }
 
-interface DeleteResult {
+export interface DeleteResult {
   success: boolean;
   deletedCount?: number;
   errorType?: string;
@@ -34,7 +36,10 @@ interface UploadResult {
   heicFileCount?: number;
 }
 
-type TranslationFunction = (key: string, options?: any) => string;
+type TranslationFunction = (
+  key: string,
+  options?: Record<string, unknown>
+) => string;
 
 /**
  * Handle document rename initiation
@@ -188,22 +193,35 @@ export const handleUploadFiles = async (
         t('documents.heicConversionInfo', { count: result.heicFileCount })
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Provide more user-friendly error messages for common upload issues
     let errorMessage = t('documents.uploadError');
 
-    if (error.message?.includes('Max')) {
-      errorMessage = error.message; // Already has a good message for max files
-    } else if (error.message?.includes('exceed size limit')) {
-      errorMessage = t('documents.uploadSizeError');
-    } else if (error.message?.includes('unsupported formats')) {
-      errorMessage = t('documents.uploadFormatError');
-    } else if (error.code === 'storage/unauthorized') {
-      errorMessage = t('documents.uploadPermissionError');
-    } else if (error.code === 'storage/canceled') {
-      errorMessage = t('documents.uploadCanceledError');
-    } else if (error.message) {
-      errorMessage = error.message;
+    // Type guard for error with message and code properties
+    const isErrorWithDetails = (
+      err: unknown
+    ): err is { message?: string; code?: string } => {
+      return (
+        err !== null &&
+        typeof err === 'object' &&
+        ('message' in err || 'code' in err)
+      );
+    };
+
+    if (isErrorWithDetails(error)) {
+      if (error.message?.includes('Max')) {
+        errorMessage = error.message; // Already has a good message for max files
+      } else if (error.message?.includes('exceed size limit')) {
+        errorMessage = t('documents.uploadSizeError');
+      } else if (error.message?.includes('unsupported formats')) {
+        errorMessage = t('documents.uploadFormatError');
+      } else if (error.code === 'storage/unauthorized') {
+        errorMessage = t('documents.uploadPermissionError');
+      } else if (error.code === 'storage/canceled') {
+        errorMessage = t('documents.uploadCanceledError');
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
     }
 
     toast.error(errorMessage);

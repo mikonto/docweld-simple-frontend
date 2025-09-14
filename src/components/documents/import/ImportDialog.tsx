@@ -9,11 +9,12 @@ import {
 import { Spinner } from '@/components/ui/custom/spinner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ImportBrowser from './ImportBrowser';
+import type { SelectedItem } from '@/hooks/documents/useImportBrowser';
 
 interface ImportDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (items: any[]) => void;
+  onSubmit: (items: SelectedItem[]) => void;
   isImporting?: boolean;
   mode?: 'section' | 'document';
   projectId?: string | null;
@@ -31,7 +32,9 @@ export default function ImportDialog({
 }: ImportDialogProps) {
   const { t } = useTranslation();
 
-  const [importSource, setImportSource] = useState<'documentLibrary' | 'projectLibrary'>('documentLibrary');
+  const [importSource, setImportSource] = useState<
+    'documentLibrary' | 'projectLibrary'
+  >('documentLibrary');
 
   const [browserKey, setBrowserKey] = useState(0);
 
@@ -56,25 +59,13 @@ export default function ImportDialog({
   };
 
   // Simplified handler for item selection that directly processes items
-  const handleItemsSelected = (items: any[]) => {
+  const handleItemsSelected = (items: SelectedItem[]) => {
     // Process selected items for import
     if (items.length === 0) return;
 
-    // Format items to match what useDocumentImport expects
-    const imports = items.map((item) => {
-      // The useDocumentImport hook expects items with the original data structure
-      // plus the type field and source information
-      return {
-        ...item, // Keep all original fields from the selected item
-        type: item.type, // Explicitly set type (section or document)
-        // Add source information based on where we're importing from
-        projectId: item.projectId || null,
-        collectionId: item.collectionId || null,
-      };
-    });
-
-    // Call submit function with the formatted imports
-    onSubmit(imports);
+    // Items already have the correct structure from useImportBrowser
+    // Just pass them through directly
+    onSubmit(items);
   };
 
   return (

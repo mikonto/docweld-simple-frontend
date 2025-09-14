@@ -14,15 +14,30 @@ vi.mock('@/components/data-table/DataTable', () => ({
     onTabChange,
     actionButtons,
     bulkActionButtons,
-  }: any) => (
+  }: {
+    columns: Array<{
+      id?: string;
+      accessorKey?: string;
+      header?: (props: { column: { id: string } }) => React.ReactNode;
+      cell?: (props: { row: { original: unknown } }) => React.ReactNode;
+    }>;
+    data: unknown[];
+    tabs?: Array<{ value: string; label: string }>;
+    onTabChange?: (value: string) => void;
+    actionButtons?: Array<{ label: string; onClick: () => void }>;
+    bulkActionButtons?: Array<{
+      label: string;
+      onClick: (items: unknown[]) => void;
+    }>;
+  }) => (
     <div data-testid="data-table">
       {/* Render tabs */}
       {tabs && (
         <div>
-          {tabs.map((tab: any) => (
+          {tabs.map((tab) => (
             <button
               key={tab.value}
-              onClick={() => onTabChange(tab.value)}
+              onClick={() => onTabChange?.(tab.value)}
               data-testid={`tab-${tab.value}`}
             >
               {tab.label}
@@ -33,7 +48,7 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render action buttons */}
       {actionButtons &&
-        actionButtons.map((button: any, index: number) => (
+        actionButtons.map((button, index) => (
           <button
             key={index}
             onClick={button.onClick}
@@ -45,7 +60,7 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render bulk action buttons */}
       {bulkActionButtons &&
-        bulkActionButtons.map((button: any, index: number) => (
+        bulkActionButtons.map((button, index) => (
           <button
             key={index}
             onClick={() => button.onClick([])}
@@ -57,12 +72,12 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render column headers */}
       {columns &&
-        columns.map((column: any, index: number) => {
+        columns.map((column, index) => {
           if (column.header && typeof column.header === 'function') {
             const Header = column.header;
             return (
               <div key={index}>
-                <Header column={{ id: column.accessorKey }} />
+                <Header column={{ id: column.accessorKey || '' }} />
               </div>
             );
           }
@@ -71,14 +86,14 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render data */}
       {data &&
-        data.map((item: any, index: number) => (
+        data.map((item, index) => (
           <div key={index} data-testid="data-row">
             {/* Render the actions column if it exists */}
             {columns &&
-              columns.find((col: any) => col.id === 'actions') &&
+              columns.find((col) => col.id === 'actions') &&
               columns
-                .find((col: any) => col.id === 'actions')
-                .cell({ row: { original: item } })}
+                .find((col) => col.id === 'actions')
+                ?.cell?.({ row: { original: item } })}
           </div>
         ))}
     </div>
@@ -87,31 +102,52 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
 // Mock DataTableColumnHeader
 vi.mock('@/components/data-table/DataTableColumnHeader', () => ({
-  DataTableColumnHeader: ({ column, title }: any) => (
-    <span data-testid={`column-header-${column.id}`}>{title}</span>
-  ),
+  DataTableColumnHeader: ({
+    column,
+    title,
+  }: {
+    column: { id: string };
+    title: string;
+  }) => <span data-testid={`column-header-${column.id}`}>{title}</span>,
 }));
 
 // Mock createColumns
 vi.mock('@/components/data-table/ColumnDef', () => ({
-  createColumns: ({ columns, rowMenuItems }: any) => {
+  createColumns: ({
+    columns,
+    rowMenuItems,
+  }: {
+    columns: unknown[];
+    rowMenuItems: () => Array<{
+      label: string;
+      onClick: (row: unknown) => void;
+    }>;
+  }) => {
     // Add actions column with menu items
     return [
       ...columns,
       {
         id: 'actions',
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: { original: unknown } }) => (
           <div>
             {rowMenuItems &&
-              rowMenuItems.map((item: any, index: number) => (
-                <button
-                  key={index}
-                  onClick={() => item.action(row.original)}
-                  data-testid={`action-${item.label.toLowerCase()}`}
-                >
-                  {item.label}
-                </button>
-              ))}
+              (typeof rowMenuItems === 'function'
+                ? rowMenuItems()
+                : rowMenuItems
+              ).map(
+                (
+                  item: { label: string; action?: (row: unknown) => void },
+                  index: number
+                ) => (
+                  <button
+                    key={index}
+                    onClick={() => item.action?.(row.original)}
+                    data-testid={`action-${item.label.toLowerCase()}`}
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
           </div>
         ),
       },

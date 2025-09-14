@@ -1,25 +1,25 @@
-import type { ReactElement } from 'react'
-import { useTranslation } from 'react-i18next'
-import { StandaloneSection } from '@/components/documents/sections/standalone/StandaloneSection'
-import type { DragEndEvent } from '@dnd-kit/core'
-import type { Document, UploadingFile } from '@/types/database'
+import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StandaloneSection } from '@/components/documents/sections/standalone/StandaloneSection';
+import type { DragEndEvent } from '@dnd-kit/core';
+import type { Document, UploadingFile } from '@/types/database';
 
 interface DropdownAction {
-  key: string
-  label: string
-  onSelect: () => void
+  key: string;
+  label: string;
+  onSelect: () => void;
 }
 
 interface WeldDocumentsSectionProps {
-  documents: Document[]
-  documentsLoading: boolean
-  documentsError: Error | null
-  onImportClick: () => void
-  onDragEnd: (event: DragEndEvent) => void
-  onUpload: (files: File[]) => void
-  uploadingFiles: UploadingFile[]
-  onRenameDocument: (id: string, title: string) => void
-  onDeleteDocument: (id: string, title: string) => void
+  documents: Document[];
+  documentsLoading: boolean;
+  documentsError: Error | null;
+  onImportClick: () => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  onUpload: (files: File[]) => void;
+  uploadingFiles: UploadingFile[];
+  onRenameDocument: (id: string, title: string) => void;
+  onDeleteDocument: (id: string, title: string) => void;
 }
 
 export function WeldDocumentsSection({
@@ -33,7 +33,7 @@ export function WeldDocumentsSection({
   onRenameDocument,
   onDeleteDocument,
 }: WeldDocumentsSectionProps): ReactElement {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   // Define dropdown actions for the section
   const dropdownActions: DropdownAction[] = [
@@ -42,7 +42,16 @@ export function WeldDocumentsSection({
       label: t('documents.importDocuments'),
       onSelect: onImportClick,
     },
-  ]
+  ];
+
+  // Convert UploadingFile[] to Record<string, { uploadStatus?: string }>
+  const uploadingFilesRecord = uploadingFiles.reduce(
+    (acc, file) => {
+      acc[file.id] = { uploadStatus: file.status };
+      return acc;
+    },
+    {} as Record<string, { uploadStatus?: string }>
+  );
 
   return (
     <StandaloneSection
@@ -50,7 +59,7 @@ export function WeldDocumentsSection({
       documents={documents}
       documentsLoading={documentsLoading}
       documentsError={documentsError}
-      uploadingFiles={uploadingFiles}
+      uploadingFiles={uploadingFilesRecord}
       onDragEnd={onDragEnd}
       onUpload={onUpload}
       onRenameDocument={onRenameDocument}
@@ -58,5 +67,5 @@ export function WeldDocumentsSection({
       dropdownActions={dropdownActions}
       initialExpanded={false}
     />
-  )
+  );
 }

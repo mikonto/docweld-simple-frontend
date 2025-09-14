@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
  */
 export interface IdentifiableEntity {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -37,7 +37,11 @@ interface Operations {
  */
 interface UseConfirmationDialogReturn {
   dialog: ConfirmationDialogState;
-  open: (type: string, data: IdentifiableEntity | IdentifiableEntity[], isBulk?: boolean) => void;
+  open: (
+    type: string,
+    data: IdentifiableEntity | IdentifiableEntity[],
+    isBulk?: boolean
+  ) => void;
   close: () => void;
   handleConfirm: () => Promise<void>;
 }
@@ -68,7 +72,9 @@ interface UseConfirmationDialogReturn {
  *   onCancel={confirmDialog.close}
  * />
  */
-export function useConfirmationDialog(operations: Operations = {}): UseConfirmationDialogReturn {
+export function useConfirmationDialog(
+  operations: Operations = {}
+): UseConfirmationDialogReturn {
   const { t } = useTranslation();
 
   const [dialog, setDialog] = useState<ConfirmationDialogState>({
@@ -84,7 +90,11 @@ export function useConfirmationDialog(operations: Operations = {}): UseConfirmat
    * @param data - Single entity or array of entities
    * @param isBulk - Whether this is a bulk operation
    */
-  const open = (type: string, data: IdentifiableEntity | IdentifiableEntity[], isBulk = false) => {
+  const open = (
+    type: string,
+    data: IdentifiableEntity | IdentifiableEntity[],
+    isBulk = false
+  ) => {
     setDialog({
       isOpen: true,
       type,
@@ -142,7 +152,8 @@ export function useConfirmationDialog(operations: Operations = {}): UseConfirmat
       }
     } catch (error) {
       // Error handling with user-friendly message
-      const errorMessage = error instanceof Error ? error.message : t('crud.unknownError');
+      const errorMessage =
+        error instanceof Error ? error.message : t('crud.unknownError');
       toast.error(
         t('crud.operationFailedWithMessage', {
           operation: type,

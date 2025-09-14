@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react';
 import { SECTION_SIZE_CONFIG } from '../constants';
+import { ReactNode } from 'react';
 
 interface CardGridProps {
   children: ReactNode;

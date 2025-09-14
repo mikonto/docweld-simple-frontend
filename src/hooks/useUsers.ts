@@ -1,12 +1,24 @@
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { doc, where, setDoc, serverTimestamp, QueryConstraint, FirestoreError } from 'firebase/firestore';
+import {
+  doc,
+  where,
+  setDoc,
+  serverTimestamp,
+  QueryConstraint,
+  FirestoreError,
+} from 'firebase/firestore';
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
 import { httpsCallable, HttpsCallableResult } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { STATUS, USER_ROLE, COLLECTIONS, type Status } from '@/constants/firestore';
+import {
+  STATUS,
+  USER_ROLE,
+  COLLECTIONS,
+  type Status,
+} from '@/constants/firestore';
 import { type User, type UserFormData } from '@/types';
 
 /**
@@ -68,7 +80,9 @@ interface UseUserOperationsReturn {
  * Note: For accessing the currently logged-in user's combined data (Auth + Firestore),
  * use the useApp hook's loggedInUser instead.
  */
-export const useUser = (userId?: string): [User | null, boolean, FirestoreError | undefined] => {
+export const useUser = (
+  userId?: string
+): [User | null, boolean, FirestoreError | undefined] => {
   // Only fetch if we have a userId
   const [snapshot, loading, error] = useDocument(
     userId ? doc(db, 'users', userId) : null
@@ -76,7 +90,7 @@ export const useUser = (userId?: string): [User | null, boolean, FirestoreError 
 
   // Return the user data if it exists
   const firestoreUser = snapshot?.exists()
-    ? { id: snapshot.id, ...snapshot.data() } as User
+    ? ({ id: snapshot.id, ...snapshot.data() } as User)
     : null;
 
   return [firestoreUser, loading, error];
@@ -90,9 +104,13 @@ export const useUser = (userId?: string): [User | null, boolean, FirestoreError 
  *   - Loading state
  *   - Error if any
  */
-export const useUsers = (status?: Status): [UserWithName[], boolean, FirestoreError | undefined] => {
+export const useUsers = (
+  status?: Status
+): [UserWithName[], boolean, FirestoreError | undefined] => {
   // Build constraints based on status filter
-  const constraints: QueryConstraint[] = status ? [where('status', '==', status)] : [];
+  const constraints: QueryConstraint[] = status
+    ? [where('status', '==', status)]
+    : [];
 
   // Use useFirestoreOperations to fetch users
   const { documents, loading, error } = useFirestoreOperations('users', {
@@ -100,10 +118,13 @@ export const useUsers = (status?: Status): [UserWithName[], boolean, FirestoreEr
   });
 
   // Transform documents to include combined name field
-  const users: UserWithName[] = documents.map((user) => ({
-    ...user,
-    name: `${user.firstName} ${user.lastName}`,
-  } as UserWithName));
+  const users: UserWithName[] = documents.map(
+    (user) =>
+      ({
+        ...user,
+        name: `${user.firstName} ${user.lastName}`,
+      }) as UserWithName
+  );
 
   return [users, loading, error];
 };
@@ -141,7 +162,8 @@ export const useUserOperations = (): UseUserOperationsReturn => {
       }
 
       // Call the Cloud Function to create the user in Firebase Auth
-      const result: HttpsCallableResult<{ uid: string }> = await createUserAdmin({ email, password });
+      const result: HttpsCallableResult<{ uid: string }> =
+        await createUserAdmin({ email, password });
       const { uid } = result.data;
 
       // Create the corresponding Firestore document
@@ -160,7 +182,8 @@ export const useUserOperations = (): UseUserOperationsReturn => {
       toast.success(t('users.createSuccess'));
       return uid;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create user';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to create user';
       toast.error(errorMessage);
       // Throw a more user-friendly error message
       throw new Error(`Failed to create user: ${errorMessage}`);
@@ -172,7 +195,10 @@ export const useUserOperations = (): UseUserOperationsReturn => {
    * @param userId - The ID of the user to update
    * @param updates - The fields to update
    */
-  const updateUser = async (userId: string, updates: Partial<User>): Promise<void> => {
+  const updateUser = async (
+    userId: string,
+    updates: Partial<User>
+  ): Promise<void> => {
     return userOps.update(userId, updates);
   };
 

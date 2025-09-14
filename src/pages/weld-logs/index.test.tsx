@@ -1,9 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type MockedFunction,
+} from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import WeldLogs from './index';
-import type { Project, WeldLog } from '@/types/app';
+import type { Project, WeldLog, WeldLogFormData } from '@/types/app';
+import type { FirestoreError, Timestamp } from 'firebase/firestore';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock hooks
 vi.mock('@/hooks/useProjects', () => ({
@@ -35,11 +44,15 @@ vi.mock('./WeldLogFormDialog', () => ({
 }));
 
 vi.mock('./WeldLogsTable', () => ({
-  WeldLogsTable: vi.fn(({ onRowClick }: { onRowClick: (row: WeldLog) => void }) => (
-    <div data-testid="weld-logs-table">
-      <button onClick={() => onRowClick({ id: 'log-123' } as WeldLog)}>Row Click</button>
-    </div>
-  )),
+  WeldLogsTable: vi.fn(
+    ({ onRowClick }: { onRowClick: (row: WeldLog) => void }) => (
+      <div data-testid="weld-logs-table">
+        <button onClick={() => onRowClick({ id: 'log-123' } as WeldLog)}>
+          Row Click
+        </button>
+      </div>
+    )
+  ),
 }));
 
 vi.mock('@/components/shared/ConfirmationDialog', () => ({
@@ -62,36 +75,55 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+// Import hooks after mocking
+import { useProject } from '@/hooks/useProjects';
+import { useWeldLogs, useWeldLogOperations } from '@/hooks/useWeldLogs';
+import { useFormDialog } from '@/hooks/useFormDialog';
+import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import { getConfirmationContent } from '@/utils/confirmationContent';
+
+// Define return types
+type UseWeldLogOperationsReturn = {
+  createWeldLog: (
+    projectId: string,
+    weldLogData: WeldLogFormData
+  ) => Promise<string>;
+  updateWeldLog: (
+    weldLogId: string,
+    updates: Partial<WeldLog>
+  ) => Promise<void>;
+  deleteWeldLog: (weldLogId: string, projectId: string) => Promise<void>;
+};
+
 describe('WeldLogs', () => {
   const mockProject: Project = {
     id: 'project-123',
     projectName: 'Test Project',
     customer: 'Test Customer',
     status: 'active',
-    createdAt: new Date() as any,
-    updatedAt: new Date() as any,
-    createdBy: 'user-123',
+    createdAt: mockTimestamp as Timestamp,
+    updatedAt: mockTimestamp as Timestamp,
   };
 
   const mockWeldLogs: WeldLog[] = [
-    { 
-      id: '1', 
-      name: 'WL-001', 
+    {
+      id: '1',
+      name: 'WL-001',
       description: 'Test weld log 1',
       projectId: 'project-123',
       status: 'active',
-      createdAt: new Date() as any,
-      updatedAt: new Date() as any,
+      createdAt: mockTimestamp as Timestamp,
+      updatedAt: mockTimestamp as Timestamp,
       createdBy: 'user-123',
     },
-    { 
-      id: '2', 
-      name: 'WL-002', 
+    {
+      id: '2',
+      name: 'WL-002',
       description: 'Test weld log 2',
       projectId: 'project-123',
       status: 'active',
-      createdAt: new Date() as any,
-      updatedAt: new Date() as any,
+      createdAt: mockTimestamp as Timestamp,
+      updatedAt: mockTimestamp as Timestamp,
       createdBy: 'user-123',
     },
   ];
@@ -110,34 +142,38 @@ describe('WeldLogs', () => {
     handleConfirm: vi.fn(),
   };
 
-  const mockOperations = {
+  const mockOperations: UseWeldLogOperationsReturn = {
     createWeldLog: vi.fn(),
     updateWeldLog: vi.fn(),
     deleteWeldLog: vi.fn(),
   };
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
 
-    const { useProject } = await import('@/hooks/useProjects');
-    const { useWeldLogs, useWeldLogOperations } = await import(
-      '@/hooks/useWeldLogs'
+    (useProject as MockedFunction<typeof useProject>).mockReturnValue([
+      mockProject,
+      false,
+      undefined,
+    ]);
+    (useWeldLogs as MockedFunction<typeof useWeldLogs>).mockReturnValue([
+      mockWeldLogs,
+      false,
+      undefined,
+    ]);
+    (
+      useWeldLogOperations as MockedFunction<typeof useWeldLogOperations>
+    ).mockReturnValue(mockOperations);
+    (useFormDialog as MockedFunction<typeof useFormDialog>).mockReturnValue(
+      mockFormDialog
     );
-    const { useFormDialog } = await import('@/hooks/useFormDialog');
-    const { useConfirmationDialog } = await import(
-      '@/hooks/useConfirmationDialog'
-    );
-    const { getConfirmationContent } = await import(
-      '@/utils/confirmationContent'
-    );
-
-    (useProject as any).mockReturnValue([mockProject, false, null]);
-    (useWeldLogs as any).mockReturnValue([mockWeldLogs, false, null]);
-    (useWeldLogOperations as any).mockReturnValue(mockOperations);
-    (useFormDialog as any).mockReturnValue(mockFormDialog);
-    (useConfirmationDialog as any).mockReturnValue(mockConfirmDialog);
-    (getConfirmationContent as any).mockReturnValue({
+    (
+      useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>
+    ).mockReturnValue(mockConfirmDialog);
+    (
+      getConfirmationContent as MockedFunction<typeof getConfirmationContent>
+    ).mockReturnValue({
       title: 'Delete Weld Log',
       description: 'Are you sure?',
       actionLabel: 'Delete',
@@ -165,9 +201,12 @@ describe('WeldLogs', () => {
   });
 
   // Loading states
-  it('should show project loading state', async () => {
-    const { useProject } = await import('@/hooks/useProjects');
-    (useProject as any).mockReturnValue([null, true, null]);
+  it('should show project loading state', () => {
+    (useProject as MockedFunction<typeof useProject>).mockReturnValue([
+      null,
+      true,
+      undefined,
+    ]);
 
     renderWithProviders(<WeldLogs />);
 
@@ -175,9 +214,12 @@ describe('WeldLogs', () => {
     expect(spinner).toBeInTheDocument();
   });
 
-  it('should show weld logs loading state', async () => {
-    const { useWeldLogs } = await import('@/hooks/useWeldLogs');
-    (useWeldLogs as any).mockReturnValue([[], true, null]);
+  it('should show weld logs loading state', () => {
+    (useWeldLogs as MockedFunction<typeof useWeldLogs>).mockReturnValue([
+      [],
+      true,
+      undefined,
+    ]);
 
     renderWithProviders(<WeldLogs />);
 
@@ -186,12 +228,11 @@ describe('WeldLogs', () => {
   });
 
   // Error states
-  it('should show project error state', async () => {
-    const { useProject } = await import('@/hooks/useProjects');
-    (useProject as any).mockReturnValue([
+  it('should show project error state', () => {
+    (useProject as MockedFunction<typeof useProject>).mockReturnValue([
       null,
       false,
-      new Error('Failed to load project'),
+      new Error('Failed to load project') as FirestoreError,
     ]);
 
     renderWithProviders(<WeldLogs />);
@@ -199,12 +240,11 @@ describe('WeldLogs', () => {
     expect(screen.getByText(/Error loading/)).toBeInTheDocument();
   });
 
-  it('should show weld logs error state', async () => {
-    const { useWeldLogs } = await import('@/hooks/useWeldLogs');
-    (useWeldLogs as any).mockReturnValue([
-      null,
+  it('should show weld logs error state', () => {
+    (useWeldLogs as MockedFunction<typeof useWeldLogs>).mockReturnValue([
+      [],
       false,
-      new Error('Failed to load weld logs'),
+      new Error('Failed to load weld logs') as FirestoreError,
     ]);
 
     renderWithProviders(<WeldLogs />);
@@ -213,9 +253,8 @@ describe('WeldLogs', () => {
   });
 
   // Dialog states
-  it('should render form dialog when open', async () => {
-    const { useFormDialog } = await import('@/hooks/useFormDialog');
-    (useFormDialog as any).mockReturnValue({
+  it('should render form dialog when open', () => {
+    (useFormDialog as MockedFunction<typeof useFormDialog>).mockReturnValue({
       ...mockFormDialog,
       isOpen: true,
       entity: null,
@@ -226,11 +265,10 @@ describe('WeldLogs', () => {
     expect(screen.getByTestId('weld-log-form-dialog')).toBeInTheDocument();
   });
 
-  it('should render confirmation dialog when open', async () => {
-    const { useConfirmationDialog } = await import(
-      '@/hooks/useConfirmationDialog'
-    );
-    (useConfirmationDialog as any).mockReturnValue({
+  it('should render confirmation dialog when open', () => {
+    (
+      useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>
+    ).mockReturnValue({
       ...mockConfirmDialog,
       dialog: {
         isOpen: true,

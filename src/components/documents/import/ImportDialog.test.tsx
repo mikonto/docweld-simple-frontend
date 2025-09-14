@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, waitFor, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ImportDialog from './ImportDialog';
@@ -13,7 +12,14 @@ vi.mock('./ImportBrowser', () => ({
     sourceType,
     projectId,
     isImporting,
-  }: any) => {
+  }: {
+    onSelectItems: (items: unknown[]) => void;
+    onCancel: () => void;
+    mode?: string;
+    sourceType?: string;
+    projectId?: string;
+    isImporting?: boolean;
+  }) => {
     const handleSelectItems = () => {
       const baseItems = [
         {

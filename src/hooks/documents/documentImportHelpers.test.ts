@@ -4,6 +4,8 @@ import {
   prepareNewSectionData,
 } from './documentImportHelpers';
 import type { User, FirestoreDocument, FirestoreSection } from '@/types';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
+import type { Timestamp } from 'firebase/firestore';
 
 // Mock Firebase
 vi.mock('@/config/firebase', () => ({
@@ -60,8 +62,8 @@ describe('documentImportHelpers', () => {
         displayName: 'Test User',
         role: 'user',
         isActive: true,
-        createdAt: {} as any,
-        updatedAt: {} as any,
+        createdAt: mockTimestamp as Timestamp,
+        updatedAt: mockTimestamp as Timestamp,
       };
 
       const result = prepareNewDocumentData(
@@ -138,8 +140,8 @@ describe('documentImportHelpers', () => {
         displayName: 'Test User',
         role: 'user',
         isActive: true,
-        createdAt: {} as any,
-        updatedAt: {} as any,
+        createdAt: mockTimestamp as Timestamp,
+        updatedAt: mockTimestamp as Timestamp,
       };
 
       const result = prepareNewSectionData(
@@ -168,14 +170,14 @@ describe('documentImportHelpers', () => {
       const result = prepareNewSectionData(
         'new-section-id',
         sourceSection,
-        { libraryCollectionId: 'lib-123' },
+        { libraryId: 'lib-123' },
         0,
         null
       );
 
       expect(result.name).toBe('Minimal Section');
       expect(result.description).toBe('');
-      expect(result.libraryCollectionId).toBe('lib-123');
+      expect(result.libraryId).toBe('lib-123');
       expect(result.createdBy).toBe('system');
       expect(result.importedFrom).toBe(null);
     });

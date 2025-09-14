@@ -9,8 +9,31 @@ import type { Status } from '@/constants/firestore';
 
 /**
  * Combined user type with both Auth and Firestore data
+ * Composed rather than extended to avoid property conflicts
  */
-interface LoggedInUser extends FirebaseUser, FirestoreUser {}
+interface LoggedInUser {
+  // Firebase Auth properties
+  uid: string;
+  email: string | null;
+  emailVerified: boolean;
+  phoneNumber: string | null;
+  photoURL: string | null;
+  providerId: string;
+
+  // Firestore User properties (takes precedence for displayName)
+  id: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  role: FirestoreUser['role'];
+  companyName?: string;
+  createdAt: FirestoreUser['createdAt'];
+  updatedAt: FirestoreUser['updatedAt'];
+  lastLogin?: FirestoreUser['lastLogin'];
+  isActive: boolean;
+
+  // Additional Firebase Auth methods/properties can be added as needed
+}
 
 /**
  * Return type for useAuthWithFirestore hook
@@ -70,24 +93,52 @@ export function useAuthWithFirestore(): UseAuthWithFirestoreReturn {
   const userDb = userDoc?.exists() ? (userDoc.data() as FirestoreUser) : null;
 
   // Determine if user is authorized (authenticated + active in Firestore)
-  const isAuthorized = !!(userAuth && userDb && userDb.status === 'active');
+  const isAuthorized = !!(userAuth && userDb && userDb.isActive);
 
   // Combine Firebase Auth and Firestore user data for convenience
-  const loggedInUser = userAuth && userDb ? ({ ...userAuth, ...userDb } as LoggedInUser) : null;
+  // Manually construct to ensure proper type alignment
+  const loggedInUser: LoggedInUser | null =
+    userAuth && userDb
+      ? {
+          // Firebase Auth properties
+          uid: userAuth.uid,
+          email: userAuth.email,
+          emailVerified: userAuth.emailVerified,
+          phoneNumber: userAuth.phoneNumber,
+          photoURL: userAuth.photoURL,
+          providerId: userAuth.providerId,
+
+          // Firestore User properties
+          id: userDb.id,
+          displayName: userDb.displayName,
+          firstName: userDb.firstName,
+          lastName: userDb.lastName,
+          role: userDb.role,
+          companyName: userDb.companyName,
+          createdAt: userDb.createdAt,
+          updatedAt: userDb.updatedAt,
+          lastLogin: userDb.lastLogin,
+          isActive: userDb.isActive,
+        }
+      : null;
 
   return {
     // Combined user object with both Auth and Firestore data
     loggedInUser,
-    // Raw Firebase Auth user
-    userAuth,
+    // Raw Firebase Auth user (convert undefined to null)
+    userAuth: userAuth ?? null,
     // Raw Firestore user document data
     userDb,
-    // User status from Firestore
-    userStatus: userDb?.status || null,
+    // User status from Firestore (derived from isActive)
+    userStatus: userDb
+      ? userDb.isActive
+        ? ('active' as Status)
+        : ('inactive' as Status)
+      : null,
     // Whether user is fully authorized to access the app
     isAuthorized,
-    // Whether any loading is happening
-    loading,
+    // Whether any loading is happening (default to false if undefined)
+    loading: loading ?? false,
     // Any errors from Auth or Firestore
     error: userDocError || authError,
   };

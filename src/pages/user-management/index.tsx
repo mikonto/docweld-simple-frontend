@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageHeader from '@/components/layouts/PageHeader';
 import { ErrorLoadingWrapper } from '@/components/shared/ErrorLoadingWrapper';
 import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
 import { useFormDialog } from '@/hooks/useFormDialog';
-import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import {
+  useConfirmationDialog,
+  type IdentifiableEntity,
+} from '@/hooks/useConfirmationDialog';
 import { getConfirmationContent } from '@/utils/confirmationContent';
 import { useUsers, useUserOperations } from '@/hooks/useUsers';
 import { UserFormDialog } from './UserFormDialog';
@@ -41,9 +44,9 @@ export default function UserManagement() {
 
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
-  const count = isBulk ? data?.length : 1;
+  const count = isBulk && Array.isArray(data) ? data.length : 1;
   const confirmContent = getConfirmationContent(
-    type,
+    type || '',
     isBulk,
     count,
     t,
@@ -75,7 +78,7 @@ export default function UserManagement() {
       <PageHeader title={t('navigation.userManagement')} />
 
       <ErrorLoadingWrapper
-        error={error}
+        error={error ? new Error(error.message) : null}
         loading={loading}
         resourceName={t('navigation.userManagement').toLowerCase()}
       >
@@ -83,10 +86,22 @@ export default function UserManagement() {
           users={users}
           loading={loading}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={(tab: string) =>
+            setActiveTab(tab as 'active' | 'inactive')
+          }
           onEdit={formDialog.open}
           onCreateNew={() => formDialog.open()}
-          onConfirmAction={confirmDialog.open}
+          onConfirmAction={(
+            action: string,
+            data: User | User[],
+            isBulk: boolean
+          ) =>
+            confirmDialog.open(
+              action,
+              data as unknown as IdentifiableEntity | IdentifiableEntity[],
+              isBulk
+            )
+          }
         />
       </ErrorLoadingWrapper>
 

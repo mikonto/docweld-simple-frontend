@@ -3,6 +3,8 @@ import { render, screen } from '@/test/utils/testUtils';
 import userEvent from '@testing-library/user-event';
 import { WeldLogFormDialog } from './WeldLogFormDialog';
 import type { WeldLog, WeldLogFormData } from '@/types/app';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
+import type { Timestamp } from 'firebase/firestore';
 
 // Mock toast
 vi.mock('sonner', () => ({
@@ -34,8 +36,8 @@ describe('WeldLogFormDialog', () => {
     description: 'Test weld log',
     projectId: 'project-123',
     status: 'active',
-    createdAt: new Date() as any,
-    updatedAt: new Date() as any,
+    createdAt: mockTimestamp as Timestamp,
+    updatedAt: mockTimestamp as Timestamp,
     createdBy: 'user-123',
   };
 

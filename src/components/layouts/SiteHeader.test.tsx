@@ -5,7 +5,7 @@ import { SiteHeader } from './SiteHeader';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { useApp } from '@/contexts/AppContext';
 import { useLocation, useParams } from 'react-router-dom';
-import type { LoggedInUser } from '@/types';
+import type { Location } from 'react-router-dom';
 
 // Mock hooks
 vi.mock('@/contexts/AppContext', () => ({
@@ -61,19 +61,27 @@ vi.mock('@/components/ui/sidebar', () => ({
 }));
 
 describe('SiteHeader', () => {
-  const mockUser: LoggedInUser = {
+  const mockUser = {
     uid: 'user123',
     email: 'test@example.com',
     displayName: 'Test User',
-    firstName: 'Test',
-    lastName: 'User',
     role: 'admin',
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useApp).mockReturnValue({ loggedInUser: mockUser });
-    vi.mocked(useLocation).mockReturnValue({ pathname: '/' });
+    vi.mocked(useApp).mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      loggedInUser: mockUser as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+    vi.mocked(useLocation).mockReturnValue({
+      pathname: '/',
+      search: '',
+      hash: '',
+      state: null,
+      key: 'default',
+    } as Location);
     vi.mocked(useParams).mockReturnValue({});
   });
 
@@ -103,7 +111,10 @@ describe('SiteHeader', () => {
 
   describe('User States', () => {
     it('should handle missing user gracefully', () => {
-      vi.mocked(useApp).mockReturnValue({ loggedInUser: null });
+      vi.mocked(useApp).mockReturnValue({
+        loggedInUser: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       renderWithProviders(<SiteHeader />);
 

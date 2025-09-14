@@ -59,16 +59,20 @@ vi.mock('sonner', () => ({
   },
 }));
 
-const mockSetDoc = setDoc as MockedFunction<typeof setDoc>;
-const mockWriteBatch = writeBatch as MockedFunction<typeof writeBatch>;
-const mockGetDocs = getDocs as MockedFunction<typeof getDocs>;
-const mockHttpsCallable = httpsCallable as MockedFunction<typeof httpsCallable>;
+const mockSetDoc = setDoc as unknown as MockedFunction<typeof setDoc>;
+const mockWriteBatch = writeBatch as unknown as MockedFunction<
+  typeof writeBatch
+>;
+const mockGetDocs = getDocs as unknown as MockedFunction<typeof getDocs>;
+const mockHttpsCallable = httpsCallable as unknown as MockedFunction<
+  typeof httpsCallable
+>;
 
 describe('useDocumentImport', () => {
-  let mockCopyFunction: MockedFunction<any>;
+  let mockCopyFunction: ReturnType<typeof vi.fn>;
   let mockBatch: {
-    set: MockedFunction<any>;
-    commit: MockedFunction<any>;
+    set: ReturnType<typeof vi.fn>;
+    commit: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -78,23 +82,28 @@ describe('useDocumentImport', () => {
     mockCopyFunction = vi.fn().mockResolvedValue({
       data: { success: true },
     });
-    mockHttpsCallable.mockReturnValue(mockCopyFunction);
+    mockHttpsCallable.mockReturnValue(
+      mockCopyFunction as unknown as ReturnType<typeof httpsCallable>
+    );
 
     // Mock batch operations
     mockBatch = {
       set: vi.fn(),
       commit: vi.fn().mockResolvedValue(undefined),
     };
-    mockWriteBatch.mockReturnValue(mockBatch as any);
+    mockWriteBatch.mockReturnValue(
+      mockBatch as unknown as ReturnType<typeof writeBatch>
+    );
 
     // Mock getDocs to return empty for order calculations
+    const emptyDocsArray: unknown[] = [];
     mockGetDocs.mockResolvedValue({
       empty: true,
-      docs: [],
-      forEach: function (callback: (doc: any) => void) {
-        this.docs.forEach(callback);
+      docs: emptyDocsArray,
+      forEach: function (callback: (doc: unknown) => void) {
+        emptyDocsArray.forEach(callback);
       },
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof getDocs>>);
   });
 
   describe('Project Documents Import', () => {
@@ -142,25 +151,33 @@ describe('useDocumentImport', () => {
       };
 
       // Mock getDocs to return documents for the section
+      const mockDocsArray = [
+        {
+          id: 'doc-1',
+          data: () => ({
+            title: 'Document 1',
+            fileType: 'PDF',
+            storageRef: 'documents/doc-1/file.pdf',
+          }),
+        },
+      ];
+
       mockGetDocs.mockResolvedValueOnce({
         empty: false,
-        docs: [
-          {
-            id: 'doc-1',
-            data: () => ({
-              title: 'Document 1',
-              fileType: 'PDF',
-              storageRef: 'documents/doc-1/file.pdf',
-            }),
-          },
-        ],
-        forEach: function (callback: (doc: any) => void) {
-          this.docs.forEach(callback);
+        docs: mockDocsArray,
+        forEach: function (callback: (doc: unknown) => void) {
+          mockDocsArray.forEach(callback);
         },
-      } as any);
+      } as unknown as import('firebase/firestore').QuerySnapshot<
+        import('firebase/firestore').DocumentData
+      >);
 
       await act(async () => {
-        await result.current.importSection(sourceSection, 'library', 'library-id');
+        await result.current.importSection(
+          sourceSection,
+          'library',
+          'library-id'
+        );
       });
 
       // Verify batch operations were called
@@ -227,7 +244,7 @@ describe('useDocumentImport', () => {
       };
 
       await act(async () => {
-        await result.current.importDocument(sourceDoc, null, { additionalPath: 'details' });
+        await result.current.importDocument(sourceDoc, null, {});
       });
 
       expect(mockSetDoc).toHaveBeenCalledWith(
@@ -331,7 +348,11 @@ describe('useDocumentImport', () => {
       let error: Error | undefined;
       try {
         await act(async () => {
-          await result.current.importSection(sourceSection, 'library', 'library-id');
+          await result.current.importSection(
+            sourceSection,
+            'library',
+            'library-id'
+          );
         });
       } catch (e) {
         error = e as Error;

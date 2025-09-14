@@ -6,7 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import type { ProjectFormDialogProps } from './ProjectFormDialog';
-import type { Project } from '@/types/database';
+import type { Project } from '@/types';
 import type { Timestamp } from 'firebase/firestore';
 
 // Mock sonner toast (no longer used in this component)
@@ -36,13 +36,11 @@ describe('ProjectFormDialog', () => {
     parentMaterialTraceable: true,
     fillerMaterialTraceable: false,
     location: '',
-    startDate: '',
-    endDate: '',
+    startDate: undefined,
+    endDate: undefined,
     status: 'active',
     createdAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
     updatedAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
-    createdBy: 'user1',
-    updatedBy: 'user1',
   };
 
   beforeEach(() => {

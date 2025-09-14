@@ -5,7 +5,8 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import Projects from './index';
 import { vi, type MockedFunction } from 'vitest';
-import type { Project } from '@/types/database';
+import type { Project } from '@/types';
+import type { FirestoreError } from 'firebase/firestore';
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
@@ -65,11 +66,11 @@ vi.mock('./ProjectFormDialog', () => ({
 }));
 
 vi.mock('./ProjectsTable', () => ({
-  ProjectsTable: ({ 
-    onCreateNew, 
-    activeTab, 
-    onTabChange 
-  }: { 
+  ProjectsTable: ({
+    onCreateNew,
+    activeTab,
+    onTabChange,
+  }: {
     onCreateNew: () => void;
     activeTab: string;
     onTabChange: (tab: string) => void;
@@ -92,12 +93,12 @@ vi.mock('@/components/layouts/PageHeader', () => ({
 }));
 
 vi.mock('@/components/shared/ErrorLoadingWrapper', () => ({
-  ErrorLoadingWrapper: ({ 
-    children, 
-    error, 
-    loading, 
-    resourceName 
-  }: { 
+  ErrorLoadingWrapper: ({
+    children,
+    error,
+    loading,
+    resourceName,
+  }: {
     children: React.ReactNode;
     error: Error | null;
     loading: boolean;
@@ -110,12 +111,12 @@ vi.mock('@/components/shared/ErrorLoadingWrapper', () => ({
 }));
 
 vi.mock('@/components/shared/ConfirmationDialog', () => ({
-  ConfirmationDialog: ({ 
-    isOpen, 
-    title, 
-    description, 
-    actionLabel 
-  }: { 
+  ConfirmationDialog: ({
+    isOpen,
+    title,
+    description,
+    actionLabel,
+  }: {
     isOpen: boolean;
     title: string;
     description: string;
@@ -159,9 +160,9 @@ describe('Projects Page', () => {
 
     const { useProjects } = vi.mocked(await import('@/hooks/useProjects'));
     (useProjects as MockedFunction<typeof useProjects>).mockReturnValue([
-      mockProjects as Project[], 
-      false, 
-      null
+      mockProjects as Project[],
+      false,
+      undefined,
     ]);
   });
 
@@ -176,7 +177,11 @@ describe('Projects Page', () => {
 
   it('should show loading state', async () => {
     const { useProjects } = vi.mocked(await import('@/hooks/useProjects'));
-    (useProjects as MockedFunction<typeof useProjects>).mockReturnValue([[], true, null]);
+    (useProjects as MockedFunction<typeof useProjects>).mockReturnValue([
+      [],
+      true,
+      undefined,
+    ]);
 
     renderWithI18n(<Projects />);
 
@@ -188,7 +193,7 @@ describe('Projects Page', () => {
     (useProjects as MockedFunction<typeof useProjects>).mockReturnValue([
       [],
       false,
-      new Error('Failed to load projects'),
+      { code: 'unknown', message: 'Failed to load projects' } as FirestoreError,
     ]);
 
     renderWithI18n(<Projects />);
@@ -216,7 +221,9 @@ describe('Projects Page', () => {
       await import('@/hooks/useConfirmationDialog')
     );
 
-    (useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>).mockReturnValue({
+    (
+      useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>
+    ).mockReturnValue({
       dialog: {
         isOpen: true,
         type: 'delete',
@@ -226,7 +233,7 @@ describe('Projects Page', () => {
       open: vi.fn(),
       close: vi.fn(),
       handleConfirm: vi.fn(),
-    } as any);
+    });
 
     renderWithI18n(<Projects />);
 

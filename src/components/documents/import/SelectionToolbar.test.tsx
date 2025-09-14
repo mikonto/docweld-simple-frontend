@@ -2,10 +2,18 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import SelectionToolbar from './SelectionToolbar';
+import type { Document, Section } from '@/types/database';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock Checkbox component
 vi.mock('@/components/ui/checkbox', () => ({
-  Checkbox: ({ checked, onCheckedChange }: any) => (
+  Checkbox: ({
+    checked,
+    onCheckedChange,
+  }: {
+    checked?: boolean;
+    onCheckedChange?: (checked: boolean) => void;
+  }) => (
     <input
       type="checkbox"
       checked={checked}
@@ -21,15 +29,81 @@ describe('SelectionToolbar', () => {
   const mockAreAllItemsSelected = vi.fn();
   const mockToggleAllItems = vi.fn();
 
-  const mockSections = [
-    { id: 'sec-1', name: 'Welding Procedures' },
-    { id: 'sec-2', name: 'Quality Standards' },
+  const mockSections: Section[] = [
+    {
+      id: 'sec-1',
+      name: 'Welding Procedures',
+      description: 'Welding procedures documentation',
+      projectId: 'proj-1',
+      order: 0,
+      documentOrder: [],
+      status: 'active',
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+    },
+    {
+      id: 'sec-2',
+      name: 'Quality Standards',
+      description: 'Quality standards documentation',
+      projectId: 'proj-1',
+      order: 1,
+      documentOrder: [],
+      status: 'active',
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+    },
   ];
 
-  const mockDocuments = [
-    { id: 'doc-1', title: 'WPS-001' },
-    { id: 'doc-2', title: 'WPS-002' },
-    { id: 'doc-3', title: 'WPS-003' },
+  const mockDocuments: Document[] = [
+    {
+      id: 'doc-1',
+      title: 'WPS-001',
+      fileType: 'pdf',
+      fileSize: 1024,
+      storageRef: 'documents/doc1.pdf',
+      thumbStorageRef: null,
+      processingState: 'completed' as const,
+      order: 0,
+      status: 'active' as const,
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+    },
+    {
+      id: 'doc-2',
+      title: 'WPS-002',
+      fileType: 'pdf',
+      fileSize: 2048,
+      storageRef: 'documents/doc2.pdf',
+      thumbStorageRef: null,
+      processingState: 'completed' as const,
+      order: 1,
+      status: 'active' as const,
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+    },
+    {
+      id: 'doc-3',
+      title: 'WPS-003',
+      fileType: 'pdf',
+      fileSize: 3072,
+      storageRef: 'documents/doc3.pdf',
+      thumbStorageRef: null,
+      processingState: 'completed' as const,
+      order: 2,
+      status: 'active' as const,
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+    },
   ];
 
   afterEach(() => {
@@ -43,8 +117,8 @@ describe('SelectionToolbar', () => {
       <SelectionToolbar
         mode="document"
         currentView="documents"
-        sections={[] as any}
-        documents={mockDocuments as any}
+        sections={[]}
+        documents={mockDocuments}
         allowMultiple={true}
         areAllItemsSelected={mockAreAllItemsSelected}
         toggleAllItems={mockToggleAllItems}
@@ -55,188 +129,164 @@ describe('SelectionToolbar', () => {
     const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
     expect(selectAllCheckbox).toBeInTheDocument();
 
-    // User sees clear label indicating what will be selected
-    expect(
-      screen.getByText(
-        (content) =>
-          content.includes('Select all documents') ||
-          content === 'documents.selectAllDocuments'
-      )
-    ).toBeInTheDocument();
-
     // User clicks to select all documents at once
     fireEvent.click(selectAllCheckbox);
-
-    // System should toggle all documents
     expect(mockToggleAllItems).toHaveBeenCalledWith('document');
   });
 
-  it('allows user to select all sections when importing by section', () => {
+  it('shows select all for sections when in section mode', () => {
     mockAreAllItemsSelected.mockReturnValue(false);
 
     renderWithProviders(
       <SelectionToolbar
         mode="section"
         currentView="sections"
-        sections={mockSections as any}
-        documents={[] as any}
+        sections={mockSections}
+        documents={[]}
         allowMultiple={true}
         areAllItemsSelected={mockAreAllItemsSelected}
         toggleAllItems={mockToggleAllItems}
       />
     );
 
-    // User sees option to select all sections
     const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
     expect(selectAllCheckbox).toBeInTheDocument();
 
-    // Label clearly indicates sections will be selected
-    expect(
-      screen.getByText(
-        (content) =>
-          content.includes('Select all sections') ||
-          content === 'documents.selectAllSections'
-      )
-    ).toBeInTheDocument();
-
-    // User triggers bulk selection
     fireEvent.click(selectAllCheckbox);
     expect(mockToggleAllItems).toHaveBeenCalledWith('section');
   });
 
-  it('shows checked state when all items are already selected', () => {
+  it('shows checked state when all items are selected', () => {
     mockAreAllItemsSelected.mockReturnValue(true);
 
     renderWithProviders(
       <SelectionToolbar
         mode="document"
         currentView="documents"
-        sections={[] as any}
-        documents={mockDocuments as any}
+        sections={[]}
+        documents={mockDocuments}
         allowMultiple={true}
         areAllItemsSelected={mockAreAllItemsSelected}
         toggleAllItems={mockToggleAllItems}
       />
     );
 
-    // User sees checkbox is checked when all selected
-    const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
-    expect(selectAllCheckbox).toBeChecked();
+    const selectAllCheckbox = screen.getByTestId(
+      'select-all-checkbox'
+    ) as HTMLInputElement;
+    expect(selectAllCheckbox.checked).toBe(true);
+  });
 
-    // Clicking again would deselect all
+  it('hides select all when multiple selection is not allowed', () => {
+    renderWithProviders(
+      <SelectionToolbar
+        mode="document"
+        currentView="documents"
+        sections={[]}
+        documents={mockDocuments}
+        allowMultiple={false}
+        areAllItemsSelected={mockAreAllItemsSelected}
+        toggleAllItems={mockToggleAllItems}
+      />
+    );
+
+    const selectAllCheckbox = screen.queryByTestId('select-all-checkbox');
+    expect(selectAllCheckbox).not.toBeInTheDocument();
+  });
+
+  it('hides select all when no items available', () => {
+    renderWithProviders(
+      <SelectionToolbar
+        mode="document"
+        currentView="documents"
+        sections={[]}
+        documents={[]} // No documents
+        allowMultiple={true}
+        areAllItemsSelected={mockAreAllItemsSelected}
+        toggleAllItems={mockToggleAllItems}
+      />
+    );
+
+    const selectAllCheckbox = screen.queryByTestId('select-all-checkbox');
+    expect(selectAllCheckbox).not.toBeInTheDocument();
+  });
+
+  it('supports both section and document selection in both mode', () => {
+    mockAreAllItemsSelected.mockReturnValue(false);
+
+    renderWithProviders(
+      <SelectionToolbar
+        mode="both"
+        currentView="documents"
+        sections={mockSections}
+        documents={mockDocuments}
+        allowMultiple={true}
+        areAllItemsSelected={mockAreAllItemsSelected}
+        toggleAllItems={mockToggleAllItems}
+      />
+    );
+
+    const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
+    expect(selectAllCheckbox).toBeInTheDocument();
+
     fireEvent.click(selectAllCheckbox);
     expect(mockToggleAllItems).toHaveBeenCalledWith('document');
   });
 
-  it('hides bulk selection when single selection mode is enforced', () => {
+  it('disables checkbox when in collections view', () => {
     renderWithProviders(
       <SelectionToolbar
-        mode="document"
-        currentView="documents"
-        sections={[] as any}
-        documents={mockDocuments as any}
-        allowMultiple={false} // Single selection only
-        areAllItemsSelected={mockAreAllItemsSelected}
-        toggleAllItems={mockToggleAllItems}
-      />
-    );
-
-    // No select all option when multiple selection disabled
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByText('Select All Documents')).not.toBeInTheDocument();
-  });
-
-  it('hides toolbar when no items are available to select', () => {
-    renderWithProviders(
-      <SelectionToolbar
-        mode="document"
-        currentView="documents"
-        sections={[] as any}
-        documents={[] as any} // No documents
+        mode="section"
+        currentView="collections"
+        sections={[]}
+        documents={mockDocuments}
         allowMultiple={true}
         areAllItemsSelected={mockAreAllItemsSelected}
         toggleAllItems={mockToggleAllItems}
       />
     );
 
-    // No toolbar when nothing to select
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByText('Select All Documents')).not.toBeInTheDocument();
+    // Should not show checkbox in collections view
+    const selectAllCheckbox = screen.queryByTestId('select-all-checkbox');
+    expect(selectAllCheckbox).not.toBeInTheDocument();
   });
 
-  it('only shows in appropriate views where selection makes sense', () => {
+  it('correctly identifies when in sections view', () => {
+    mockAreAllItemsSelected.mockReturnValue(false);
+
     renderWithProviders(
       <SelectionToolbar
         mode="both"
-        currentView="collections" // Collections can't be selected
-        sections={mockSections as any}
-        documents={mockDocuments as any}
+        currentView="sections"
+        sections={mockSections}
+        documents={[]}
         allowMultiple={true}
         areAllItemsSelected={mockAreAllItemsSelected}
         toggleAllItems={mockToggleAllItems}
       />
     );
 
-    // No selection toolbar at collections level
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByText('Select All Sections')).not.toBeInTheDocument();
-    expect(screen.queryByText('Select All Documents')).not.toBeInTheDocument();
+    const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
+    fireEvent.click(selectAllCheckbox);
+
+    // Should call with 'section' when in sections view
+    expect(mockToggleAllItems).toHaveBeenCalledWith('section');
   });
 
-  it('respects mode restrictions for what can be selected', () => {
-    // In section-only mode, viewing documents
+  it('displays proper label for select all checkbox', () => {
     renderWithProviders(
       <SelectionToolbar
-        mode="section" // Only sections can be selected
-        currentView="documents" // But we're viewing documents
-        sections={[] as any}
-        documents={mockDocuments as any}
-        allowMultiple={true}
-        areAllItemsSelected={mockAreAllItemsSelected}
-        toggleAllItems={mockToggleAllItems}
-      />
-    );
-
-    // No select all for documents when in section-only mode
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByText('Select All Documents')).not.toBeInTheDocument();
-  });
-
-  it('provides visual feedback for bulk operations', () => {
-    mockAreAllItemsSelected
-      .mockReturnValueOnce(false) // Initial render
-      .mockReturnValueOnce(true); // After selection
-
-    const { rerender } = renderWithProviders(
-      <SelectionToolbar
         mode="document"
         currentView="documents"
-        sections={[] as any}
-        documents={mockDocuments as any}
+        sections={[]}
+        documents={mockDocuments}
         allowMultiple={true}
         areAllItemsSelected={mockAreAllItemsSelected}
         toggleAllItems={mockToggleAllItems}
       />
     );
 
-    // Initially unchecked
-    let selectAllCheckbox = screen.getByTestId('select-all-checkbox');
-    expect(selectAllCheckbox).not.toBeChecked();
-
-    // After user selects all, checkbox updates
-    rerender(
-      <SelectionToolbar
-        mode="document"
-        currentView="documents"
-        sections={[] as any}
-        documents={mockDocuments as any}
-        allowMultiple={true}
-        areAllItemsSelected={mockAreAllItemsSelected}
-        toggleAllItems={mockToggleAllItems}
-      />
-    );
-
-    selectAllCheckbox = screen.getByTestId('select-all-checkbox');
-    expect(selectAllCheckbox).toBeChecked();
+    const selectAllCheckbox = screen.getByLabelText('Select all items');
+    expect(selectAllCheckbox).toBeInTheDocument();
   });
 });

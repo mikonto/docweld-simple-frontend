@@ -1,18 +1,26 @@
-import React from 'react';
 import { Plus, UserCog, UserMinus, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import {
+  createColumns,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
 import type { User } from '@/types';
+import type { Column, Row } from '@tanstack/react-table';
 
 interface UsersTableProps {
   users: User[];
   loading?: boolean;
   activeTab: 'active' | 'inactive';
-  onTabChange: (tab: 'active' | 'inactive') => void;
+  onTabChange: (tab: string) => void;
   onEdit: (user: User) => void;
   onCreateNew: () => void;
-  onConfirmAction: (action: string, data: User | User[], isBulk: boolean) => void;
+  onConfirmAction: (
+    action: string,
+    data: User | User[],
+    isBulk: boolean
+  ) => void;
 }
 
 // Main users table component with tabs for active/inactive users
@@ -26,37 +34,40 @@ export function UsersTable({
   onConfirmAction,
 }: UsersTableProps) {
   const { t } = useTranslation();
-  
+
   // Map User to display format
-  const displayUsers = users.map(user => ({
+  const displayUsers = users.map((user) => ({
     ...user,
-    name: user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+    name:
+      user.displayName ||
+      `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+      user.email,
   }));
-  
+
   // Define user columns
   const userColumns = [
     {
       accessorKey: 'name',
-      header: ({ column }: any) => (
+      header: ({ column }: { column: Column<User> }) => (
         <DataTableColumnHeader column={column} title={t('common.name')} />
       ),
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<User> }) => (
         <div className="font-medium">{row.getValue('name')}</div>
       ),
     },
     {
       accessorKey: 'email',
-      header: ({ column }: any) => (
+      header: ({ column }: { column: Column<User> }) => (
         <DataTableColumnHeader column={column} title={t('users.email')} />
       ),
     },
     {
       accessorKey: 'role',
-      header: ({ column }: any) => (
+      header: ({ column }: { column: Column<User> }) => (
         <DataTableColumnHeader column={column} title={t('users.role')} />
       ),
-      cell: ({ row }: any) => {
-        const role = row.getValue('role');
+      cell: ({ row }: { row: Row<User> }) => {
+        const role = row.getValue('role') as string;
         return (
           <div className="capitalize">
             {role === 'admin' ? t('users.admin') : t('users.user')}
@@ -76,11 +87,11 @@ export function UsersTable({
   const getActionMenuItems = () => [
     {
       label: t('common.edit'),
-      action: (rowData: any) => onEdit(rowData),
+      action: (rowData: User) => onEdit(rowData),
     },
     {
       label: t('users.promoteOrDemote'),
-      action: (rowData: any) => {
+      action: (rowData: User) => {
         onConfirmAction(
           rowData.role === 'admin' ? 'demote' : 'promote',
           rowData,
@@ -94,7 +105,7 @@ export function UsersTable({
         activeTab === 'active'
           ? t('users.deactivateUser')
           : t('users.activateUser'),
-      action: (rowData: any) => {
+      action: (rowData: User) => {
         onConfirmAction(
           activeTab === 'active' ? 'deactivate' : 'activate',
           rowData,
@@ -119,7 +130,7 @@ export function UsersTable({
     {
       label: t('users.promoteSelectedToAdmin'),
       icon: <UserCog className="h-4 w-4" />,
-      onClick: (selectedRows: any[]) => {
+      onClick: (selectedRows: User[]) => {
         const usersToPromote = selectedRows.filter(
           (row) => row.role === 'user'
         );
@@ -132,7 +143,7 @@ export function UsersTable({
     {
       label: t('users.demoteSelectedToUser'),
       icon: <UserMinus className="h-4 w-4" />,
-      onClick: (selectedRows: any[]) => {
+      onClick: (selectedRows: User[]) => {
         const usersToDemote = selectedRows.filter(
           (row) => row.role === 'admin'
         );
@@ -153,7 +164,7 @@ export function UsersTable({
         ) : (
           <UserCheck className="h-4 w-4" />
         ),
-      onClick: (selectedRows: any[]) => {
+      onClick: (selectedRows: User[]) => {
         if (selectedRows.length > 0) {
           onConfirmAction(
             activeTab === 'active' ? 'deactivate' : 'activate',
@@ -182,7 +193,7 @@ export function UsersTable({
           data={displayUsers}
           tabs={tabs}
           activeTab={activeTab}
-          loading={loading}
+          isLoading={loading}
           onTabChange={onTabChange}
           actionButtons={actionButtons}
           bulkActionButtons={bulkActionButtons}

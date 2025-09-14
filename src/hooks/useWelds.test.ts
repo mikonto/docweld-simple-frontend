@@ -33,8 +33,11 @@ vi.mock('sonner', () => ({
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, params?: any) => {
-      const translations: Record<string, string | ((p: any) => string)> = {
+    t: (key: string, params?: Record<string, unknown>) => {
+      const translations: Record<
+        string,
+        string | ((p: Record<string, unknown>) => string)
+      > = {
         'welds.createSuccess': 'Weld added successfully',
         'welds.createRangeSuccess': params?.count
           ? `${params.count} welds added successfully`
@@ -49,7 +52,7 @@ vi.mock('react-i18next', () => ({
           'One or more weld numbers in the range are already in use',
       };
       const translation = translations[key];
-      if (typeof translation === 'function') {
+      if (typeof translation === 'function' && params) {
         return translation(params);
       }
       return translation || key;
@@ -100,15 +103,15 @@ describe('useWelds Hook', () => {
           id: '1',
           number: '1',
           weldLogId: 'weldlog123',
-          description: 'Test weld 1',
-          status: 'active',
+          notes: 'Test weld 1',
+          status: 'pending',
         },
         {
           id: '2',
           number: '2',
           weldLogId: 'weldlog123',
-          description: 'Test weld 2',
-          status: 'active',
+          notes: 'Test weld 2',
+          status: 'pending',
         },
       ];
 
@@ -169,8 +172,8 @@ describe('useWelds Hook', () => {
         data: () => ({
           number: '1',
           weldLogId: 'weldlog123',
-          description: 'Test weld',
-          status: 'active',
+          notes: 'Test weld',
+          status: 'pending',
         }),
       };
 
@@ -182,8 +185,8 @@ describe('useWelds Hook', () => {
         id: '123',
         number: '1',
         weldLogId: 'weldlog123',
-        description: 'Test weld',
-        status: 'active',
+        notes: 'Test weld',
+        status: 'pending',
       });
     });
 
@@ -231,7 +234,7 @@ describe('useWelds Hook', () => {
 
         const weldData: WeldFormData = {
           number: '1',
-          description: 'Test weld',
+          notes: 'Test weld',
         };
 
         await act(async () => {
@@ -246,7 +249,7 @@ describe('useWelds Hook', () => {
         expect(mockCreate).toHaveBeenCalledWith(
           expect.objectContaining({
             number: '1',
-            description: 'Test weld',
+            notes: 'Test weld',
             projectId: 'project123',
             weldLogId: 'weldlog123',
           })
@@ -301,7 +304,7 @@ describe('useWelds Hook', () => {
         const { result } = renderHook(() => useWeldOperations());
 
         const sharedData: Partial<WeldFormData> = {
-          description: 'Batch weld',
+          notes: 'Batch weld',
         };
 
         await act(async () => {
@@ -371,16 +374,16 @@ describe('useWelds Hook', () => {
 
         await act(async () => {
           await result.current.updateWeld('weld123', {
-            description: 'Updated description',
-            notes: 'Additional notes',
+            notes: 'Updated notes',
+            status: 'completed',
           });
         });
 
         expect(mockUpdate).toHaveBeenCalledWith(
           'weld123',
           expect.objectContaining({
-            description: 'Updated description',
-            notes: 'Additional notes',
+            notes: 'Updated notes',
+            status: 'completed',
           })
         );
       });
@@ -408,7 +411,7 @@ describe('useWelds Hook', () => {
 
         await act(async () => {
           await expect(
-            result.current.updateWeld('weld123', { description: 'Test' })
+            result.current.updateWeld('weld123', { notes: 'Test' })
           ).rejects.toThrow('User must be logged in to update welds');
         });
       });
@@ -502,10 +505,12 @@ describe('useWeldOperations i18n messages', () => {
       try {
         await result.current.createWeld('project-id', 'weld-log-id', {
           number: '123',
-          position: '1F',
+          notes: 'Position 1F',
         } as WeldFormData);
       } catch (error) {
-        expect((error as Error).message).toBe('Weld number 123 is already in use');
+        expect((error as Error).message).toBe(
+          'Weld number 123 is already in use'
+        );
       }
     });
 
@@ -533,7 +538,7 @@ describe('useWeldOperations i18n messages', () => {
         'weld-log-id',
         '1',
         '5',
-        { position: '1F' }
+        { notes: 'Position 1F' }
       );
     });
 
@@ -550,7 +555,7 @@ describe('useWeldOperations i18n messages', () => {
           'weld-log-id',
           '5',
           '1', // Invalid: start > end
-          { position: '1F' }
+          { notes: 'Position 1F' }
         );
       } catch (error) {
         expect((error as Error).message).toBe('Invalid number range');
@@ -576,7 +581,7 @@ describe('useWeldOperations i18n messages', () => {
           'weld-log-id',
           '1',
           '5',
-          { position: '1F' }
+          { notes: 'Position 1F' }
         );
       } catch (error) {
         expect((error as Error).message).toBe(

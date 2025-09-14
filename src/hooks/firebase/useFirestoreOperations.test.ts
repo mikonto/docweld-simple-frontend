@@ -50,7 +50,7 @@ describe('useFirestoreOperations', () => {
 
     // Setup default doc mock to return an ID
     (mockDoc as Mock).mockReturnValue({ id: 'new-doc-123' });
-    
+
     // Reset useApp mock to have a logged in user by default
     mockUseApp.mockReturnValue({ loggedInUser: { uid: 'test-user' } });
   });
@@ -67,14 +67,14 @@ describe('useFirestoreOperations', () => {
       });
 
       // Test with null
-      await expect(result.current.create(null as any)).rejects.toThrow(
-        'Invalid data provided'
-      );
+      await expect(
+        result.current.create(null as unknown as Record<string, unknown>)
+      ).rejects.toThrow('Invalid data provided');
 
       // Test with non-object
-      await expect(result.current.create('invalid' as any)).rejects.toThrow(
-        'Invalid data provided'
-      );
+      await expect(
+        result.current.create('invalid' as unknown as Record<string, unknown>)
+      ).rejects.toThrow('Invalid data provided');
 
       expect(mockSetDoc).not.toHaveBeenCalled();
     });
@@ -90,13 +90,16 @@ describe('useFirestoreOperations', () => {
 
       // Test with invalid ID
       await expect(
-        result.current.update(null as any, { name: 'Test' })
+        result.current.update(null as unknown as string, { name: 'Test' })
       ).rejects.toThrow('Invalid document ID provided');
 
       // Test with invalid data
-      await expect(result.current.update('doc-123', null as any)).rejects.toThrow(
-        'Invalid update data provided'
-      );
+      await expect(
+        result.current.update(
+          'doc-123',
+          null as unknown as Record<string, unknown>
+        )
+      ).rejects.toThrow('Invalid update data provided');
 
       expect(mockUpdateDoc).not.toHaveBeenCalled();
     });
@@ -105,7 +108,9 @@ describe('useFirestoreOperations', () => {
   describe('Authentication Checks', () => {
     it('should reject operations when user is not logged in', async () => {
       // Mock no logged in user
-      mockUseApp.mockReturnValue({ loggedInUser: null });
+      mockUseApp.mockReturnValue({
+        loggedInUser: null as unknown as { uid: string },
+      });
 
       const { result } = renderHook(() =>
         useFirestoreOperations('test-collection')
@@ -176,7 +181,11 @@ describe('useFirestoreOperations', () => {
       const docId = await result.current.create(data);
 
       expect(docId).toBe('custom-id');
-      expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'test-collection', 'custom-id');
+      expect(mockDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        'test-collection',
+        'custom-id'
+      );
       expect(mockSetDoc).toHaveBeenCalled();
     });
 
@@ -189,10 +198,7 @@ describe('useFirestoreOperations', () => {
         expect(result.current).toBeDefined();
       });
 
-      await result.current.create(
-        { name: 'Test' },
-        { suppressToast: true }
-      );
+      await result.current.create({ name: 'Test' }, { suppressToast: true });
 
       expect(toast.success).not.toHaveBeenCalled();
     });

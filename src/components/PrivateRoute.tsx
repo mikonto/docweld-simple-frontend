@@ -45,7 +45,7 @@ export default function PrivateRoute({ children }: PrivateRouteProps) {
         signOutUser().then(() => {
           navigate('/login');
         });
-      } else if (userDb.status !== 'active') {
+      } else if (!userDb.isActive) {
         // User exists but is not active - sign out and redirect
         signingOutRef.current = true;
 

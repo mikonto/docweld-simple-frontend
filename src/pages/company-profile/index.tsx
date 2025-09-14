@@ -5,7 +5,7 @@ import { useCompanyInformation } from '@/hooks/useCompanyInformation';
 import { CompanyProfileForm } from './CompanyProfileForm';
 import PageHeader from '@/components/layouts/PageHeader';
 import { ErrorLoadingWrapper } from '@/components/shared/ErrorLoadingWrapper';
-import type { CompanyInformation } from '@/types/database';
+import type { CompanyFormData } from '@/types';
 
 export default function CompanyProfile() {
   const { t } = useTranslation();
@@ -54,7 +54,7 @@ export default function CompanyProfile() {
   };
 
   // Handle form submission with logo upload
-  const handleSubmit = async (data: Partial<CompanyInformation>) => {
+  const handleSubmit = async (data: CompanyFormData) => {
     try {
       setIsSaving(true);
 
@@ -63,9 +63,13 @@ export default function CompanyProfile() {
         try {
           await uploadCompanyLogo(logoFile);
           // Logo URL is automatically updated in Firestore by the hook
-        } catch (uploadError: any) {
+        } catch (uploadError: unknown) {
+          const errorMessage =
+            uploadError instanceof Error
+              ? uploadError.message
+              : String(uploadError);
           toast.error(
-            `${t('company.logoUploadError')}: ${uploadError.message || t('errors.unknownError')}`
+            `${t('company.logoUploadError')}: ${errorMessage || t('errors.unknownError')}`
           );
           // Continue with other updates even if logo upload fails
         }
@@ -89,7 +93,7 @@ export default function CompanyProfile() {
       <PageHeader title={t('company.title')} />
 
       <ErrorLoadingWrapper
-        error={error}
+        error={error || null}
         loading={loading}
         resourceName={t('navigation.companyProfile').toLowerCase()}
       >

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import js from '@eslint/js';
 import globals from 'globals';
 import react from 'eslint-plugin-react';
@@ -5,10 +6,8 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import type { Linter } from 'eslint';
-
-const config: Linter.FlatConfig[] = [
-  { ignores: ['dist'] },
+const config = [
+  { ignores: ['dist', 'coverage'] },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -23,10 +22,10 @@ const config: Linter.FlatConfig[] = [
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint,
-      'react': react,
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
+      '@typescript-eslint': tseslint as any,
+      react: react as any,
+      'react-hooks': reactHooks as any,
+      'react-refresh': reactRefresh as any,
     },
     settings: {
       react: {

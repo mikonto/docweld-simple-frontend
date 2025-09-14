@@ -19,8 +19,18 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
 import { getFileExtension } from '@/components/documents/utils/fileUtils';
-import { getImportDestinationConfig, DestinationType, AdditionalContext } from './utils';
-import type { User, FirestoreDocument, FirestoreSection, ImportedDocumentData, ImportedSectionData } from '@/types';
+import {
+  getImportDestinationConfig,
+  DestinationType,
+  AdditionalContext,
+} from './utils';
+import type {
+  User,
+  FirestoreDocument,
+  FirestoreSection,
+  ImportedDocumentData,
+  ImportedSectionData,
+} from '@/types';
 
 interface CopyDocumentResponse {
   success: boolean;
@@ -36,7 +46,10 @@ type SourceType = 'project' | 'library';
 /**
  * Copy a file using the Cloud Function
  */
-async function copyStorageFile(sourcePath: string, destPath: string): Promise<boolean> {
+async function copyStorageFile(
+  sourcePath: string,
+  destPath: string
+): Promise<boolean> {
   try {
     const copyDocumentFn = httpsCallable<
       { sourceStoragePath: string; destinationStoragePath: string },
@@ -160,7 +173,8 @@ export function prepareNewDocumentData(
 ): ImportedDocumentData {
   const timestamp = serverTimestamp();
 
-  const fileType = sourceDoc.fileType ||
+  const fileType =
+    sourceDoc.fileType ||
     getFileExtension(sourceDoc.storageRef || '')
       .substring(1)
       .toUpperCase() ||
@@ -353,7 +367,10 @@ export async function importCompleteSection(
   let documentOrder = 1000; // First doc in section gets order 1000
 
   for (const docSnapshot of sourceDocsSnapshot.docs) {
-    const sourceDoc = { id: docSnapshot.id, ...docSnapshot.data() } as FirestoreDocument;
+    const sourceDoc = {
+      id: docSnapshot.id,
+      ...docSnapshot.data(),
+    } as FirestoreDocument;
     const newDocId = doc(collection(db, documentCollectionName)).id;
 
     // Copy files

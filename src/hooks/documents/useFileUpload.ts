@@ -26,8 +26,9 @@ interface UseFileUploadConfig {
   foreignKeys?: Record<string, string>;
 }
 
-interface EnhancedError extends StorageError {
+interface EnhancedError extends Error {
   enhancedMessage?: string;
+  code?: string;
 }
 
 type AddDocumentFunction = (
@@ -48,12 +49,14 @@ interface UseFileUploadReturn {
   handleFileUpload: (
     file: File,
     onComplete: (docId: string) => void,
-    onError: (docId: string, error: any) => void,
+    onError: (docId: string, error: unknown) => void,
     existingDocId?: string | null
   ) => { docId: string };
   handleUpload: (
     files: FileList | File[],
-    updateDocumentOrder?: (orderedDocIds: string[]) => Promise<any>
+    updateDocumentOrder?: (
+      orderedDocIds: string[]
+    ) => Promise<{ success: boolean; error?: Error | unknown }>
   ) => Promise<UploadResults>;
   handleCancelUpload: (fileId: string) => void;
 }
@@ -66,7 +69,9 @@ export function useFileUpload(
   addDocument: AddDocumentFunction,
   updateProcessingState: UpdateProcessingStateFunction
 ): UseFileUploadReturn {
-  const [uploadingFiles, setUploadingFiles] = useState<Record<string, UploadingFileStatus>>({});
+  const [uploadingFiles, setUploadingFiles] = useState<
+    Record<string, UploadingFileStatus>
+  >({});
   const timeoutRefs = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   /**
@@ -76,7 +81,7 @@ export function useFileUpload(
     (
       file: File,
       onComplete: (docId: string) => void,
-      onError: (docId: string, error: any) => void,
+      onError: (docId: string, error: unknown) => void,
       existingDocId: string | null = null
     ): { docId: string } => {
       const sanitizedName = sanitizeFileName(file.name);
@@ -109,7 +114,12 @@ export function useFileUpload(
         (err: StorageError) => {
           // Use helper to get user-friendly error message
           const errorMessage = getStorageErrorMessage(err);
-          const enhancedError: EnhancedError = { ...err, enhancedMessage: errorMessage };
+          const enhancedError: EnhancedError = {
+            name: err.name || 'StorageError',
+            message: err.message || 'Upload failed',
+            enhancedMessage: errorMessage,
+            code: err.code,
+          };
           onError(docId, enhancedError);
         },
         async () => {
@@ -148,7 +158,9 @@ export function useFileUpload(
   const handleUpload = useCallback(
     async (
       files: FileList | File[],
-      _updateDocumentOrder?: (orderedDocIds: string[]) => Promise<any>
+      _updateDocumentOrder?: (
+        orderedDocIds: string[]
+      ) => Promise<{ success: boolean; error?: Error | unknown }>
     ): Promise<UploadResults> => {
       // ========== STEP 1: VALIDATE FILES ==========
       const validation = validateUploadBatch(files);
@@ -179,9 +191,20 @@ export function useFileUpload(
 
       try {
         // ========== STEP 3: CREATE DOCUMENTS WITH ROLLBACK ==========
+        // Wrap addDocument to match the expected signature
+        const addDocumentWrapper = async (
+          fileName: string,
+          docId: string,
+          order: number | null,
+          fileExtension: string,
+          fileSize: number
+        ): Promise<void> => {
+          await addDocument(fileName, docId, order, fileExtension, fileSize);
+        };
+
         const createdDocuments = await createDocumentsWithRollback(
           plannedDocuments,
-          addDocument,
+          addDocumentWrapper,
           firestoreConfig as FirestoreConfig
         );
 
@@ -215,7 +238,7 @@ export function useFileUpload(
 
                 resolve(id);
               },
-              (id: string, error: any) => {
+              (id: string, error: unknown) => {
                 setUploadingFiles((prev) => {
                   const newUploadingFiles = { ...prev };
                   delete newUploadingFiles[id];

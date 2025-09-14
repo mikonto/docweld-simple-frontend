@@ -17,7 +17,11 @@ import {
   SECTION_SIZE_CONFIG,
 } from '@/components/documents/constants';
 import * as operations from './sectionOperations';
-import type { Section as SectionType, Document } from '@/types/database';
+import type {
+  Section as SectionType,
+  Document,
+  UploadingFile,
+} from '@/types/database';
 
 interface SectionProps {
   sectionData: SectionType;
@@ -46,7 +50,9 @@ export function Section({
 
   // State
   const [isExpanded, setIsExpanded] = useState(false);
-  const [draggedDocuments, setDraggedDocuments] = useState<Document[] | null>(null);
+  const [draggedDocuments, setDraggedDocuments] = useState<Document[] | null>(
+    null
+  );
 
   const deleteDocumentDialog = useConfirmationDialog({});
   const deleteSectionDialog = useConfirmationDialog({});
@@ -151,7 +157,11 @@ export function Section({
           onMoveSection={onMoveSection}
           onRenameSection={() => renameSectionDialog.open(sectionData)}
           onDeleteSection={() =>
-            deleteSectionDialog.open('delete', sectionData, false)
+            deleteSectionDialog.open(
+              'delete',
+              { id: sectionData.id, title: sectionData.name },
+              false
+            )
           }
           showImportMenu={showImportMenu}
           onImportDocuments={onImportDocuments}
@@ -169,13 +179,21 @@ export function Section({
         >
           <SectionContent
             documents={localDocuments}
-            uploadingFiles={uploadingFiles}
+            uploadingFiles={uploadingFiles.reduce(
+              (acc, file) => {
+                acc[file.id] = file;
+                return acc;
+              },
+              {} as Record<string, UploadingFile>
+            )}
             onDragEnd={(event: DragEndEvent) =>
               operations.handleDragEnd(
                 event,
                 localDocuments,
                 setDraggedDocuments,
-                updateDocumentOrder,
+                updateDocumentOrder as (
+                  ids: string[]
+                ) => Promise<operations.DeleteResult | undefined>,
                 t
               )
             }
@@ -186,7 +204,11 @@ export function Section({
               operations.handleRename(renameDocumentDialog, docId, currentTitle)
             }
             onDelete={(docId: string, title: string) =>
-              operations.handleDelete(deleteDocumentDialog as any, docId, title)
+              operations.handleDelete(
+                deleteDocumentDialog as unknown as operations.DeleteDialog,
+                docId,
+                title
+              )
             }
             maxFilesAllowed={UPLOAD_CONFIG.MAX_FILES}
           />
@@ -197,19 +219,28 @@ export function Section({
 
       {/* Document Rename Dialog */}
       <CardDialog
-        document={renameDocumentDialog.entity}
+        document={renameDocumentDialog.entity as Document | null | undefined}
         open={renameDocumentDialog.isOpen}
         onClose={renameDocumentDialog.close}
         onSubmit={async (newTitle: string) => {
           try {
-            await renameDocument(renameDocumentDialog.entity.id, newTitle);
+            await renameDocument(
+              (renameDocumentDialog.entity as Document).id,
+              newTitle
+            );
             // Success toast is already shown by useFirestoreOperations
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Show specific error messages only for known error codes
-            if (error.code === 'permission-denied') {
-              toast.error(t('documents.renamePermissionError'));
-            } else if (error.code === 'not-found') {
-              toast.error(t('documents.renameNotFoundError'));
+            const isErrorWithCode = (err: unknown): err is { code: string } => {
+              return err !== null && typeof err === 'object' && 'code' in err;
+            };
+
+            if (isErrorWithCode(error)) {
+              if (error.code === 'permission-denied') {
+                toast.error(t('documents.renamePermissionError'));
+              } else if (error.code === 'not-found') {
+                toast.error(t('documents.renameNotFoundError'));
+              }
             }
             // Generic errors are already handled by useFirestoreOperations
           } finally {
@@ -221,19 +252,28 @@ export function Section({
       {/* Section Rename Dialog */}
       <SectionDialog
         mode="edit"
-        section={renameSectionDialog.entity}
+        section={renameSectionDialog.entity as SectionType | null | undefined}
         open={renameSectionDialog.isOpen}
         onClose={renameSectionDialog.close}
         onSubmit={async (newName: string) => {
           try {
-            await renameSection(renameSectionDialog.entity.id, newName);
+            await renameSection(
+              (renameSectionDialog.entity as SectionType).id,
+              newName
+            );
             // Success toast is already shown by useFirestoreOperations
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Show specific error messages only for known error codes
-            if (error.code === 'permission-denied') {
-              toast.error(t('sections.renamePermissionError'));
-            } else if (error.code === 'not-found') {
-              toast.error(t('sections.renameNotFoundError'));
+            const isErrorWithCode = (err: unknown): err is { code: string } => {
+              return err !== null && typeof err === 'object' && 'code' in err;
+            };
+
+            if (isErrorWithCode(error)) {
+              if (error.code === 'permission-denied') {
+                toast.error(t('sections.renamePermissionError'));
+              } else if (error.code === 'not-found') {
+                toast.error(t('sections.renameNotFoundError'));
+              }
             }
             // Generic errors are already handled by useFirestoreOperations
           } finally {
@@ -250,13 +290,17 @@ export function Section({
         }}
         onConfirm={() =>
           operations.handleConfirmDocumentDelete(
-            deleteDocument,
-            deleteDocumentDialog as any
+            deleteDocument as (id: string) => Promise<operations.DeleteResult>,
+            deleteDocumentDialog as unknown as operations.Dialog<operations.DialogData> & {
+              dialog: { data: operations.DialogData };
+            }
           )
         }
         title={t('documents.deleteDocument')}
         description={t('documents.confirmDeleteDocument', {
-          documentName: deleteDocumentDialog.dialog.data?.title || '',
+          documentName:
+            (deleteDocumentDialog.dialog.data as operations.DialogData | null)
+              ?.title || '',
         })}
         actionLabel={t('common.delete')}
         actionVariant="destructive"
@@ -270,8 +314,8 @@ export function Section({
         }}
         onConfirm={() =>
           operations.handleConfirmSectionDelete(
-            deleteSection,
-            deleteSectionDialog,
+            deleteSection as (id: string) => Promise<operations.DeleteResult>,
+            deleteSectionDialog as unknown as operations.Dialog<unknown>,
             sectionData.id,
             t
           )

@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CardOverlay } from './CardOverlay';
@@ -45,7 +44,7 @@ describe('CardOverlay', () => {
     it('should not render when not loading', () => {
       render(
         <CardOverlay
-          uploadStatus={UPLOAD_STATES.COMPLETED}
+          uploadStatus={UPLOAD_STATES.COMPLETE}
           processingState={PROCESSING_STATES.COMPLETED}
         />
       );

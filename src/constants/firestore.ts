@@ -42,7 +42,7 @@ export const COLLECTIONS = {
 } as const;
 
 // Type exports for use in other files
-export type Status = typeof STATUS[keyof typeof STATUS];
-export type UserRole = typeof USER_ROLE[keyof typeof USER_ROLE];
+export type Status = (typeof STATUS)[keyof typeof STATUS];
+export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
 // @unused - type for collection names
 // type CollectionName = typeof COLLECTIONS[keyof typeof COLLECTIONS];

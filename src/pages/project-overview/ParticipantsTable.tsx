@@ -1,9 +1,14 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash } from 'lucide-react';
-import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import {
+  createColumns,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
 import type { User, ProjectParticipant } from '@/types';
+import type { Column, Row } from '@tanstack/react-table';
 
 interface ParticipantsTableProps {
   participants: ProjectParticipant[];
@@ -11,7 +16,11 @@ interface ParticipantsTableProps {
   loading?: boolean;
   onAddParticipant: () => void;
   onEdit: (participant: ProjectParticipant) => void;
-  onConfirmAction: (action: string, data: ProjectParticipant | ProjectParticipant[], isBulk?: boolean) => void;
+  onConfirmAction: (
+    action: string,
+    data: ProjectParticipant | ProjectParticipant[],
+    isBulk?: boolean
+  ) => void;
 }
 
 // Main participants table component for displaying project participants with roles
@@ -60,10 +69,10 @@ export function ParticipantsTable({
         return user ? `${user.firstName} ${user.lastName}` : 'Unknown User';
       },
       id: 'name', // Provide a unique ID when using accessorFn
-      header: ({ column }: any) => (
+      header: ({ column }: { column: Column<ProjectParticipant> }) => (
         <DataTableColumnHeader column={column} title={t('common.name')} />
       ),
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: Row<ProjectParticipant> }) => {
         const user = userMap.get(row.original.userId);
         if (!user) {
           return (
@@ -81,14 +90,17 @@ export function ParticipantsTable({
     },
     {
       accessorKey: 'participatingAs',
-      header: ({ column }: any) => (
+      header: ({ column }: { column: Column<ProjectParticipant> }) => (
         <DataTableColumnHeader
           column={column}
           title={t('projects.participatingAs')}
         />
       ),
-      cell: ({ row }: any) => {
-        return <div>{formatRoles(row.getValue('participatingAs'))}</div>;
+      cell: ({ row }: { row: Row<ProjectParticipant> }) => {
+        const participatingAs = row.getValue('participatingAs') as
+          | string[]
+          | undefined;
+        return <div>{formatRoles(participatingAs)}</div>;
       },
     },
   ];

@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import * as z from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from 'sonner'
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import * as z from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -20,65 +20,68 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { useMaterials, useMaterialOperations } from '@/hooks/useMaterials'
-import { MaterialFormDialog } from '@/pages/material-management/MaterialFormDialog'
-import { MultiCombobox } from '@/components/ui/custom/multi-combobox'
-import { useWeldOperations } from '@/hooks/useWelds'
-import type { Weld, Material, MaterialFormData } from '@/types/app'
+} from '@/components/ui/select';
+import { useMaterials, useMaterialOperations } from '@/hooks/useMaterials';
+import { MaterialFormDialog } from '@/pages/material-management/MaterialFormDialog';
+import { MultiCombobox } from '@/components/ui/custom/multi-combobox';
+import { useWeldOperations } from '@/hooks/useWelds';
+import type { Weld, Material, MaterialFormData } from '@/types/app';
 
-interface SingleWeldFormData {
-  number: string
-  position: string
-  parentMaterials: string[]
-  fillerMaterials: string[]
-  description?: string
-  heatTreatment: boolean
+export interface SingleWeldFormData {
+  number: string;
+  position: string;
+  parentMaterials: string[];
+  fillerMaterials: string[];
+  description?: string;
+  heatTreatment: boolean;
 }
 
-interface MultipleWeldsFormData {
-  startNumber: string
-  endNumber: string
-  position?: string
-  positionMode: '' | 'same-as-number' | 'manual' | 'add-later'
-  parentMaterials: string[]
-  fillerMaterials: string[]
-  description?: string
-  heatTreatment: boolean
+export interface MultipleWeldsFormData {
+  startNumber: string;
+  endNumber: string;
+  position?: string;
+  positionMode: '' | 'same-as-number' | 'manual' | 'add-later';
+  parentMaterials: string[];
+  fillerMaterials: string[];
+  description?: string;
+  heatTreatment: boolean;
 }
 
 interface MaterialDialogState {
-  isOpen: boolean
-  materialType: 'parent' | 'filler' | null
+  isOpen: boolean;
+  materialType: 'parent' | 'filler' | null;
 }
 
 interface WeldFormDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  weld?: Weld | null
-  weldLogId?: string
-  onSubmit: (data: any, mode?: string) => Promise<void>
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  weld?: Weld | null;
+  weldLogId?: string;
+  onSubmit: (
+    data: SingleWeldFormData | MultipleWeldsFormData,
+    mode?: string
+  ) => Promise<void>;
 }
 
 // Default values for forms
 const getSingleWeldDefaults = (weld?: Weld | null): SingleWeldFormData => ({
   number: weld?.number || '',
-  position: (weld as any)?.position || '',
-  parentMaterials: (weld as any)?.parentMaterials || [],
-  fillerMaterials: (weld as any)?.fillerMaterials || [],
-  description: (weld as any)?.description || '',
-  heatTreatment: (weld as any)?.heatTreatment || false,
-})
+  position: '', // Position is not stored in Weld type
+  parentMaterials: [], // Parent materials are not stored in Weld type
+  fillerMaterials: [], // Filler materials are not stored in Weld type
+  description: weld?.notes || '', // Map notes to description
+  heatTreatment: false, // Heat treatment is not stored in Weld type
+});
 
 const getMultipleWeldsDefaults = (): MultipleWeldsFormData => ({
   startNumber: '',
@@ -89,7 +92,7 @@ const getMultipleWeldsDefaults = (): MultipleWeldsFormData => ({
   fillerMaterials: [],
   description: '',
   heatTreatment: false,
-})
+});
 
 // Weld form dialog for creating and editing individual welds with single/multiple modes
 export function WeldFormDialog({
@@ -99,9 +102,35 @@ export function WeldFormDialog({
   weldLogId,
   onSubmit,
 }: WeldFormDialogProps): React.ReactElement {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  // Form schema for single weld mode
+  // State for form mode (single or multiple)
+  const [mode, setMode] = useState<'single' | 'multiple'>('single');
+
+  // State for wizard navigation
+  const [currentStep, setCurrentStep] = useState<number>(1);
+
+  // State for manual positions
+  const [positions, setPositions] = useState<Record<string, string>>({});
+
+  // Get materials from hooks
+  const [parentMaterials] = useMaterials('parent');
+  const [fillerMaterials] = useMaterials('filler');
+  const { createMaterial } = useMaterialOperations();
+  const { isWeldNumberAvailable, isWeldNumberRangeAvailable } =
+    useWeldOperations();
+
+  // State for material dialog
+  const [materialFormDialog, setMaterialFormDialog] =
+    useState<MaterialDialogState>({
+      isOpen: false,
+      materialType: null,
+    });
+
+  // State for validation in progress
+  const [validating, setValidating] = useState(false);
+
+  // Form schema for single weld mode - must match SingleWeldFormData interface exactly
   const singleWeldSchema = z.object({
     number: z.string().min(1, t('validation.weldNumberRequired')),
     position: z.string().min(1, t('validation.positionRequired')),
@@ -112,17 +141,15 @@ export function WeldFormDialog({
       .array(z.string())
       .min(1, t('validation.fillerMaterialsRequired')),
     description: z.string().optional(),
-    heatTreatment: z.boolean().default(false),
-  })
+    heatTreatment: z.boolean(),
+  });
 
-  // Form schema for multiple welds mode
+  // Form schema for multiple welds mode - must match MultipleWeldsFormData interface exactly
   const multipleWeldsSchema = z.object({
     startNumber: z.string().min(1, t('validation.startNumberRequired')),
     endNumber: z.string().min(1, t('validation.endNumberRequired')),
-    position: z.string().optional(), // Position is optional when using position mode
-    positionMode: z
-      .enum(['', 'same-as-number', 'manual', 'add-later'])
-      .default(''),
+    position: z.string().optional(),
+    positionMode: z.enum(['', 'same-as-number', 'manual', 'add-later']),
     parentMaterials: z
       .array(z.string())
       .min(1, t('validation.parentMaterialsRequired')),
@@ -130,673 +157,754 @@ export function WeldFormDialog({
       .array(z.string())
       .min(1, t('validation.fillerMaterialsRequired')),
     description: z.string().optional(),
-    heatTreatment: z.boolean().default(false),
-  })
+    heatTreatment: z.boolean(),
+  });
 
-  // State for form mode (single or multiple)
-  const [mode, setMode] = useState<'single' | 'multiple'>('single')
+  // Single form
+  const singleForm = useForm<SingleWeldFormData>({
+    resolver: zodResolver(singleWeldSchema),
+    defaultValues: getSingleWeldDefaults(weld),
+  });
 
-  // State for wizard navigation
-  const [currentStep, setCurrentStep] = useState<number>(1)
+  // Multiple form
+  const multipleForm = useForm<MultipleWeldsFormData>({
+    resolver: zodResolver(multipleWeldsSchema),
+    defaultValues: getMultipleWeldsDefaults(),
+  });
 
-  // State for manual positions
-  const [positions, setPositions] = useState<Record<string, string>>({})
-
-  // Get materials from hooks
-  const [parentMaterials, parentLoading] = useMaterials('parent')
-  const [fillerMaterials, fillerLoading] = useMaterials('filler')
-  const { createMaterial } = useMaterialOperations()
-  const { isWeldNumberAvailable, isWeldNumberRangeAvailable } =
-    useWeldOperations()
-
-  // State for material dialog
-  const [materialFormDialog, setMaterialFormDialog] = useState<MaterialDialogState>({
-    isOpen: false,
-    materialType: null,
-  })
-
-  // Form setup with conditional schema based on mode
-  const form = useForm<SingleWeldFormData | MultipleWeldsFormData>({
-    resolver: zodResolver(
-      mode === 'single' ? singleWeldSchema : multipleWeldsSchema
-    ),
-    defaultValues:
-      mode === 'single'
-        ? getSingleWeldDefaults(weld)
-        : getMultipleWeldsDefaults(),
-  })
-
-  // When the dialog opens, reset to single mode and populate form.
+  // Update form when weld changes or mode switches
   useEffect(() => {
-    if (open) {
-      setMode('single')
-      setCurrentStep(1)
-      setPositions({})
-      form.reset(getSingleWeldDefaults(weld))
+    if (mode === 'single' && weld) {
+      singleForm.reset(getSingleWeldDefaults(weld));
+    } else if (mode === 'multiple') {
+      multipleForm.reset(getMultipleWeldsDefaults());
     }
-  }, [open, weld, form])
+  }, [weld, mode, singleForm, multipleForm]);
 
-  const handleModeChange = (newMode: 'single' | 'multiple'): void => {
-    setMode(newMode)
-    setCurrentStep(1)
-    setPositions({})
-    if (newMode === 'single') {
-      form.reset(getSingleWeldDefaults(weld))
-    } else {
-      form.reset(getMultipleWeldsDefaults())
+  // Clear form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setMode('single');
+      setCurrentStep(1);
+      setPositions({});
+      singleForm.reset(getSingleWeldDefaults());
+      multipleForm.reset(getMultipleWeldsDefaults());
     }
-  }
+  }, [open, singleForm, multipleForm]);
 
-  // Check weld number availability
-  const checkWeldNumberAvailability = async (number: string, currentWeldId?: string | null): Promise<boolean> => {
+  // Helper to generate position list for manual mode
+  const generateWeldNumbersList = (
+    startNumber: string,
+    endNumber: string
+  ): string[] => {
+    const weldNumbers: string[] = [];
+    const startNum = parseInt(startNumber.replace(/\D/g, ''), 10);
+    const endNum = parseInt(endNumber.replace(/\D/g, ''), 10);
+    const prefix = startNumber.replace(/\d/g, '');
+
+    if (!isNaN(startNum) && !isNaN(endNum) && startNum <= endNum) {
+      for (let i = startNum; i <= endNum; i++) {
+        weldNumbers.push(`${prefix}${i}`);
+      }
+    }
+
+    return weldNumbers;
+  };
+
+  const validateWeldNumber = async (number: string): Promise<string | null> => {
+    if (!weldLogId) return null;
+
+    const isAvailable = await isWeldNumberAvailable(weldLogId, number);
+    if (!isAvailable) {
+      return t('validation.weldNumberTaken', { number });
+    }
+
+    return null;
+  };
+
+  const validateWeldNumberRange = async (
+    startNumber: string,
+    endNumber: string
+  ): Promise<string | null> => {
+    if (!weldLogId) return null;
+
+    // Extract numbers from the weld number strings
+    const startNum = parseInt(startNumber.replace(/\D/g, ''), 10);
+    const endNum = parseInt(endNumber.replace(/\D/g, ''), 10);
+
+    if (isNaN(startNum) || isNaN(endNum)) {
+      return t('validation.invalidNumberRange');
+    }
+
+    const isAvailable = await isWeldNumberRangeAvailable(
+      weldLogId,
+      startNum,
+      endNum
+    );
+
+    if (!isAvailable) {
+      return t('validation.weldNumbersConflict', {
+        conflicts: `${startNumber} - ${endNumber}`,
+      });
+    }
+
+    return null;
+  };
+
+  // Handle single weld submission
+  const handleSingleWeldSubmit = async (data: SingleWeldFormData) => {
     try {
-      const isAvailable = await isWeldNumberAvailable(
-        weldLogId!,
-        number,
-        currentWeldId || undefined
-      )
-      return isAvailable
-    } catch {
-      return false
-    }
-  }
+      setValidating(true);
 
-  // Check weld number range availability
-  const checkWeldNumberRangeAvailability = async (start: number, end: number): Promise<boolean> => {
-    try {
-      const isAvailable = await isWeldNumberRangeAvailable(
-        weldLogId!,
-        start,
-        end
-      )
-      return isAvailable
-    } catch {
-      return false
-    }
-  }
+      // Validate weld number availability if creating new weld
+      if (!weld) {
+        const error = await validateWeldNumber(data.number);
+        if (error) {
+          singleForm.setError('number', { message: error });
+          setValidating(false);
+          return;
+        }
+      }
 
-  // Handle form submission for single weld
-  const handleSingleWeldSubmit = async (data: SingleWeldFormData): Promise<void> => {
+      setValidating(false);
+      await onSubmit(data, mode);
+      onOpenChange(false);
+    } catch (error) {
+      setValidating(false);
+      console.error('Error submitting single weld:', error);
+      toast.error(t('weldLogs.errorSavingWeld'));
+    }
+  };
+
+  // Handle multiple welds submission
+  const handleMultipleWeldsSubmit = async (data: MultipleWeldsFormData) => {
     try {
-      // Check if weld number is available (only if creating new or changing number)
-      if (!weld || weld.number !== data.number) {
-        const isAvailable = await checkWeldNumberAvailability(
-          data.number,
-          weld?.id
-        )
-        if (!isAvailable) {
+      setValidating(true);
+
+      // Validate weld number range availability
+      const error = await validateWeldNumberRange(
+        data.startNumber,
+        data.endNumber
+      );
+      if (error) {
+        multipleForm.setError('startNumber', { message: error });
+        setValidating(false);
+        return;
+      }
+
+      // If using manual position mode, validate all positions are filled
+      if (data.positionMode === 'manual') {
+        const weldNumbers = generateWeldNumbersList(
+          data.startNumber,
+          data.endNumber
+        );
+        const missingPositions = weldNumbers.filter(
+          (num) => !positions[num] || positions[num].trim() === ''
+        );
+
+        if (missingPositions.length > 0) {
           toast.error(
-            t('weldLogs.weldNumberAlreadyInUse', {
-              number: data.number,
+            t('validation.missingPositions', {
+              count: missingPositions.length,
             })
-          )
-          return
+          );
+          setValidating(false);
+          return;
         }
+
+        // Add manual positions to the data
+        const multipleData = {
+          ...data,
+          manualPositions: positions,
+        };
+        setValidating(false);
+        await onSubmit(multipleData, mode);
+      } else {
+        setValidating(false);
+        await onSubmit(data, mode);
       }
 
-      await onSubmit(data, 'single')
-      form.reset()
-      onOpenChange(false)
-      // Success toast is handled by useFirestoreOperations
-    } catch {
-      // Error is already logged by useFirestoreOperations
+      onOpenChange(false);
+    } catch (error) {
+      setValidating(false);
+      console.error('Error submitting multiple welds:', error);
+      toast.error(t('weldLogs.errorSavingWelds'));
     }
-  }
+  };
 
-  // Handle form submission for multiple welds
-  const handleMultipleWeldsSubmit = async (data: MultipleWeldsFormData): Promise<void> => {
+  // Handle adding a new material
+  const handleAddNewMaterial = async (
+    type: 'parent' | 'filler',
+    data: MaterialFormData | string
+  ): Promise<void> => {
     try {
-      // Convert to numbers and validate
-      const startNum = parseInt(data.startNumber, 10)
-      const endNum = parseInt(data.endNumber, 10)
+      const materialData: MaterialFormData =
+        typeof data === 'string' ? { name: data } : data;
+      const materialId = await createMaterial(type, materialData);
 
-      if (isNaN(startNum) || isNaN(endNum)) {
-        toast.error(t('weldLogs.invalidNumberRange'))
-        return
-      }
+      if (materialId) {
+        toast.success(t('materials.materialCreated'));
 
-      if (startNum > endNum) {
-        form.setError('endNumber', {
-          type: 'manual',
-          message: t('weldLogs.endNumberMustBeGreater'),
-        })
-        return
-      }
-
-      // Check if the entire range is available
-      const isAvailable = await checkWeldNumberRangeAvailability(
-        startNum,
-        endNum
-      )
-      if (!isAvailable) {
-        toast.error(t('weldLogs.weldNumbersInRangeInUse'))
-        return
-      }
-
-      // Validate position mode is selected
-      if (!data.positionMode) {
-        form.setError('positionMode', {
-          type: 'manual',
-          message: t('validation.positionModeRequired'),
-        })
-        return
-      }
-
-      // Prepare position data based on position mode
-      let positionData: Record<string, string> = {}
-
-      if (data.positionMode === 'same-as-number') {
-        // Position same as weld number
-        for (let i = startNum; i <= endNum; i++) {
-          positionData[i] = i.toString()
-        }
-      } else if (data.positionMode === 'manual') {
-        // Use manually entered positions
-        positionData = positions
-
-        // Validate that all positions are filled
-        for (let i = startNum; i <= endNum; i++) {
-          if (!positionData[i]) {
-            toast.error(t('weldLogs.allPositionsMustBeFilled'))
-            return
+        // Update form field with new material
+        if (mode === 'single') {
+          const currentValues = singleForm.getValues();
+          if (type === 'parent') {
+            singleForm.setValue('parentMaterials', [
+              ...(currentValues.parentMaterials || []),
+              materialId,
+            ]);
+          } else if (type === 'filler') {
+            singleForm.setValue('fillerMaterials', [
+              ...(currentValues.fillerMaterials || []),
+              materialId,
+            ]);
+          }
+        } else {
+          const currentValues = multipleForm.getValues();
+          if (type === 'parent') {
+            multipleForm.setValue('parentMaterials', [
+              ...(currentValues.parentMaterials || []),
+              materialId,
+            ]);
+          } else if (type === 'filler') {
+            multipleForm.setValue('fillerMaterials', [
+              ...(currentValues.fillerMaterials || []),
+              materialId,
+            ]);
           }
         }
       }
-      // For 'add-later' mode, positionData remains empty
-
-      // Create a shared data object for all welds
-      const sharedData = {
-        parentMaterials: data.parentMaterials,
-        fillerMaterials: data.fillerMaterials,
-        description: data.description,
-        heatTreatment: data.heatTreatment,
-      }
-
-      await onSubmit(
-        {
-          startNumber: data.startNumber,
-          endNumber: data.endNumber,
-          positionMode: data.positionMode,
-          positions: positionData,
-          ...sharedData,
-        },
-        'multiple'
-      )
-
-      form.reset(getMultipleWeldsDefaults())
-      setCurrentStep(1)
-      setPositions({})
-      onOpenChange(false)
-      // Success toast is handled by useFirestoreOperations
-    } catch {
-      // Error is already logged by useFirestoreOperations
+    } catch (error) {
+      console.error('Error creating material:', error);
+      toast.error(t('materials.errorCreatingMaterial'));
     }
-  }
+  };
 
-  // Handle form submission based on mode
-  const handleSubmit = form.handleSubmit(
-    mode === 'single' 
-      ? (data) => handleSingleWeldSubmit(data as SingleWeldFormData)
-      : (data) => handleMultipleWeldsSubmit(data as MultipleWeldsFormData)
-  )
-
-  // Handle adding a new material
-  const handleAddNewMaterial = async (type: 'parent' | 'filler', data: MaterialFormData | string): Promise<void> => {
-    try {
-      // Transform data based on material type
-      // Parent materials have multiple fields, filler materials only have name
-      const transformedData =
-        type === 'parent' ? data : { name: typeof data === 'string' ? data : data.name || data }
-
-      const newMaterialId = await createMaterial(type, transformedData as MaterialFormData)
-
-      // Auto-select the newly created material in the appropriate field
-      const currentValues = form.getValues()
-      if (type === 'parent') {
-        const updatedParentMaterials = [
-          ...currentValues.parentMaterials,
-          newMaterialId,
-        ]
-        form.setValue('parentMaterials', updatedParentMaterials, {
-          shouldValidate: true,
-          shouldDirty: true,
-        })
-      } else if (type === 'filler') {
-        const updatedFillerMaterials = [
-          ...currentValues.fillerMaterials,
-          newMaterialId,
-        ]
-        form.setValue('fillerMaterials', updatedFillerMaterials, {
-          shouldValidate: true,
-          shouldDirty: true,
-        })
-      }
-
-      // Success toast is handled by useFirestoreOperations
-      setMaterialFormDialog({ isOpen: false, materialType: null })
-    } catch {
-      // Error is already logged by useFirestoreOperations
+  // Handle next step in wizard for multiple welds
+  const handleNextStep = () => {
+    const positionMode = multipleForm.getValues('positionMode');
+    if (currentStep === 1 && positionMode === 'manual') {
+      setCurrentStep(2);
+    } else {
+      multipleForm.handleSubmit(handleMultipleWeldsSubmit)();
     }
-  }
+  };
 
-  // Transform materials to options format for the combobox
-  const parentMaterialOptions = parentMaterials.map((material: Material) => ({
-    label: (material as any).type
-      ? `${(material as any).type} - ${(material as any).dimensions} - ${(material as any).alloyMaterial}`
-      : material.name,
-    value: material.id!,
-  }))
+  // Determine submit button text
+  const getSubmitButtonText = () => {
+    if (validating) return t('common.validating');
+    if (weld) return t('common.save');
+    if (mode === 'multiple') {
+      const positionMode = multipleForm.watch('positionMode');
+      if (currentStep === 1 && positionMode === 'manual') {
+        return t('common.next');
+      }
+    }
+    return t('common.add');
+  };
 
-  const fillerMaterialOptions = fillerMaterials.map((material: Material) => ({
-    label: material.name,
-    value: material.id!,
-  }))
+  // Get dialog title
+  const getDialogTitle = () => {
+    if (weld) return t('weldLogs.editWeld');
+    return mode === 'single' ? t('weldLogs.addWeld') : t('weldLogs.addWelds');
+  };
+
+  // Render manual position entry for step 2
+  const renderManualPositionEntry = () => {
+    const values = multipleForm.getValues();
+    const weldNumbers = generateWeldNumbersList(
+      values.startNumber || '',
+      values.endNumber || ''
+    );
+
+    return (
+      <div className="space-y-4">
+        <div className="text-sm text-muted-foreground">
+          {t('weldLogs.enterPositionsForWelds')}
+        </div>
+        <div className="grid grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
+          {weldNumbers.map((number) => (
+            <div key={number} className="flex items-center gap-2">
+              <span className="font-medium min-w-[80px]">{number}:</span>
+              <Input
+                placeholder={t('weldLogs.positionPlaceholder')}
+                value={positions[number] || ''}
+                onChange={(e) =>
+                  setPositions((prev) => ({
+                    ...prev,
+                    [number]: e.target.value,
+                  }))
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render single weld form
+  const renderSingleWeldForm = () => (
+    <Form {...singleForm}>
+      <form
+        onSubmit={singleForm.handleSubmit(handleSingleWeldSubmit)}
+        className="space-y-6"
+      >
+        {/* Mode tabs - only show when creating new welds */}
+        {!weld && (
+          <Tabs
+            value={mode}
+            onValueChange={(v) => setMode(v as 'single' | 'multiple')}
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="single">
+                {t('weldLogs.singleWeld')}
+              </TabsTrigger>
+              <TabsTrigger value="multiple">
+                {t('weldLogs.multipleWelds')}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+
+        <div className="space-y-4">
+          <FormField
+            control={singleForm.control}
+            name="number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('weldLogs.weldNumber')}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={t('weldLogs.weldNumberPlaceholder')}
+                    disabled={!!weld}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={singleForm.control}
+            name="position"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('weldLogs.position')}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={t('weldLogs.positionPlaceholder')}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={singleForm.control}
+            name="parentMaterials"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('weldLogs.parentMaterials')}</FormLabel>
+                <FormControl>
+                  <MultiCombobox
+                    options={parentMaterials
+                      .filter((m): m is Material & { id: string } => !!m.id)
+                      .map((m) => ({
+                        value: m.id,
+                        label: m.name || '',
+                      }))}
+                    value={field.value || []}
+                    onValueChange={field.onChange}
+                    placeholder={t('weldLogs.selectParentMaterials')}
+                    showAddNew={true}
+                    onAddNew={() => {
+                      setMaterialFormDialog({
+                        isOpen: true,
+                        materialType: 'parent',
+                      });
+                    }}
+                    addNewLabel={t('materials.addNew')}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={singleForm.control}
+            name="fillerMaterials"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('weldLogs.fillerMaterials')}</FormLabel>
+                <FormControl>
+                  <MultiCombobox
+                    options={fillerMaterials
+                      .filter((m): m is Material & { id: string } => !!m.id)
+                      .map((m) => ({
+                        value: m.id,
+                        label: m.name || '',
+                      }))}
+                    value={field.value || []}
+                    onValueChange={field.onChange}
+                    placeholder={t('weldLogs.selectFillerMaterials')}
+                    showAddNew={true}
+                    onAddNew={() => {
+                      setMaterialFormDialog({
+                        isOpen: true,
+                        materialType: 'filler',
+                      });
+                    }}
+                    addNewLabel={t('materials.addNew')}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={singleForm.control}
+            name="heatTreatment"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>{t('weldLogs.heatTreatment')}</FormLabel>
+                  <FormDescription>
+                    {t('weldLogs.heatTreatmentDescription')}
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={singleForm.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('common.description')}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={t('common.descriptionPlaceholder')}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" disabled={validating}>
+            {getSubmitButtonText()}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+
+  // Render multiple welds form
+  const renderMultipleWeldsForm = () => (
+    <Form {...multipleForm}>
+      <form
+        onSubmit={multipleForm.handleSubmit(handleMultipleWeldsSubmit)}
+        className="space-y-6"
+      >
+        {/* Mode tabs */}
+        <Tabs
+          value={mode}
+          onValueChange={(v) => setMode(v as 'single' | 'multiple')}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="single">{t('weldLogs.singleWeld')}</TabsTrigger>
+            <TabsTrigger value="multiple">
+              {t('weldLogs.multipleWelds')}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Step 1: Main form fields */}
+        {currentStep === 1 && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={multipleForm.control}
+                name="startNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('weldLogs.startNumber')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t('weldLogs.startNumberPlaceholder')}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={multipleForm.control}
+                name="endNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('weldLogs.endNumber')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t('weldLogs.endNumberPlaceholder')}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={multipleForm.control}
+              name="positionMode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('weldLogs.positionMode')}</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t('weldLogs.selectPositionMode')}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="same-as-number">
+                        {t('weldLogs.sameAsWeldNumber')}
+                      </SelectItem>
+                      <SelectItem value="manual">
+                        {t('weldLogs.enterManually')}
+                      </SelectItem>
+                      <SelectItem value="add-later">
+                        {t('weldLogs.addLater')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Show position field when position mode is not selected/manual/same-as-number */}
+            {multipleForm.watch('positionMode') !== 'manual' &&
+              multipleForm.watch('positionMode') !== 'same-as-number' && (
+                <FormField
+                  control={multipleForm.control}
+                  name="position"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('weldLogs.position')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={t('weldLogs.positionPlaceholder')}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+            <FormField
+              control={multipleForm.control}
+              name="parentMaterials"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('weldLogs.parentMaterials')}</FormLabel>
+                  <FormControl>
+                    <MultiCombobox
+                      options={parentMaterials
+                        .filter((m): m is Material & { id: string } => !!m.id)
+                        .map((m) => ({
+                          value: m.id,
+                          label: m.name || '',
+                        }))}
+                      value={field.value || []}
+                      onValueChange={field.onChange}
+                      placeholder={t('weldLogs.selectParentMaterials')}
+                      showAddNew={true}
+                      onAddNew={() => {
+                        setMaterialFormDialog({
+                          isOpen: true,
+                          materialType: 'parent',
+                        });
+                      }}
+                      addNewLabel={t('materials.addNew')}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={multipleForm.control}
+              name="fillerMaterials"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('weldLogs.fillerMaterials')}</FormLabel>
+                  <FormControl>
+                    <MultiCombobox
+                      options={fillerMaterials
+                        .filter((m): m is Material & { id: string } => !!m.id)
+                        .map((m) => ({
+                          value: m.id,
+                          label: m.name || '',
+                        }))}
+                      value={field.value || []}
+                      onValueChange={field.onChange}
+                      placeholder={t('weldLogs.selectFillerMaterials')}
+                      showAddNew={true}
+                      onAddNew={() => {
+                        setMaterialFormDialog({
+                          isOpen: true,
+                          materialType: 'filler',
+                        });
+                      }}
+                      addNewLabel={t('materials.addNew')}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={multipleForm.control}
+              name="heatTreatment"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>{t('weldLogs.heatTreatment')}</FormLabel>
+                    <FormDescription>
+                      {t('weldLogs.heatTreatmentDescription')}
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={multipleForm.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('common.description')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder={t('common.descriptionPlaceholder')}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {/* Step 2: Manual position entry */}
+        {currentStep === 2 && renderManualPositionEntry()}
+
+        <DialogFooter className="gap-2">
+          {currentStep === 2 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCurrentStep(1)}
+            >
+              {t('common.back')}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            type={
+              currentStep === 1 &&
+              multipleForm.watch('positionMode') === 'manual'
+                ? 'button'
+                : 'submit'
+            }
+            disabled={validating}
+            onClick={
+              currentStep === 1 &&
+              multipleForm.watch('positionMode') === 'manual'
+                ? handleNextStep
+                : undefined
+            }
+          >
+            {getSubmitButtonText()}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {weld
-                ? t('weldLogs.editWeld')
-                : mode === 'single'
-                  ? t('weldLogs.addWeld')
-                  : t('weldLogs.addWelds')}
-            </DialogTitle>
+            <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
 
-          {/* Mode selection tabs - only show when adding new welds */}
-          {!weld && (
-            <Tabs
-              defaultValue="single"
-              value={mode}
-              onValueChange={handleModeChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="single">
-                  {t('weldLogs.singleWeld')}
-                </TabsTrigger>
-                <TabsTrigger value="multiple">
-                  {t('weldLogs.multipleWelds')}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          )}
-
-          <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Step 1: Form fields */}
-              {currentStep === 1 && (
-                <>
-                  {/* Render fields based on mode */}
-                  {mode === 'single' ? (
-                    <FormField
-                      control={form.control}
-                      name="number"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('weldLogs.weldNumber')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('weldLogs.enterWeldNumber')}
-                              autoComplete="off"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="startNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('weldLogs.startNumber')}</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={t('weldLogs.enterStartNumber')}
-                                autoComplete="off"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="endNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('weldLogs.endNumber')}</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={t('weldLogs.enterEndNumber')}
-                                autoComplete="off"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {/* Position mode selector - only show for multiple welds */}
-                  {mode === 'multiple' && currentStep === 1 && (
-                    <FormField
-                      control={form.control}
-                      name="positionMode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('weldLogs.positionMode')}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue
-                                  placeholder={t('weldLogs.selectPositionMode')}
-                                />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="same-as-number">
-                                {t('weldLogs.sameAsWeldNumber')}
-                              </SelectItem>
-                              <SelectItem value="manual">
-                                {t('weldLogs.enterManually')}
-                              </SelectItem>
-                              <SelectItem value="add-later">
-                                {t('weldLogs.addLaterWithEditWeld')}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  {/* Position field - only show for single weld mode */}
-                  {mode === 'single' && (
-                    <FormField
-                      control={form.control}
-                      name="position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('weldLogs.position')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('weldLogs.enterPosition')}
-                              autoComplete="off"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  <FormField
-                    control={form.control}
-                    name="parentMaterials"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('weldLogs.parentMaterials')}</FormLabel>
-                        <FormControl>
-                          <MultiCombobox
-                            placeholder={t('weldLogs.selectParentMaterials')}
-                            options={parentMaterialOptions}
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            showAddNew={true}
-                            addNewLabel={t('weldLogs.addNewParentMaterial')}
-                            emptyText={
-                              parentLoading
-                                ? t('weldLogs.loadingMaterials')
-                                : t('weldLogs.noParentMaterialsFound')
-                            }
-                            onAddNew={() =>
-                              setMaterialFormDialog({
-                                isOpen: true,
-                                materialType: 'parent',
-                              })
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="fillerMaterials"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('weldLogs.fillerMaterials')}</FormLabel>
-                        <FormControl>
-                          <MultiCombobox
-                            placeholder={t('weldLogs.selectFillerMaterials')}
-                            options={fillerMaterialOptions}
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            showAddNew={true}
-                            addNewLabel={t('weldLogs.addNewFillerMaterial')}
-                            emptyText={
-                              fillerLoading
-                                ? t('weldLogs.loadingMaterials')
-                                : t('weldLogs.noFillerMaterialsFound')
-                            }
-                            onAddNew={() =>
-                              setMaterialFormDialog({
-                                isOpen: true,
-                                materialType: 'filler',
-                              })
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('common.description')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('weldLogs.enterDescriptionOptional')}
-                            autoComplete="off"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="heatTreatment"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>{t('weldLogs.heatTreatment')}</FormLabel>
-                          <FormDescription>
-                            {t('weldLogs.requiresHeatTreatment')}
-                          </FormDescription>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-
-              {/* Step 2: Position entry for manual mode */}
-              {currentStep === 2 && mode === 'multiple' && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium">
-                      {t('weldLogs.enterPositionsForWelds')}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t('weldLogs.enterPositionForEachWeld')}
-                    </p>
-                  </div>
-                  {/* Scrollable container for position inputs */}
-                  <div className="max-h-[400px] overflow-y-auto border rounded-lg p-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      {(() => {
-                        const formData = form.getValues() as MultipleWeldsFormData
-                        const startNum = parseInt(formData.startNumber, 10)
-                        const endNum = parseInt(formData.endNumber, 10)
-                        const entries = []
-
-                        for (let i = startNum; i <= endNum; i++) {
-                          entries.push(
-                            <div key={i} className="space-y-2">
-                              <label
-                                htmlFor={`position-${i}`}
-                                className="text-sm font-medium"
-                              >
-                                {t('weldLogs.weld')} {i}
-                              </label>
-                              <Input
-                                id={`position-${i}`}
-                                placeholder={t('weldLogs.enterPosition')}
-                                value={positions[i] || ''}
-                                onChange={(e) => {
-                                  setPositions((prev) => ({
-                                    ...prev,
-                                    [i]: e.target.value,
-                                  }))
-                                }}
-                                autoComplete="off"
-                              />
-                            </div>
-                          )
-                        }
-
-                        return entries
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <DialogFooter>
-                {/* Back button for step 2 */}
-                {currentStep === 2 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setCurrentStep(1)}
-                  >
-                    {t('common.back')}
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  {t('common.cancel')}
-                </Button>
-
-                {/* Next button for step 1 when manual position mode is selected */}
-                {currentStep === 1 &&
-                  mode === 'multiple' &&
-                  form.watch('positionMode') === 'manual' && (
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        // Validate step 1 fields before proceeding
-                        const formData = form.getValues() as MultipleWeldsFormData
-                        const startNum = formData.startNumber
-                        const endNum = formData.endNumber
-                        const parentMats = formData.parentMaterials
-                        const fillerMats = formData.fillerMaterials
-
-                        if (!startNum || !endNum) {
-                          toast.error(
-                            t('validation.pleaseEnterWeldNumberRange')
-                          )
-                          return
-                        }
-
-                        if (parentMats.length === 0) {
-                          toast.error(t('validation.parentMaterialsRequired'))
-                          return
-                        }
-
-                        if (fillerMats.length === 0) {
-                          toast.error(t('validation.fillerMaterialsRequired'))
-                          return
-                        }
-
-                        setCurrentStep(2)
-                      }}
-                    >
-                      {t('common.next')}
-                    </Button>
-                  )}
-
-                {/* Submit button - hidden on step 1 when manual mode is selected */}
-                {!(
-                  currentStep === 1 &&
-                  mode === 'multiple' &&
-                  form.watch('positionMode') === 'manual'
-                ) && (
-                  <Button type="submit">
-                    {weld ? t('common.saveChanges') : t('common.addButton')}
-                  </Button>
-                )}
-              </DialogFooter>
-            </form>
-          </Form>
+          {mode === 'single'
+            ? renderSingleWeldForm()
+            : renderMultipleWeldsForm()}
         </DialogContent>
       </Dialog>
 
-      {/* Material Form Dialog for adding materials on the fly */}
-      {materialFormDialog.isOpen && materialFormDialog.materialType && (
+      {/* Material form dialog */}
+      {materialFormDialog.materialType && (
         <MaterialFormDialog
           open={materialFormDialog.isOpen}
-          onOpenChange={(isOpen) =>
-            setMaterialFormDialog({
-              ...materialFormDialog,
-              isOpen,
-            })
+          onOpenChange={(open) =>
+            setMaterialFormDialog({ ...materialFormDialog, isOpen: open })
           }
           materialType={materialFormDialog.materialType}
-          description={
-            materialFormDialog.materialType === 'parent'
-              ? t('materials.addParentMaterialForWeldDescription')
-              : t('materials.addFillerMaterialForWeldDescription')
-          }
           onSubmit={(data) =>
             handleAddNewMaterial(materialFormDialog.materialType!, data)
           }
         />
       )}
     </>
-  )
+  );
 }

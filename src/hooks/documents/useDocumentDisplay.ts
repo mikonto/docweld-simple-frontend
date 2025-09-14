@@ -1,6 +1,10 @@
 // src/hooks/documents/useDocumentDisplay.ts
 import { useState, useEffect } from 'react';
-import { ref as storageRefFunc, getStorage, StorageReference } from 'firebase/storage';
+import {
+  ref as storageRefFunc,
+  getStorage,
+  StorageReference,
+} from 'firebase/storage';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
 
 interface UseDocumentDisplayReturn {
@@ -29,10 +33,11 @@ export function useDocumentDisplay(
   // Create storage references only when we can fetch
   const fullImageRef: StorageReference | null =
     storageRef && canFetch ? storageRefFunc(getStorage(), storageRef) : null;
+
+  // Determine the path for thumbnail (use thumbStorageRef if available, otherwise use storageRef)
+  const thumbPath = thumbStorageRef || storageRef;
   const thumbImageRef: StorageReference | null =
-    (thumbStorageRef || storageRef) && canFetch
-      ? storageRefFunc(getStorage(), thumbStorageRef || storageRef)
-      : null;
+    thumbPath && canFetch ? storageRefFunc(getStorage(), thumbPath) : null;
 
   // Use react-firebase-hooks for downloading URLs
   const [fullUrl, fullLoading, fullError] = useDownloadURL(fullImageRef);

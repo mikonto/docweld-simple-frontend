@@ -33,7 +33,11 @@ export default function WeldLogs() {
   // Hooks for managing dialogs
   const formDialog = useFormDialog<WeldLog>();
   const confirmDialog = useConfirmationDialog({
-    delete: deleteWeldLog,
+    delete: async (id: string) => {
+      if (projectId) {
+        await deleteWeldLog(id, projectId);
+      }
+    },
   });
 
   // Navigate to weld log details when a row is clicked
@@ -43,9 +47,9 @@ export default function WeldLogs() {
 
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
-  const count = isBulk ? data?.length : 1;
+  const count = isBulk && Array.isArray(data) ? data.length : 1;
   const confirmContent = getConfirmationContent(
-    type,
+    type || '',
     isBulk,
     count,
     t,
@@ -112,7 +116,9 @@ export default function WeldLogs() {
               loading={weldLogsLoading}
               onEdit={formDialog.open}
               onCreateNew={() => formDialog.open()}
-              onConfirmAction={confirmDialog.open}
+              onConfirmAction={(action, data, isBulk) =>
+                confirmDialog.open(action, data as WeldLog | WeldLog[], isBulk)
+              }
               onRowClick={handleRowClick}
             />
           </ErrorLoadingWrapper>

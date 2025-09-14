@@ -245,6 +245,7 @@ describe('useUsers Hook', () => {
         const userData: UserFormData = {
           firstName: 'John',
           lastName: 'Doe',
+          displayName: 'John Doe',
           email: 'john@example.com',
           password: 'securePassword123',
           role: 'user',
@@ -267,6 +268,8 @@ describe('useUsers Hook', () => {
             result.current.createUser({
               firstName: 'John',
               lastName: 'Doe',
+              displayName: 'John Doe',
+              role: 'user',
               // Missing email and password
             } as UserFormData)
           ).rejects.toThrow('Email and password are required');
@@ -287,8 +290,10 @@ describe('useUsers Hook', () => {
             result.current.createUser({
               firstName: 'John',
               lastName: 'Doe',
+              displayName: 'John Doe',
               email: 'john@example.com',
               password: 'securePassword123',
+              role: 'user',
             } as UserFormData)
           ).rejects.toThrow('Must be logged in to create users');
         });
@@ -420,8 +425,10 @@ describe('useUserOperations i18n messages', () => {
       await result.current.createUser({
         firstName: 'Test',
         lastName: 'User',
+        displayName: 'Test User',
         email: 'test@example.com',
         password: 'password123',
+        role: 'user',
       } as UserFormData);
     });
 
@@ -441,11 +448,15 @@ describe('useUserOperations i18n messages', () => {
         await result.current.createUser({
           firstName: 'Test',
           lastName: 'User',
+          displayName: 'Test User',
           email: 'test@example.com',
           password: 'password123',
+          role: 'user',
         } as UserFormData);
       } catch (error) {
-        expect((error as Error).message).toBe('Failed to create user: Network error');
+        expect((error as Error).message).toBe(
+          'Failed to create user: Network error'
+        );
       }
     });
 

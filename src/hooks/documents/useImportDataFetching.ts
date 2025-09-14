@@ -1,9 +1,21 @@
 import { useEffect, Dispatch } from 'react';
-import { collection, query, where, getDocs, Query, DocumentData as FirestoreDocumentData } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  Query,
+  DocumentData as FirestoreDocumentData,
+} from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/config/firebase';
 import { ACTIONS, BrowserState, BrowserAction } from './useImportBrowser';
-import type { CollectionData, SectionData, DocumentData } from '@/types/database';
+import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+
+// Type aliases for import browser context
+type CollectionData = { id: string; name: string; [key: string]: unknown };
+type SectionData = FirestoreSection;
+type DocumentData = FirestoreDocument;
 
 /**
  * Hook for managing data fetching in the import browser
@@ -175,10 +187,13 @@ export default function useImportDataFetching(
 
           if (documentsQuery) {
             const snapshot = await getDocs(documentsQuery);
-            const documentsData: DocumentData[] = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            } as DocumentData));
+            const documentsData: DocumentData[] = snapshot.docs.map(
+              (doc) =>
+                ({
+                  id: doc.id,
+                  ...doc.data(),
+                }) as DocumentData
+            );
 
             dispatch({ type: ACTIONS.SET_DOCUMENTS, payload: documentsData });
 

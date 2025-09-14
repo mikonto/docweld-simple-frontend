@@ -1,10 +1,13 @@
-import React from 'react';
 import { Plus, Trash, Archive, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import {
+  createColumns,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
-import type { Project } from '@/types/database';
+import type { Project } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 export interface ProjectsTableProps {
@@ -180,7 +183,7 @@ export function ProjectsTable({
           tabs={tabs}
           activeTab={activeTab}
           isLoading={loading}
-          onTabChange={onTabChange}
+          onTabChange={(value) => onTabChange(value as 'active' | 'archived')}
           actionButtons={actionButtons}
           bulkActionButtons={bulkActionButtons}
           onRowClick={onRowClick}

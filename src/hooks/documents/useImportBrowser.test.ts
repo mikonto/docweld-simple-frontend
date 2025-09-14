@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useImportBrowser from './useImportBrowser';
-import type { CollectionData, SectionData, DocumentData } from '@/types/database';
+import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+
+// Type aliases for compatibility
+type CollectionData = { id: string; name: string; [key: string]: unknown };
+type SectionData = FirestoreSection;
+type DocumentData = FirestoreDocument;
 import type { SelectedItem } from './useImportBrowser';
 
 describe('useImportBrowser', () => {
@@ -84,7 +89,10 @@ describe('useImportBrowser', () => {
 
   it('handles SET_SELECTED_COLLECTION action', () => {
     const { result } = renderHook(() => useImportBrowser());
-    const mockCollection: CollectionData = { id: 'col-1', name: 'Technical Standards' } as CollectionData;
+    const mockCollection: CollectionData = {
+      id: 'col-1',
+      name: 'Technical Standards',
+    } as CollectionData;
 
     act(() => {
       result.current.dispatch({
@@ -115,7 +123,10 @@ describe('useImportBrowser', () => {
 
   it('handles SET_SELECTED_SECTION action', () => {
     const { result } = renderHook(() => useImportBrowser());
-    const mockSection: SectionData = { id: 'sec-1', name: 'Welding Procedures' } as SectionData;
+    const mockSection: SectionData = {
+      id: 'sec-1',
+      name: 'Welding Procedures',
+    } as SectionData;
 
     act(() => {
       result.current.dispatch({
@@ -163,8 +174,44 @@ describe('useImportBrowser', () => {
 
   it('handles TOGGLE_ITEM_SELECTION action to track user selections', () => {
     const { result } = renderHook(() => useImportBrowser());
-    const item1 = { id: 'doc-1', title: 'Document 1' };
-    const item2 = { id: 'sec-1', name: 'Section 1' };
+    const item1: DocumentData = {
+      id: 'doc-1',
+      title: 'Document 1',
+      fileType: 'PDF',
+      fileSize: 1024,
+      storageRef: 'documents/doc-1/file.pdf',
+      thumbStorageRef: null,
+      processingState: 'completed',
+      status: 'active',
+      order: 1,
+      createdAt: {
+        seconds: 0,
+        nanoseconds: 0,
+      } as unknown as import('firebase/firestore').Timestamp,
+      createdBy: 'user',
+      updatedAt: {
+        seconds: 0,
+        nanoseconds: 0,
+      } as unknown as import('firebase/firestore').Timestamp,
+      updatedBy: 'user',
+    };
+    const item2: SectionData = {
+      id: 'sec-1',
+      name: 'Section 1',
+      description: '',
+      status: 'active',
+      order: 1,
+      createdAt: {
+        seconds: 0,
+        nanoseconds: 0,
+      } as unknown as import('firebase/firestore').Timestamp,
+      createdBy: 'user',
+      updatedAt: {
+        seconds: 0,
+        nanoseconds: 0,
+      } as unknown as import('firebase/firestore').Timestamp,
+      updatedBy: 'user',
+    };
 
     // Add first item
     act(() => {
@@ -211,7 +258,27 @@ describe('useImportBrowser', () => {
 
   it('handles TOGGLE_ITEM_SELECTION to unselect items', () => {
     const { result } = renderHook(() => useImportBrowser());
-    const item1 = { id: 'doc-1', title: 'Document 1' };
+    const item1: DocumentData = {
+      id: 'doc-1',
+      title: 'Document 1',
+      fileType: 'PDF',
+      fileSize: 1024,
+      storageRef: 'documents/doc-1/file.pdf',
+      thumbStorageRef: null,
+      processingState: 'completed',
+      status: 'active',
+      order: 1,
+      createdAt: {
+        seconds: 0,
+        nanoseconds: 0,
+      } as unknown as import('firebase/firestore').Timestamp,
+      createdBy: 'user',
+      updatedAt: {
+        seconds: 0,
+        nanoseconds: 0,
+      } as unknown as import('firebase/firestore').Timestamp,
+      updatedBy: 'user',
+    };
 
     // First add item
     act(() => {
@@ -315,7 +382,10 @@ describe('useImportBrowser', () => {
         type: result.current.ACTIONS.RESET_FOR_SOURCE_CHANGE,
         payload: {
           view: 'sections',
-          collection: { id: 'main', name: 'Project Documents' } as CollectionData,
+          collection: {
+            id: 'main',
+            name: 'Project Documents',
+          } as CollectionData,
         },
       });
     });

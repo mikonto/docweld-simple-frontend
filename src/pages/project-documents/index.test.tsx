@@ -1,10 +1,10 @@
-import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, type MockedFunction } from 'vitest';
 import ProjectDocuments from './index';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { useProject } from '@/hooks/useProjects';
-import type { Project } from '@/types/database';
+import type { Project } from '@/types';
+import type { FirestoreError } from 'firebase/firestore';
 
 // Mock hooks
 vi.mock('@/hooks/useProjects');
@@ -25,7 +25,15 @@ vi.mock('@/components/documents/sections/multi/SectionsContainer', () => ({
     entityId,
     showImportMenu,
     importSource,
-  }: any) => (
+  }: {
+    collectionType: string;
+    entityId: string;
+    showImportMenu?: boolean;
+    importSource?: {
+      collectionType: string;
+      entityId: string;
+    };
+  }) => (
     <div data-testid="document-section-list">
       <div>Collection Type: {collectionType}</div>
       <div>Entity ID: {entityId}</div>
@@ -52,7 +60,11 @@ describe('ProjectDocuments', () => {
   const stateTestCases = [
     {
       name: 'loading state',
-      mockReturn: [null, true, null] as [Project | null, boolean, Error | null],
+      mockReturn: [null, true, undefined] as [
+        Project | null,
+        boolean,
+        FirestoreError | undefined,
+      ],
       expectations: {
         spinner: true,
         header: false,
@@ -61,7 +73,14 @@ describe('ProjectDocuments', () => {
     },
     {
       name: 'error state',
-      mockReturn: [null, false, new Error('Failed to load project')] as [Project | null, boolean, Error | null],
+      mockReturn: [
+        null,
+        false,
+        {
+          code: 'unknown',
+          message: 'Failed to load project',
+        } as FirestoreError,
+      ] as [Project | null, boolean, FirestoreError | undefined],
       expectations: {
         spinner: false,
         header: false,
@@ -70,7 +89,11 @@ describe('ProjectDocuments', () => {
     },
     {
       name: 'null project state',
-      mockReturn: [null, false, null] as [Project | null, boolean, Error | null],
+      mockReturn: [null, false, undefined] as [
+        Project | null,
+        boolean,
+        FirestoreError | undefined,
+      ],
       expectations: {
         spinner: false,
         header: false,
@@ -79,7 +102,11 @@ describe('ProjectDocuments', () => {
     },
     {
       name: 'loaded state',
-      mockReturn: [mockProject, false, null] as [Project | null, boolean, Error | null],
+      mockReturn: [mockProject, false, undefined] as [
+        Project | null,
+        boolean,
+        FirestoreError | undefined,
+      ],
       expectations: {
         spinner: false,
         header: true,
@@ -90,7 +117,9 @@ describe('ProjectDocuments', () => {
 
   stateTestCases.forEach(({ name, mockReturn, expectations }) => {
     it(`should handle ${name} correctly`, async () => {
-      (useProject as any).mockReturnValue(mockReturn);
+      (useProject as MockedFunction<typeof useProject>).mockReturnValue(
+        mockReturn
+      );
       renderWithProviders(<ProjectDocuments />);
 
       if (expectations.spinner) {
@@ -118,7 +147,11 @@ describe('ProjectDocuments', () => {
   });
 
   it('should render SectionsContainer with correct configuration', async () => {
-    (useProject as any).mockReturnValue([mockProject, false, null]);
+    (useProject as MockedFunction<typeof useProject>).mockReturnValue([
+      mockProject,
+      false,
+      undefined,
+    ]);
     renderWithProviders(<ProjectDocuments />);
 
     await waitFor(() => {

@@ -29,18 +29,22 @@
  * @note Weld logs do not support sections - documents are flat in weld logs
  */
 
-import { useSectionOperations, UseSectionOperationsReturn } from './useSectionOperations';
+import {
+  useSectionOperations,
+  UseSectionOperationsReturn,
+} from './useSectionOperations';
 import { useSectionData } from './useSectionData';
 import { DocumentData, FirestoreError } from 'firebase/firestore';
 
 type SectionEntityType = 'project' | 'library';
 
-interface UseSectionsConfig {
+export interface UseSectionsConfig {
   entityType: SectionEntityType;
   entityId: string;
 }
 
-interface UseSectionsReturn extends Omit<UseSectionOperationsReturn, 'sections' | 'loading' | 'error'> {
+interface UseSectionsReturn
+  extends Omit<UseSectionOperationsReturn, 'sections' | 'loading' | 'error'> {
   sections: DocumentData[];
   sectionsLoading: boolean;
   sectionsError: FirestoreError | undefined;

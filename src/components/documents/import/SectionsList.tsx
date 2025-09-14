@@ -65,10 +65,12 @@ function SectionsList({
                 <div
                   onClick={(e: MouseEvent) => {
                     e.stopPropagation();
-                    onSelectItem(section, 'section');
                   }}
                 >
-                  <Checkbox checked={isSelected} />
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => onSelectItem(section, 'section')}
+                  />
                 </div>
               )}
               <FolderIcon className="h-5 w-5 text-muted-foreground" />
@@ -76,10 +78,10 @@ function SectionsList({
                 <h3 className="text-sm font-medium">{section.name}</h3>
                 <p className="text-xs text-muted-foreground">
                   {t(
-                    section.documentCount === 1
+                    (section.documentCount ?? 0) === 1
                       ? 'documents.documents_one'
                       : 'documents.documents_other',
-                    { count: section.documentCount }
+                    { count: section.documentCount ?? 0 }
                   )}
                 </p>
               </div>

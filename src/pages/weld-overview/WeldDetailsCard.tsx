@@ -1,70 +1,57 @@
-import type { ReactElement } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { MoreHorizontal, Pencil } from 'lucide-react'
-import { formatDate } from '@/utils/dateFormatting'
-import { useMaterials } from '@/hooks/useMaterials'
-import type { Weld, User, Material } from '@/types'
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Pencil } from 'lucide-react';
+import { formatDate } from '@/utils/dateFormatting';
+import type { Weld, User } from '@/types';
+import type { Timestamp } from 'firebase/firestore';
 
 interface WeldDetailsCardProps {
-  weld: Weld | null
-  creator: User | null
-  onEdit: (weld: Weld) => void
+  weld: Weld | null;
+  creator: User | null;
+  onEdit: (weld: Weld) => void;
 }
 
-export function WeldDetailsCard({ weld, creator, onEdit }: WeldDetailsCardProps): ReactElement {
-  const { t } = useTranslation()
-
-  // Fetch parent and filler materials for display
-  const [parentMaterials, parentLoading] = useMaterials('parent')
-  const [fillerMaterials, fillerLoading] = useMaterials('filler')
+export function WeldDetailsCard({
+  weld,
+  creator,
+  onEdit,
+}: WeldDetailsCardProps): ReactElement {
+  const { t } = useTranslation();
 
   // Format timestamp for display using locale-aware formatting
-  const formatTimestamp = (timestamp: Date): string => {
-    return formatDate(timestamp, 'dateTime')
-  }
+  const formatTimestamp = (timestamp: Timestamp): string => {
+    // Convert Timestamp to Date for formatting
+    const date = timestamp.toDate
+      ? timestamp.toDate()
+      : new Date(timestamp as unknown as Date);
+    return formatDate(date, 'dateTime');
+  };
 
-  // Get material names from IDs
-  const getMaterialName = (materialId: string, materials: Material[] | null): string => {
-    const material = materials?.find((m) => m.id === materialId)
-    if (material) {
-      return material.specification
-        ? `${material.name} (${material.specification})`
-        : material.name
+  // Format material for display
+  const formatMaterial = (): string => {
+    if (!weld?.material) {
+      return '—';
     }
-    return materialId // Return ID if material not found
-  }
-
-  // Format parent materials for display
-  const formatParentMaterials = (): string => {
-    if (!weld?.parentMaterials || weld.parentMaterials.length === 0) {
-      return '—'
+    const material = weld.material;
+    if (material.name && material.specification) {
+      return `${material.name} (${material.specification})`;
     }
-    if (parentLoading) return t('common.loading')
+    return material.name || material.specification || material.type || '—';
+  };
 
-    return weld.parentMaterials
-      .map((id) => getMaterialName(id, parentMaterials))
-      .join(', ')
-  }
-
-  // Format filler materials for display
-  const formatFillerMaterials = (): string => {
-    if (!weld?.fillerMaterials || weld.fillerMaterials.length === 0) {
-      return '—'
-    }
-    if (fillerLoading) return t('common.loading')
-
-    return weld.fillerMaterials
-      .map((id) => getMaterialName(id, fillerMaterials))
-      .join(', ')
-  }
+  // Get display value for welder (would need to fetch user info in real app)
+  const getWelderDisplay = (): string => {
+    // In a real app, you'd fetch the welder's info from the users collection
+    return weld?.welderId || '—';
+  };
 
   return (
     <Card className="gap-4">
@@ -96,58 +83,83 @@ export function WeldDetailsCard({ weld, creator, onEdit }: WeldDetailsCardProps)
               <p className="text-sm font-medium">{weld?.number || '—'}</p>
             </div>
 
-            {/* Position */}
+            {/* Status */}
             <div className="bg-card px-6 py-3">
               <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('welds.position')}
+                {t('welds.status')}
               </h4>
-              <p className="text-sm font-medium">{weld?.position || '—'}</p>
+              <p className="text-sm font-medium">{weld?.status || '—'}</p>
             </div>
 
-            {/* Heat Treatment */}
+            {/* Type */}
             <div className="bg-card px-6 py-3">
               <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('welds.heatTreatment')}
+                {t('welds.type')}
               </h4>
-              <p className="text-sm font-medium">
-                {weld?.heatTreatment || '—'}
-              </p>
+              <p className="text-sm font-medium">{weld?.type || '—'}</p>
             </div>
 
             {/* Row 2 */}
-            {/* Parent Materials */}
+            {/* Process */}
             <div className="bg-card px-6 py-3">
               <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('materials.parentMaterials')}
+                {t('welds.process')}
               </h4>
-              <p className="text-sm font-medium">{formatParentMaterials()}</p>
+              <p className="text-sm font-medium">{weld?.process || '—'}</p>
             </div>
 
-            {/* Filler Materials */}
+            {/* Material */}
             <div className="bg-card px-6 py-3">
               <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('materials.fillerMaterials')}
+                {t('materials.material')}
               </h4>
-              <p className="text-sm font-medium">{formatFillerMaterials()}</p>
+              <p className="text-sm font-medium">{formatMaterial()}</p>
             </div>
 
-            {/* Created By */}
+            {/* Welder */}
             <div className="bg-card px-6 py-3">
               <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('common.createdBy')}
+                {t('welds.welder')}
               </h4>
-              <p className="text-sm font-medium">
-                {creator ? (creator.displayName || creator.email) : '—'}
-              </p>
+              <p className="text-sm font-medium">{getWelderDisplay()}</p>
             </div>
 
             {/* Row 3 */}
-            {/* Description - spans 2 columns */}
+            {/* Inspector */}
+            <div className="bg-card px-6 py-3">
+              <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('welds.inspector')}
+              </h4>
+              <p className="text-sm font-medium">{weld?.inspectorId || '—'}</p>
+            </div>
+
+            {/* Completed At */}
+            <div className="bg-card px-6 py-3">
+              <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('welds.completedAt')}
+              </h4>
+              <p className="text-sm font-medium">
+                {weld?.completedAt ? formatTimestamp(weld.completedAt) : '—'}
+              </p>
+            </div>
+
+            {/* Inspected At */}
+            <div className="bg-card px-6 py-3">
+              <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('welds.inspectedAt')}
+              </h4>
+              <p className="text-sm font-medium">
+                {weld?.inspectedAt ? formatTimestamp(weld.inspectedAt) : '—'}
+              </p>
+            </div>
+
+            {/* Row 4 */}
+            {/* Notes - spans 2 columns */}
             <div className="bg-card px-6 py-3 col-span-2">
               <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('common.description')}
+                {t('welds.notes')}
               </h4>
-              <p className="text-sm font-medium">{weld?.description || '—'}</p>
+              <p className="text-sm font-medium">{weld?.notes || '—'}</p>
             </div>
 
             {/* Created At */}
@@ -159,9 +171,20 @@ export function WeldDetailsCard({ weld, creator, onEdit }: WeldDetailsCardProps)
                 {weld?.createdAt ? formatTimestamp(weld.createdAt) : '—'}
               </p>
             </div>
+
+            {/* Row 5 */}
+            {/* Created By - spans 3 columns */}
+            <div className="bg-card px-6 py-3 col-span-3">
+              <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('common.createdBy')}
+              </h4>
+              <p className="text-sm font-medium">
+                {creator ? creator.displayName || creator.email : '—'}
+              </p>
+            </div>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,8 +1,11 @@
+import * as React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import DocumentsGrid from './DocumentsGrid';
 import { Document } from '@/types/database';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
+import type { Timestamp } from 'firebase/firestore';
 
 // Mock Firebase storage
 vi.mock('firebase/storage', () => ({
@@ -12,7 +15,15 @@ vi.mock('firebase/storage', () => ({
 
 // Mock Checkbox component
 vi.mock('@/components/ui/checkbox', () => ({
-  Checkbox: ({ checked, onCheckedChange, onClick }: any) => (
+  Checkbox: ({
+    checked,
+    onCheckedChange,
+    onClick,
+  }: {
+    checked?: boolean;
+    onCheckedChange?: (checked: boolean) => void;
+    onClick?: React.MouseEventHandler;
+  }) => (
     <input
       type="checkbox"
       checked={checked}
@@ -39,9 +50,9 @@ describe('DocumentsGrid', () => {
       processingState: 'completed',
       status: 'active',
       order: 1,
-      createdAt: new Date() as any,
+      createdAt: mockTimestamp as Timestamp,
       createdBy: 'user1',
-      updatedAt: new Date() as any,
+      updatedAt: mockTimestamp as Timestamp,
       updatedBy: 'user1',
     },
     {
@@ -54,9 +65,9 @@ describe('DocumentsGrid', () => {
       processingState: 'completed',
       status: 'active',
       order: 2,
-      createdAt: new Date() as any,
+      createdAt: mockTimestamp as Timestamp,
       createdBy: 'user1',
-      updatedAt: new Date() as any,
+      updatedAt: mockTimestamp as Timestamp,
       updatedBy: 'user1',
     },
   ];

@@ -18,10 +18,10 @@ interface DataTableColumnHeaderProps<TData, TValue> {
  * DataTableColumnHeader component for sortable columns
  * Following shadcn/ui conventions
  */
-export function DataTableColumnHeader<TData, TValue>({ 
-  column, 
-  title, 
-  className 
+export function DataTableColumnHeader<TData, TValue>({
+  column,
+  title,
+  className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
     return <div className={className || ''}>{title}</div>;

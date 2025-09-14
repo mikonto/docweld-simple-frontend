@@ -12,7 +12,9 @@ vi.mock('@/components/documents/cards', () => ({
     <div data-testid={`card-${id}`}>{title}</div>
   ),
   UploadCard: ({ onUpload }: { onUpload: (files: File[]) => void }) => (
-    <button onClick={() => onUpload(['file' as any])}>Upload Card</button>
+    <button onClick={() => onUpload([new File([''], 'file')])}>
+      Upload Card
+    </button>
   ),
 }));
 
@@ -36,9 +38,9 @@ vi.mock('@dnd-kit/sortable', () => ({
 
 describe('StandaloneSectionContent', () => {
   const mockDocuments: Document[] = [
-    { 
-      id: '1', 
-      title: 'Doc 1', 
+    {
+      id: '1',
+      title: 'Doc 1',
       storageRef: 'ref1',
       thumbStorageRef: null,
       processingState: 'completed',
@@ -52,9 +54,9 @@ describe('StandaloneSectionContent', () => {
       createdBy: 'user1',
       updatedBy: 'user1',
     },
-    { 
-      id: '2', 
-      title: 'Doc 2', 
+    {
+      id: '2',
+      title: 'Doc 2',
       storageRef: 'ref2',
       thumbStorageRef: null,
       processingState: 'completed',

@@ -16,6 +16,7 @@ import {
 import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { useFileUpload } from './useFileUpload';
+import type { UploadResults } from './fileUploadHelpers';
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
 import {
   getNextDescendingOrder,
@@ -58,14 +59,21 @@ export interface UseBaseDocumentOperationsReturn {
     fileSize?: number | null
   ) => Promise<BaseDocumentData>;
   renameDocument: (docId: string, newTitle: string) => Promise<void>;
-  deleteDocument: (docId: string) => Promise<{ success: boolean; error?: Error | unknown }>;
-  updateDocumentOrder: (orderedDocIds: string[]) => Promise<{ success: boolean; error?: Error | unknown }>;
-  updateProcessingState: (docId: string, processingState: string) => Promise<void>;
+  deleteDocument: (
+    docId: string
+  ) => Promise<{ success: boolean; error?: Error | unknown }>;
+  updateDocumentOrder: (
+    orderedDocIds: string[]
+  ) => Promise<{ success: boolean; error?: Error | unknown }>;
+  updateProcessingState: (
+    docId: string,
+    processingState: string
+  ) => Promise<void>;
 
   // File upload operations
   handleFileUpload: (files: FileList | File[]) => void;
   uploadingFiles: UploadingFile[];
-  handleUpload: (files: FileList | File[]) => Promise<any>;
+  handleUpload: (files: FileList | File[]) => Promise<UploadResults>;
   handleCancelUpload: (fileId: string) => void;
 }
 
@@ -180,7 +188,9 @@ export function useBaseDocumentOperations(
    * Soft delete a document
    */
   const deleteDocument = useCallback(
-    async (docId: string): Promise<{ success: boolean; error?: Error | unknown }> => {
+    async (
+      docId: string
+    ): Promise<{ success: boolean; error?: Error | unknown }> => {
       try {
         // Use the remove method from useFirestoreOperations with soft delete
         await firebaseOps.remove(docId, false); // false = soft delete
@@ -217,7 +227,9 @@ export function useBaseDocumentOperations(
    * Update document order using numeric values
    */
   const updateDocumentOrder = useCallback(
-    async (orderedDocIds: string[]): Promise<{ success: boolean; error?: Error | unknown }> => {
+    async (
+      orderedDocIds: string[]
+    ): Promise<{ success: boolean; error?: Error | unknown }> => {
       try {
         const batch = writeBatch(db);
 
@@ -248,8 +260,7 @@ export function useBaseDocumentOperations(
 
   // Set up file upload functionality
   const {
-    uploadingFiles,
-    handleFileUpload,
+    uploadingFiles: uploadingFilesRecord,
     handleUpload: baseHandleUpload,
     handleCancelUpload,
   } = useFileUpload(
@@ -257,6 +268,31 @@ export function useBaseDocumentOperations(
     { collectionName, foreignKeys },
     addDocument,
     updateProcessingState
+  );
+
+  // Transform uploadingFiles from Record to Array for interface compatibility
+  const uploadingFiles = useMemo(() => {
+    return Object.entries(uploadingFilesRecord).map(([id, fileStatus]) => ({
+      id,
+      file: fileStatus.file,
+      progress: 0, // Progress tracking was removed, default to 0
+      status:
+        fileStatus.uploadStatus === 'complete'
+          ? 'success'
+          : ('uploading' as 'uploading' | 'success'),
+      documentId: id,
+    }));
+  }, [uploadingFilesRecord]);
+
+  // Wrap handleFileUpload to match expected signature (files array instead of single file)
+  const handleFileUpload = useCallback(
+    (files: FileList | File[]) => {
+      // Note: The original handleFileUpload from useFileUpload handles single files
+      // This wrapper allows batch operations but doesn't actually use the internal handleFileUpload
+      // Instead, we delegate to handleUpload which properly handles multiple files
+      void baseHandleUpload(files, updateDocumentOrder);
+    },
+    [baseHandleUpload, updateDocumentOrder]
   );
 
   // Wrap handleUpload to include any post-upload operations

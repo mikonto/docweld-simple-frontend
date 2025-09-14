@@ -1,11 +1,17 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type MockedFunction,
+} from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import CompanyProfile from './index';
 import { toast } from 'sonner';
-import type { CompanyInformation } from '@/types/database';
 
 // Mock the useCompanyInformation hook
 vi.mock('@/hooks/useCompanyInformation', () => ({
@@ -19,7 +25,17 @@ vi.mock('@/components/layouts/PageHeader', () => ({
 
 // Mock ErrorLoadingWrapper
 vi.mock('@/components/shared/ErrorLoadingWrapper', () => ({
-  ErrorLoadingWrapper: ({ error, loading, resourceName, children }: any) => {
+  ErrorLoadingWrapper: ({
+    error,
+    loading,
+    resourceName,
+    children,
+  }: {
+    error?: Error | null;
+    loading?: boolean;
+    resourceName?: string;
+    children?: React.ReactNode;
+  }) => {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error loading {resourceName}</div>;
     return <>{children}</>;
@@ -28,7 +44,13 @@ vi.mock('@/components/shared/ErrorLoadingWrapper', () => ({
 
 // Mock CompanyProfileForm
 vi.mock('./CompanyProfileForm', () => ({
-  CompanyProfileForm: ({ onSubmit, handleLogoChange }: any) => (
+  CompanyProfileForm: ({
+    onSubmit,
+    handleLogoChange,
+  }: {
+    onSubmit: (data: { companyName: string }) => void;
+    handleLogoChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  }) => (
     <div>
       <button onClick={() => onSubmit({ companyName: 'Test Company' })}>
         Save Changes
@@ -51,6 +73,7 @@ describe('CompanyProfile', () => {
 
   const defaultMockData = {
     companyInformation: {
+      id: 'company',
       companyName: 'Test Company',
       address: '123 Test St',
       contactPerson: 'John Doe',
@@ -58,9 +81,9 @@ describe('CompanyProfile', () => {
       contactPhone: '+1234567890',
       website: 'https://test.com',
       logoUrl: 'https://test.com/logo.png',
-    } as CompanyInformation,
+    },
     loading: false,
-    error: null,
+    error: undefined,
     updateCompanyInformation: mockUpdateCompanyInformation,
     uploadCompanyLogo: mockUploadCompanyLogo,
     isUploading: false,
@@ -71,7 +94,7 @@ describe('CompanyProfile', () => {
     const { useCompanyInformation } = vi.mocked(
       await import('@/hooks/useCompanyInformation')
     );
-    (useCompanyInformation as any).mockReturnValue(defaultMockData);
+    useCompanyInformation.mockReturnValue(defaultMockData);
   });
 
   // Test data states using data-driven approach
@@ -98,7 +121,9 @@ describe('CompanyProfile', () => {
       const { useCompanyInformation } = vi.mocked(
         await import('@/hooks/useCompanyInformation')
       );
-      (useCompanyInformation as any).mockReturnValue(mockData);
+      (
+        useCompanyInformation as MockedFunction<typeof useCompanyInformation>
+      ).mockReturnValue(mockData);
 
       renderWithProviders(<CompanyProfile />);
 

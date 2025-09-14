@@ -1,12 +1,12 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Globe } from "lucide-react";
+} from '@/components/ui/select';
+import { Globe } from 'lucide-react';
 
 interface Language {
   code: string;
@@ -18,8 +18,8 @@ export function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
   const languages: Language[] = [
-    { code: "en", name: "English", flag: "🇬🇧" },
-    { code: "da", name: "Dansk", flag: "🇩🇰" },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'da', name: 'Dansk', flag: '🇩🇰' },
   ];
 
   const handleLanguageChange = (value: string) => {

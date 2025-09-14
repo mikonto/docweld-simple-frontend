@@ -1,23 +1,27 @@
-import { UPLOAD_CONFIG } from '../constants'
-import type { ProcessingState } from '../constants'
+import { UPLOAD_CONFIG } from '../constants';
+import type { ProcessingState } from '../constants';
 
 export function getFileExtension(filename: string): string {
-  const parts = filename.split('.')
-  return parts.length > 1 ? `.${parts.pop()!.toLowerCase()}` : ''
+  const parts = filename.split('.');
+  return parts.length > 1 ? `.${parts.pop()!.toLowerCase()}` : '';
 }
 
 export function isAllowedFile(file: File): boolean {
-  if (UPLOAD_CONFIG.ALLOWED_TYPES.includes(file.type as any)) {
-    return true
+  // Check if file.type is one of the allowed MIME types
+  const allowedTypes = UPLOAD_CONFIG.ALLOWED_TYPES as readonly string[];
+  if (allowedTypes.includes(file.type)) {
+    return true;
   }
 
   // Check by extension as fallback
-  const extension = getFileExtension(file.name)
-  return UPLOAD_CONFIG.ALLOWED_EXTENSIONS.includes(extension as any)
+  const extension = getFileExtension(file.name);
+  const allowedExtensions =
+    UPLOAD_CONFIG.ALLOWED_EXTENSIONS as readonly string[];
+  return allowedExtensions.includes(extension);
 }
 
 export function getMimeTypeFromExtension(filename: string): string {
-  const extension = getFileExtension(filename)
+  const extension = getFileExtension(filename);
   const mimeTypes = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -28,9 +32,11 @@ export function getMimeTypeFromExtension(filename: string): string {
     '.heic': 'image/heic',
     '.heif': 'image/heif',
     '.pdf': 'application/pdf',
-  } as const
+  } as const;
 
-  return mimeTypes[extension as keyof typeof mimeTypes] || 'application/octet-stream'
+  return (
+    mimeTypes[extension as keyof typeof mimeTypes] || 'application/octet-stream'
+  );
 }
 
 // Get display name for a document, handling HEIC to JPG conversion
@@ -39,22 +45,22 @@ export function getDisplayName(
   storageRef?: string,
   processingState?: ProcessingState
 ): string {
-  if (!title) return ''
+  if (!title) return '';
 
   if (processingState === 'pending') {
-    return title
+    return title;
   }
 
-  const originalExtension = getFileExtension(title)
-  const isHeicOriginal = ['.heic', '.heif'].includes(originalExtension)
+  const originalExtension = getFileExtension(title);
+  const isHeicOriginal = ['.heic', '.heif'].includes(originalExtension);
 
   if (isHeicOriginal && storageRef && processingState === 'completed') {
-    const storageExtension = getFileExtension(storageRef)
+    const storageExtension = getFileExtension(storageRef);
     if (storageExtension && storageExtension !== originalExtension) {
-      const baseName = title.substring(0, title.lastIndexOf('.'))
-      return `${baseName}${storageExtension}`
+      const baseName = title.substring(0, title.lastIndexOf('.'));
+      return `${baseName}${storageExtension}`;
     }
   }
 
-  return title
+  return title;
 }

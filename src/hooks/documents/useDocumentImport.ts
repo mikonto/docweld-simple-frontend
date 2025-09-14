@@ -5,8 +5,11 @@ import {
   importSingleDocument,
   importCompleteSection,
 } from './documentImportHelpers';
-import type { DocumentData, SectionData } from '@/types/database';
+import type { FirestoreDocument, FirestoreSection } from '@/types/database';
 import type { DestinationType, AdditionalContext } from './utils';
+
+// Type alias for source types (only project or library can be sources)
+type SourceType = 'project' | 'library';
 
 /**
  * Import item types
@@ -14,11 +17,12 @@ import type { DestinationType, AdditionalContext } from './utils';
 interface ImportItem {
   type: 'section' | 'document';
   id?: string;
+  name?: string; // Required for sections
   projectId?: string;
   collectionId?: string;
   targetSectionId?: string;
   sectionId?: string;
-  [key: string]: any; // Allow additional properties from source data
+  [key: string]: unknown; // Allow additional properties from source data
 }
 
 /**
@@ -26,15 +30,15 @@ interface ImportItem {
  */
 interface ImportResults {
   sections: Array<{
-    original: any;
+    original: ImportItem;
     imported: string;
   }>;
   documents: Array<{
-    original: any;
+    original: ImportItem;
     imported: string;
   }>;
   errors: Array<{
-    item?: any;
+    item?: ImportItem;
     error: string;
   }>;
 }
@@ -44,13 +48,13 @@ interface ImportResults {
  */
 interface UseDocumentImportReturn {
   importDocument: (
-    sourceDoc: DocumentData | any,
+    sourceDoc: Partial<FirestoreDocument>,
     targetSectionId?: string | null,
     additionalContext?: AdditionalContext
   ) => Promise<string>;
   importSection: (
-    sourceSection: SectionData | any,
-    sourceType: DestinationType,
+    sourceSection: Partial<FirestoreSection> & { id: string; name: string },
+    sourceType: SourceType,
     sourceId: string
   ) => Promise<string>;
   importItems: (
@@ -86,7 +90,7 @@ export function useDocumentImport(
   destinationType: DestinationType,
   destinationId: string | null
 ): UseDocumentImportReturn {
-  const { loggedInUser } = useApp();
+  const { userDb } = useApp();
   const [isImporting, setIsImporting] = useState(false);
 
   /**
@@ -95,20 +99,23 @@ export function useDocumentImport(
    */
   const importDocument = useCallback(
     async (
-      sourceDoc: DocumentData | any,
+      sourceDoc: Partial<FirestoreDocument>,
       targetSectionId?: string | null,
       additionalContext: AdditionalContext = {}
     ): Promise<string> => {
+      if (!destinationId) {
+        throw new Error('Destination ID is required for import');
+      }
       return await importSingleDocument(
         sourceDoc,
-        targetSectionId || null,
+        targetSectionId ?? null,
         destinationType,
         destinationId,
         additionalContext,
-        loggedInUser
+        userDb
       );
     },
-    [destinationType, destinationId, loggedInUser]
+    [destinationType, destinationId, userDb]
   );
 
   /**
@@ -117,20 +124,23 @@ export function useDocumentImport(
    */
   const importSection = useCallback(
     async (
-      sourceSection: SectionData | any,
-      sourceType: DestinationType,
+      sourceSection: Partial<FirestoreSection> & { id: string; name: string },
+      sourceType: SourceType,
       sourceId: string
     ): Promise<string> => {
+      if (!destinationId) {
+        throw new Error('Destination ID is required for import');
+      }
       return await importCompleteSection(
         sourceSection,
         sourceType,
         sourceId,
         destinationType,
         destinationId,
-        loggedInUser
+        userDb
       );
     },
-    [destinationType, destinationId, loggedInUser]
+    [destinationType, destinationId, userDb]
   );
 
   /**
@@ -171,13 +181,21 @@ export function useDocumentImport(
           // Import each section with all its documents
           for (const section of sections) {
             try {
-              const sourceType: DestinationType = section.projectId ? 'project' : 'library';
+              const sourceType: SourceType = section.projectId
+                ? 'project'
+                : 'library';
               const sourceId = section.projectId || section.collectionId;
               if (!sourceId) {
                 throw new Error('Source ID is required for section import');
               }
+              if (!section.id || !section.name) {
+                throw new Error('Section must have id and name properties');
+              }
               const newSectionId = await importSection(
-                section,
+                section as Partial<FirestoreSection> & {
+                  id: string;
+                  name: string;
+                },
                 sourceType,
                 sourceId
               );
@@ -185,9 +203,11 @@ export function useDocumentImport(
                 original: section,
                 imported: newSectionId,
               });
-            } catch (error: any) {
+            } catch (error: unknown) {
               // Silently handle error - added to results.errors for UI feedback
-              results.errors.push({ item: section, error: error.message });
+              const errorMessage =
+                error instanceof Error ? error.message : String(error);
+              results.errors.push({ item: section, error: errorMessage });
             }
           }
         }
@@ -198,26 +218,30 @@ export function useDocumentImport(
             // Use targetSectionId from container or document itself
             const targetSectionId = doc.targetSectionId || doc.sectionId;
             const newDocId = await importDocument(
-              doc,
+              doc as Partial<FirestoreDocument>,
               targetSectionId,
               additionalContext
             );
             results.documents.push({ original: doc, imported: newDocId });
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Silently handle error - added to results.errors for UI feedback
-            results.errors.push({ item: doc, error: error.message });
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            results.errors.push({ item: doc, error: errorMessage });
           }
         }
 
         // Success/error messaging handled by calling components
         // This prevents duplicate toasts
         return results;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Add error to results and return
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         const errorResult: ImportResults = {
           sections: [],
           documents: [],
-          errors: [{ error: error.message }],
+          errors: [{ error: errorMessage }],
         };
         return errorResult;
       } finally {

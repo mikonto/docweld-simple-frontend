@@ -8,6 +8,8 @@ import {
   getFilteredRowModel,
   useReactTable,
   ColumnDef,
+  SortingState,
+  Row,
 } from '@tanstack/react-table';
 
 import {
@@ -31,17 +33,29 @@ interface TabConfig {
 export interface ActionButton {
   label: string;
   onClick: () => void;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  variant?:
+    | 'default'
+    | 'destructive'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   disabled?: boolean;
   className?: string;
   icon?: React.ReactNode;
 }
 
-export interface BulkActionButton {
+export interface BulkActionButton<TData = unknown> {
   label: string;
-  onClick: (selectedData: any[]) => void;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  onClick: (selectedData: TData[]) => void;
+  variant?:
+    | 'default'
+    | 'destructive'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   disabled?: boolean;
   className?: string;
@@ -53,13 +67,13 @@ export interface DataTableError {
 }
 
 interface DataTableProps<TData> {
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, unknown>[];
   data: TData[];
   tabs?: TabConfig[] | null;
   activeTab?: string | null;
   onTabChange?: ((value: string) => void) | null;
   actionButtons?: ActionButton[] | null;
-  bulkActionButtons?: BulkActionButton[] | null;
+  bulkActionButtons?: BulkActionButton<TData>[] | null;
   onRowClick?: ((rowData: TData) => void) | null;
   isLoading?: boolean;
   error?: DataTableError | null;
@@ -84,9 +98,9 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const { t } = useTranslation();
   const [rowSelection, setRowSelection] = React.useState({});
-  const [sorting, setSorting] = React.useState<any[]>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
-  
+
   // Load saved page size from localStorage, default to 10 if not found
   const getSavedPageSize = (): number => {
     if (!tableKey) return 10; // No persistence without tableKey
@@ -147,7 +161,7 @@ export function DataTable<TData>({
 
   // Handle row click
   const handleRowClick = React.useCallback(
-    (row: any) => {
+    (row: Row<TData>) => {
       if (onRowClick) {
         onRowClick(row.original);
       }
@@ -157,7 +171,7 @@ export function DataTable<TData>({
 
   // Handle table row click with event filtering
   const handleTableRowClick = React.useCallback(
-    (e: React.MouseEvent, row: any) => {
+    (e: React.MouseEvent, row: Row<TData>) => {
       // Don't trigger row click when clicking on checkboxes or action buttons
       if (
         (e.target as Element).closest('[role="checkbox"]') ||

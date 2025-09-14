@@ -1,12 +1,13 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { AppLayout } from '@/components/layouts/AppLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useParams, useLocation } from 'react-router-dom';
-import type { LoggedInUser } from '@/types/app';
+import type { UseAuthWithFirestoreReturn } from '@/hooks/useAuthWithFirestore';
 import type { MockedFunction } from '@/types/test-utils';
+import type { Location } from 'react-router-dom';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // ============== Type Definitions ==============
 
@@ -48,8 +49,9 @@ vi.mock('@/hooks/useProjects', () => ({
 // Mock Breadcrumbs component that returns breadcrumbs on project pages
 vi.mock('@/components/Breadcrumbs', () => ({
   Breadcrumbs: () => {
-    const location = (vi.mocked(useLocation) as MockedFunction<typeof useLocation>)
-      .mock.results[0]?.value as MockLocationReturn | undefined;
+    const location = (
+      vi.mocked(useLocation) as MockedFunction<typeof useLocation>
+    ).mock.results[0]?.value as MockLocationReturn | undefined;
     if (
       location?.pathname.includes('/projects/') &&
       location?.pathname !== '/projects'
@@ -62,15 +64,39 @@ vi.mock('@/components/Breadcrumbs', () => ({
 
 // ============== Helper Functions ==============
 
-const createMockUser = (role: LoggedInUser['role'], uid = 'test-uid', email = 'test@example.com'): LoggedInUser => ({
-  uid,
-  email,
-  displayName: `Test ${role}`,
-  role,
+const createMockUser = (
+  role: 'admin' | 'user' | 'viewer',
+  uid = 'test-uid',
+  email = 'test@example.com'
+): UseAuthWithFirestoreReturn => ({
+  loggedInUser: {
+    // Firebase Auth properties
+    uid,
+    email,
+    emailVerified: true,
+    phoneNumber: null,
+    photoURL: null,
+    providerId: 'password',
+    // Firestore User properties
+    id: uid,
+    displayName: `Test ${role}`,
+    role,
+    createdAt: mockTimestamp,
+    updatedAt: mockTimestamp,
+    isActive: true,
+  },
+  userAuth: null,
+  userDb: null,
+  userStatus: null,
+  isAuthorized: true,
+  loading: false,
+  error: undefined,
 });
 
 const mockUseApp = vi.mocked(useApp) as MockedFunction<typeof useApp>;
-const mockUseLocation = vi.mocked(useLocation) as MockedFunction<typeof useLocation>;
+const mockUseLocation = vi.mocked(useLocation) as MockedFunction<
+  typeof useLocation
+>;
 const mockUseParams = vi.mocked(useParams) as MockedFunction<typeof useParams>;
 
 // ============== Test Suites ==============
@@ -82,13 +108,19 @@ describe('Navigation Behaviors for Different User Types', () => {
 
   describe('Admin User Navigation', () => {
     beforeEach(() => {
-      mockUseApp.mockReturnValue({
-        loggedInUser: createMockUser('admin', 'admin123', 'admin@example.com'),
-      });
+      mockUseApp.mockReturnValue(
+        createMockUser('admin', 'admin123', 'admin@example.com')
+      );
     });
 
     it('should NOT show project navigation on projects list page', () => {
-      mockUseLocation.mockReturnValue({ pathname: '/' });
+      mockUseLocation.mockReturnValue({
+        pathname: '/',
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({});
 
       renderWithProviders(<AppLayout />);
@@ -102,7 +134,11 @@ describe('Navigation Behaviors for Different User Types', () => {
     it('should show project navigation when inside a project', () => {
       mockUseLocation.mockReturnValue({
         pathname: '/projects/123/weld-logs',
-      });
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({ projectId: '123' });
 
       renderWithProviders(<AppLayout />);
@@ -117,7 +153,13 @@ describe('Navigation Behaviors for Different User Types', () => {
     });
 
     it('should NOT show project navigation on top-level admin pages', () => {
-      mockUseLocation.mockReturnValue({ pathname: '/user-management' });
+      mockUseLocation.mockReturnValue({
+        pathname: '/user-management',
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({});
 
       renderWithProviders(<AppLayout />);
@@ -133,13 +175,19 @@ describe('Navigation Behaviors for Different User Types', () => {
 
   describe('Basic User Navigation', () => {
     beforeEach(() => {
-      mockUseApp.mockReturnValue({
-        loggedInUser: createMockUser('user', 'user123', 'user@example.com'),
-      });
+      mockUseApp.mockReturnValue(
+        createMockUser('user', 'user123', 'user@example.com')
+      );
     });
 
     it('should NOT show project navigation on projects list page', () => {
-      mockUseLocation.mockReturnValue({ pathname: '/' });
+      mockUseLocation.mockReturnValue({
+        pathname: '/',
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({});
 
       renderWithProviders(<AppLayout />);
@@ -152,7 +200,11 @@ describe('Navigation Behaviors for Different User Types', () => {
     it('should show project navigation when inside a project', () => {
       mockUseLocation.mockReturnValue({
         pathname: '/projects/123/project-overview',
-      });
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({ projectId: '123' });
 
       renderWithProviders(<AppLayout />);
@@ -166,7 +218,11 @@ describe('Navigation Behaviors for Different User Types', () => {
     it('should show project navigation for document pages', () => {
       mockUseLocation.mockReturnValue({
         pathname: '/projects/123/documents',
-      });
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({ projectId: '123' });
 
       renderWithProviders(<AppLayout />);
@@ -180,10 +236,16 @@ describe('Navigation Behaviors for Different User Types', () => {
 
   describe('Site Header Visibility', () => {
     it('should always show site header with logo', () => {
-      mockUseApp.mockReturnValue({
-        loggedInUser: createMockUser('user', 'user123', 'user@example.com'),
-      });
-      mockUseLocation.mockReturnValue({ pathname: '/' });
+      mockUseApp.mockReturnValue(
+        createMockUser('user', 'user123', 'user@example.com')
+      );
+      mockUseLocation.mockReturnValue({
+        pathname: '/',
+        state: null,
+        key: 'default',
+        search: '',
+        hash: '',
+      } as Location);
       mockUseParams.mockReturnValue({});
 
       renderWithProviders(<AppLayout />);

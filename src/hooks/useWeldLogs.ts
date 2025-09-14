@@ -1,5 +1,10 @@
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { doc, where, QueryConstraint, FirestoreError } from 'firebase/firestore';
+import {
+  doc,
+  where,
+  QueryConstraint,
+  FirestoreError,
+} from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
 import { useCascadingSoftDelete } from '@/hooks/firebase/useCascadingSoftDelete';
@@ -9,9 +14,15 @@ import { type WeldLog, type WeldLogFormData } from '@/types';
  * Return type for useWeldLogOperations hook
  */
 interface UseWeldLogOperationsReturn {
-  createWeldLog: (projectId: string, weldLogData: WeldLogFormData) => Promise<string>;
-  updateWeldLog: (weldLogId: string, updates: Partial<WeldLog>) => Promise<void>;
-  deleteWeldLog: (weldLogId: string, projectId: string) => Promise<void>;
+  createWeldLog: (
+    projectId: string,
+    weldLogData: WeldLogFormData
+  ) => Promise<string>;
+  updateWeldLog: (
+    weldLogId: string,
+    updates: Partial<WeldLog>
+  ) => Promise<void>;
+  deleteWeldLog: (weldLogId: string, _projectId: string) => Promise<void>;
 }
 
 // Collection of hooks for interacting with weld logs in Firestore
@@ -24,13 +35,15 @@ interface UseWeldLogOperationsReturn {
  *   - Loading state
  *   - Error if any
  */
-export const useWeldLog = (weldLogId?: string | null): [WeldLog | null, boolean, FirestoreError | undefined] => {
+export const useWeldLog = (
+  weldLogId?: string | null
+): [WeldLog | null, boolean, FirestoreError | undefined] => {
   const [snapshot, loading, error] = useDocument(
     weldLogId ? doc(db, 'weld-logs', weldLogId) : null
   );
 
   const weldLog = snapshot?.exists()
-    ? { id: snapshot.id, ...snapshot.data() } as WeldLog
+    ? ({ id: snapshot.id, ...snapshot.data() } as WeldLog)
     : null;
 
   return [weldLog, loading, error];
@@ -44,7 +57,9 @@ export const useWeldLog = (weldLogId?: string | null): [WeldLog | null, boolean,
  *   - Loading state
  *   - Error if any
  */
-export const useWeldLogs = (projectId?: string | null): [WeldLog[], boolean, FirestoreError | undefined] => {
+export const useWeldLogs = (
+  projectId?: string | null
+): [WeldLog[], boolean, FirestoreError | undefined] => {
   // Use useFirestoreOperations with constraints for projectId and active status
   const constraints: QueryConstraint[] = projectId
     ? [where('projectId', '==', projectId), where('status', '==', 'active')]
@@ -56,7 +71,7 @@ export const useWeldLogs = (projectId?: string | null): [WeldLog[], boolean, Fir
 
   // If no projectId, return empty results
   if (!projectId) {
-    return [[], false, null];
+    return [[], false, undefined];
   }
 
   return [documents as WeldLog[], loading, error];
@@ -79,7 +94,10 @@ export const useWeldLogOperations = (): UseWeldLogOperationsReturn => {
    * @param weldLogData - The weld log data
    * @returns The ID of the created weld log
    */
-  const createWeldLog = async (projectId: string, weldLogData: WeldLogFormData): Promise<string> => {
+  const createWeldLog = async (
+    projectId: string,
+    weldLogData: WeldLogFormData
+  ): Promise<string> => {
     // Add projectId to the weld log data
     const newWeldLogData = {
       ...weldLogData,
@@ -95,17 +113,24 @@ export const useWeldLogOperations = (): UseWeldLogOperationsReturn => {
    * @param weldLogId - The ID of the weld log to update
    * @param updates - The fields to update
    */
-  const updateWeldLog = async (weldLogId: string, updates: Partial<WeldLog>): Promise<void> => {
+  const updateWeldLog = async (
+    weldLogId: string,
+    updates: Partial<WeldLog>
+  ): Promise<void> => {
     await update(weldLogId, updates);
   };
 
   /**
    * Delete a weld log (mark as deleted) and cascade to related data
    * @param weldLogId - The ID of the weld log to delete
-   * @param projectId - The project ID (required for cascading)
+   * @param _projectId - The project ID (not used but kept for API consistency)
    */
-  const deleteWeldLog = async (weldLogId: string, projectId: string): Promise<void> => {
-    await cascadeDelete(weldLogId, projectId);
+  const deleteWeldLog = async (
+    weldLogId: string,
+    _projectId: string
+  ): Promise<void> => {
+    // Note: _projectId is not used by cascadeDelete but kept for API consistency
+    await cascadeDelete(weldLogId);
   };
 
   return {

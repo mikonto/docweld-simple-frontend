@@ -1,6 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { useConfirmationDialog, type IdentifiableEntity } from './useConfirmationDialog';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  useConfirmationDialog,
+  type IdentifiableEntity,
+} from './useConfirmationDialog';
 import { toast } from 'sonner';
 
 // Mock dependencies
@@ -13,7 +16,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: vi.fn((key: string, options?: Record<string, any>) => {
+    t: vi.fn((key: string, options?: Record<string, unknown>) => {
       if (key === 'crud.operationSuccess')
         return `Operation ${options?.operation} successful`;
       if (key === 'crud.bulkOperationSuccess')
@@ -29,8 +32,8 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('useConfirmationDialog', () => {
-  const mockDelete: Mock<[string], Promise<void>> = vi.fn();
-  const mockArchive: Mock<[string], Promise<void>> = vi.fn();
+  const mockDelete = vi.fn<(id: string) => Promise<void>>();
+  const mockArchive = vi.fn<(id: string) => Promise<void>>();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -174,7 +177,9 @@ describe('useConfirmationDialog', () => {
     });
 
     expect(mockDelete).toHaveBeenCalledWith('1');
-    expect(toast.error).toHaveBeenCalledWith('Operation delete failed: Operation failed');
+    expect(toast.error).toHaveBeenCalledWith(
+      'Operation delete failed: Operation failed'
+    );
     expect(result.current.dialog.isOpen).toBe(false);
   });
 });

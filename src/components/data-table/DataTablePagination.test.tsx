@@ -1,5 +1,5 @@
 import React from 'react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DataTablePagination } from './DataTablePagination';
 import { I18nextProvider } from 'react-i18next';
@@ -11,8 +11,8 @@ const renderWithI18n = (component: React.ReactElement) => {
 };
 
 interface MockTableOverrides {
-  selectedRows?: any[];
-  filteredRows?: any[];
+  selectedRows?: unknown[];
+  filteredRows?: unknown[];
   pageSize?: number;
   pageIndex?: number;
   pageCount?: number;
@@ -25,28 +25,29 @@ interface MockTableOverrides {
 }
 
 // Mock table object
-const createMockTable = (overrides: MockTableOverrides = {}): Table<any> => ({
-  getFilteredSelectedRowModel: () => ({
-    rows: overrides.selectedRows || [],
-  }),
-  getFilteredRowModel: () => ({
-    rows: overrides.filteredRows || [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  }),
-  getState: () => ({
-    pagination: {
-      pageSize: overrides.pageSize || 10,
-      pageIndex: overrides.pageIndex || 0,
-    },
-  }),
-  getPageCount: () => overrides.pageCount || 5,
-  getCanPreviousPage: () => overrides.canPreviousPage || false,
-  getCanNextPage: () => overrides.canNextPage || true,
-  setPageSize: overrides.setPageSize || vi.fn(),
-  setPageIndex: overrides.setPageIndex || vi.fn(),
-  previousPage: overrides.previousPage || vi.fn(),
-  nextPage: overrides.nextPage || vi.fn(),
-  ...overrides,
-} as Table<any>);
+const createMockTable = (overrides: MockTableOverrides = {}): Table<unknown> =>
+  ({
+    getFilteredSelectedRowModel: () => ({
+      rows: overrides.selectedRows || [],
+    }),
+    getFilteredRowModel: () => ({
+      rows: overrides.filteredRows || [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    }),
+    getState: () => ({
+      pagination: {
+        pageSize: overrides.pageSize || 10,
+        pageIndex: overrides.pageIndex || 0,
+      },
+    }),
+    getPageCount: () => overrides.pageCount || 5,
+    getCanPreviousPage: () => overrides.canPreviousPage || false,
+    getCanNextPage: () => overrides.canNextPage || true,
+    setPageSize: overrides.setPageSize || vi.fn(),
+    setPageIndex: overrides.setPageIndex || vi.fn(),
+    previousPage: overrides.previousPage || vi.fn(),
+    nextPage: overrides.nextPage || vi.fn(),
+    ...overrides,
+  }) as unknown as Table<unknown>;
 
 describe('DataTablePagination', () => {
   it("should use i18n for 'Rows per page' text", () => {

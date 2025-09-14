@@ -1,11 +1,17 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach, type MockedFunction } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type MockedFunction,
+} from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Login from './Login';
-import type { User } from 'firebase/auth';
-import type { FirebaseError } from 'firebase/app';
+import type { User, AuthError } from 'firebase/auth';
 
 // Mock dependencies
 vi.mock('@/config/firebase', () => ({
@@ -47,19 +53,25 @@ describe('Login', () => {
     vi.clearAllMocks();
 
     // Default mock implementations
-    (useSignInWithEmailAndPassword as MockedFunction<typeof useSignInWithEmailAndPassword>).mockReturnValue([
+    (
+      useSignInWithEmailAndPassword as MockedFunction<
+        typeof useSignInWithEmailAndPassword
+      >
+    ).mockReturnValue([
       mockSignIn,
-      null as User | null, // user
+      undefined, // user credential
       false, // loading
-      undefined as FirebaseError | undefined, // error
+      undefined, // error
     ]);
 
     (useApp as MockedFunction<typeof useApp>).mockReturnValue({
       loading: false,
       isAuthorized: false,
       userAuth: null,
-      userData: null,
-      error: null,
+      userDb: null,
+      loggedInUser: null,
+      userStatus: null,
+      error: undefined,
     });
   });
 
@@ -100,9 +112,13 @@ describe('Login', () => {
   });
 
   it('should show loading state while signing in', () => {
-    (useSignInWithEmailAndPassword as MockedFunction<typeof useSignInWithEmailAndPassword>).mockReturnValue([
+    (
+      useSignInWithEmailAndPassword as MockedFunction<
+        typeof useSignInWithEmailAndPassword
+      >
+    ).mockReturnValue([
       mockSignIn,
-      null,
+      undefined,
       true, // loading
       undefined,
     ]);
@@ -117,8 +133,10 @@ describe('Login', () => {
       loading: true,
       isAuthorized: false,
       userAuth: null,
-      userData: null,
-      error: null,
+      userDb: null,
+      loggedInUser: null,
+      userStatus: null,
+      error: undefined,
     });
 
     renderLogin();
@@ -127,14 +145,13 @@ describe('Login', () => {
   });
 
   it('should display error message on authentication failure', async () => {
-    const error = { message: 'Invalid credentials' } as FirebaseError;
+    const error = { message: 'Invalid credentials' } as AuthError;
 
-    (useSignInWithEmailAndPassword as MockedFunction<typeof useSignInWithEmailAndPassword>).mockReturnValue([
-      mockSignIn,
-      null,
-      false,
-      error,
-    ]);
+    (
+      useSignInWithEmailAndPassword as MockedFunction<
+        typeof useSignInWithEmailAndPassword
+      >
+    ).mockReturnValue([mockSignIn, undefined, false, error]);
 
     renderLogin();
 
@@ -149,9 +166,11 @@ describe('Login', () => {
     (useApp as MockedFunction<typeof useApp>).mockReturnValue({
       loading: false,
       userAuth: { uid: 'test-user' } as User, // User is authenticated
-      userData: null,
+      userDb: null,
+      loggedInUser: null,
+      userStatus: null,
       isAuthorized: false,
-      error: null,
+      error: undefined,
     });
 
     renderLogin();
@@ -160,9 +179,13 @@ describe('Login', () => {
   });
 
   it('should disable submit button while loading', () => {
-    (useSignInWithEmailAndPassword as MockedFunction<typeof useSignInWithEmailAndPassword>).mockReturnValue([
+    (
+      useSignInWithEmailAndPassword as MockedFunction<
+        typeof useSignInWithEmailAndPassword
+      >
+    ).mockReturnValue([
       mockSignIn,
-      null,
+      undefined,
       true, // loading
       undefined,
     ]);

@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/utils/testUtils';
 import userEvent from '@testing-library/user-event';
@@ -14,15 +15,30 @@ vi.mock('@/components/data-table/DataTable', () => ({
     onTabChange,
     actionButtons,
     bulkActionButtons,
-  }: any) => (
+  }: {
+    columns: Array<{
+      id?: string;
+      accessorKey?: string;
+      header?: (props: { column: { id: string } }) => React.ReactNode;
+      cell?: (props: { row: { original: unknown } }) => React.ReactNode;
+    }>;
+    data: unknown[];
+    tabs?: Array<{ value: string; label: string }>;
+    onTabChange?: (value: string) => void;
+    actionButtons?: Array<{ label: string; onClick: () => void }>;
+    bulkActionButtons?: Array<{
+      label: string;
+      onClick: (items: unknown[]) => void;
+    }>;
+  }) => (
     <div data-testid="data-table">
       {/* Render tabs */}
       {tabs && (
         <div role="tablist">
-          {tabs.map((tab: any) => (
+          {tabs.map((tab) => (
             <button
               key={tab.value}
-              onClick={() => onTabChange(tab.value)}
+              onClick={() => onTabChange?.(tab.value)}
               data-testid={`tab-${tab.value}`}
               role="tab"
               aria-selected={tab.value === 'active'}
@@ -35,7 +51,7 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render action buttons */}
       {actionButtons &&
-        actionButtons.map((button: any, index: number) => (
+        actionButtons.map((button, index) => (
           <button
             key={index}
             onClick={button.onClick}
@@ -48,7 +64,7 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render bulk action buttons */}
       {bulkActionButtons &&
-        bulkActionButtons.map((button: any, index: number) => (
+        bulkActionButtons.map((button, index) => (
           <button
             key={index}
             onClick={() => button.onClick([])}
@@ -61,12 +77,12 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render column headers */}
       {columns &&
-        columns.map((column: any, index: number) => {
+        columns.map((column, index) => {
           if (column.header && typeof column.header === 'function') {
             const Header = column.header;
             return (
               <div key={index}>
-                <Header column={{ id: column.accessorKey }} />
+                <Header column={{ id: column.accessorKey || '' }} />
               </div>
             );
           } else if (column.header) {
@@ -84,14 +100,16 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
       {/* Render data */}
       {data &&
-        data.map((item: any, index: number) => (
+        data.map((item, index) => (
           <div key={index} data-testid="data-row">
             {/* Render the actions column if it exists */}
             {columns &&
-              columns.find((col: any) => col.id === 'actions') &&
-              columns
-                .find((col: any) => col.id === 'actions')
-                .cell({ row: { original: item } })}
+              (() => {
+                const actionsColumn = columns.find(
+                  (col) => col.id === 'actions'
+                );
+                return actionsColumn?.cell?.({ row: { original: item } });
+              })()}
           </div>
         ))}
     </div>
@@ -100,15 +118,26 @@ vi.mock('@/components/data-table/DataTable', () => ({
 
 // Mock DataTableColumnHeader
 vi.mock('@/components/data-table/DataTableColumnHeader', () => ({
-  DataTableColumnHeader: ({ column, title }: any) => (
-    <div data-testid={`column-header-${column.id}`}>{title}</div>
-  ),
+  DataTableColumnHeader: ({
+    column,
+    title,
+  }: {
+    column: { id: string };
+    title: string;
+  }) => <div data-testid={`column-header-${column.id}`}>{title}</div>,
 }));
 
 // Mock createColumns
 vi.mock('@/components/data-table/ColumnDef', () => ({
-  createColumns: ({ columns, rowMenuItems }: any) => {
+  createColumns: ({
+    columns,
+    rowMenuItems,
+  }: {
+    columns: unknown[];
+    rowMenuItems?: Array<{ label: string; onClick: (row: unknown) => void }>;
+  }) => {
     // Add actions column with menu items
+    const menuItems = rowMenuItems || [];
     return [
       ...columns,
       {
@@ -116,12 +145,11 @@ vi.mock('@/components/data-table/ColumnDef', () => ({
         cell: () => (
           <div>
             <button aria-label="Open menu">Actions</button>
-            {rowMenuItems &&
-              rowMenuItems.map((item: any, index: number) => (
-                <div key={index} style={{ display: 'none' }}>
-                  {item.label}
-                </div>
-              ))}
+            {menuItems.map((item: { label: string }, index: number) => (
+              <div key={index} style={{ display: 'none' }}>
+                {item.label}
+              </div>
+            ))}
           </div>
         ),
       },

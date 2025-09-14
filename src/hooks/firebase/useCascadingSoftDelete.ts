@@ -39,7 +39,10 @@ interface UseCascadingSoftDeleteReturn {
   deleteWeldLog: (weldLogId: string) => Promise<boolean>;
   deleteDocumentLibrary: (libraryId: string) => Promise<boolean>;
   deleteUser: (userId: string) => Promise<boolean>;
-  deleteMaterial: (materialId: string) => Promise<boolean>;
+  deleteMaterial: (
+    materialId: string,
+    materialType: 'parent' | 'filler' | 'alloy'
+  ) => Promise<boolean>;
 }
 
 /**
@@ -63,13 +66,16 @@ export function useCascadingSoftDelete(): UseCascadingSoftDeleteReturn {
       const deletedBy = loggedInUser?.uid || 'system';
 
       // Helper to manage batch size limits
-      const addBatchOperation = (docRef: DocumentReference<DocumentData>, updates: BatchUpdate) => {
+      const addBatchOperation = (
+        docRef: DocumentReference<DocumentData>,
+        updates: BatchUpdate
+      ) => {
         if (operationCount >= FIRESTORE_BATCH_LIMIT) {
           batches.push(batch);
           batch = writeBatch(db);
           operationCount = 0;
         }
-        batch.update(docRef, updates);
+        batch.update(docRef, { ...updates });
         operationCount++;
       };
 
@@ -211,13 +217,16 @@ export function useCascadingSoftDelete(): UseCascadingSoftDeleteReturn {
       const deletedBy = loggedInUser?.uid || 'system';
 
       // Helper to manage batch size limits
-      const addBatchOperation = (docRef: DocumentReference<DocumentData>, updates: BatchUpdate) => {
+      const addBatchOperation = (
+        docRef: DocumentReference<DocumentData>,
+        updates: BatchUpdate
+      ) => {
         if (operationCount >= FIRESTORE_BATCH_LIMIT) {
           batches.push(batch);
           batch = writeBatch(db);
           operationCount = 0;
         }
-        batch.update(docRef, updates);
+        batch.update(docRef, { ...updates });
         operationCount++;
       };
 
@@ -290,13 +299,16 @@ export function useCascadingSoftDelete(): UseCascadingSoftDeleteReturn {
       const deletedBy = loggedInUser?.uid || 'system';
 
       // Helper to manage batch size limits
-      const addBatchOperation = (docRef: DocumentReference<DocumentData>, updates: BatchUpdate) => {
+      const addBatchOperation = (
+        docRef: DocumentReference<DocumentData>,
+        updates: BatchUpdate
+      ) => {
         if (operationCount >= FIRESTORE_BATCH_LIMIT) {
           batches.push(batch);
           batch = writeBatch(db);
           operationCount = 0;
         }
-        batch.update(docRef, updates);
+        batch.update(docRef, { ...updates });
         operationCount++;
       };
 
@@ -388,15 +400,35 @@ export function useCascadingSoftDelete(): UseCascadingSoftDeleteReturn {
   /**
    * Soft delete a material
    * @param materialId - The material ID to delete
+   * @param materialType - The type of material ('parent', 'filler', or 'alloy')
    */
-  const deleteMaterial = async (materialId: string): Promise<boolean> => {
+  const deleteMaterial = async (
+    materialId: string,
+    materialType: 'parent' | 'filler' | 'alloy'
+  ): Promise<boolean> => {
     try {
       const batch = writeBatch(db);
       const timestamp = serverTimestamp();
       const deletedBy = loggedInUser?.uid || 'system';
 
+      // Determine the correct collection based on material type
+      let collectionName: string;
+      switch (materialType) {
+        case 'parent':
+          collectionName = COLLECTIONS.PARENT_MATERIALS;
+          break;
+        case 'filler':
+          collectionName = COLLECTIONS.FILLER_MATERIALS;
+          break;
+        case 'alloy':
+          collectionName = COLLECTIONS.ALLOY_MATERIALS;
+          break;
+        default:
+          throw new Error(`Invalid material type: ${materialType}`);
+      }
+
       // Delete the material (single operation, no batch management needed)
-      const materialRef = doc(db, COLLECTIONS.MATERIALS, materialId);
+      const materialRef = doc(db, collectionName, materialId);
       batch.update(materialRef, {
         status: STATUS.DELETED,
         updatedAt: timestamp,

@@ -1,9 +1,16 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type MockedFunction,
+} from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import MaterialManagement from './index';
-import type { Material } from '@/types/database';
+import type { Material } from '@/types';
+import type { FirestoreError } from 'firebase/firestore';
 
 // Mock the hooks
 vi.mock('@/hooks/useMaterials', () => ({
@@ -57,8 +64,20 @@ vi.mock('@/components/shared/ConfirmationDialog', () => ({
 
 describe('MaterialManagement', () => {
   const mockMaterials: Material[] = [
-    { id: '1', name: 'Steel Grade A', dimensions: '10mm' } as Material,
-    { id: '2', name: 'Steel Grade B', dimensions: '20mm' } as Material,
+    {
+      id: '1',
+      name: 'Steel Grade A',
+      type: 'carbon-steel',
+      grade: 'A',
+      thickness: '10mm',
+    },
+    {
+      id: '2',
+      name: 'Steel Grade B',
+      type: 'carbon-steel',
+      grade: 'B',
+      thickness: '20mm',
+    },
   ];
 
   const mockOperations = {
@@ -73,8 +92,14 @@ describe('MaterialManagement', () => {
       '@/hooks/useMaterials'
     );
 
-    (useMaterials as any).mockReturnValue([mockMaterials, false, null]);
-    (useMaterialOperations as any).mockReturnValue(mockOperations);
+    (useMaterials as MockedFunction<typeof useMaterials>).mockReturnValue([
+      mockMaterials,
+      false,
+      undefined,
+    ]);
+    (
+      useMaterialOperations as MockedFunction<typeof useMaterialOperations>
+    ).mockReturnValue(mockOperations);
   });
 
   // Basic rendering and data flow
@@ -89,7 +114,11 @@ describe('MaterialManagement', () => {
   // Loading state
   it('should show loading state', async () => {
     const { useMaterials } = await import('@/hooks/useMaterials');
-    (useMaterials as any).mockReturnValue([[], true, null]);
+    (useMaterials as MockedFunction<typeof useMaterials>).mockReturnValue([
+      [],
+      true,
+      undefined,
+    ]);
 
     renderWithProviders(<MaterialManagement />);
 
@@ -99,10 +128,13 @@ describe('MaterialManagement', () => {
   // Error state
   it('should show error state', async () => {
     const { useMaterials } = await import('@/hooks/useMaterials');
-    (useMaterials as any).mockReturnValue([
-      null,
+    (useMaterials as MockedFunction<typeof useMaterials>).mockReturnValue([
+      [],
       false,
-      new Error('Failed to load materials'),
+      {
+        code: 'unknown',
+        message: 'Failed to load materials',
+      } as FirestoreError,
     ]);
 
     renderWithProviders(<MaterialManagement />);

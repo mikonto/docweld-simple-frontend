@@ -3,6 +3,38 @@ import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import ImportBrowser from './ImportBrowser';
 
+// Type definitions for mocked components
+interface MockCollection {
+  id: string;
+  name: string;
+}
+
+interface MockSection {
+  id: string;
+  name: string;
+}
+
+interface MockDocument {
+  id: string;
+  title: string;
+}
+
+interface MockSelectedItem {
+  id: string;
+  type: 'section' | 'document';
+}
+
+interface MockState {
+  collections: MockCollection[];
+  selectedCollection: MockCollection | null;
+  selectedSection: MockSection | null;
+  sections: MockSection[];
+  documents: MockDocument[];
+  thumbnails: Record<string, string>;
+  isLoading: boolean;
+  currentView: string;
+}
+
 // Mock Firebase to prevent actual database calls
 vi.mock('@/config/firebase', () => ({
   db: {},
@@ -28,9 +60,15 @@ vi.mock('firebase/firestore', () => ({
 
 // Mock child components with minimal functionality for integration testing
 vi.mock('./CollectionsList', () => ({
-  default: ({ collections, onCollectionClick }: any) => (
+  default: ({
+    collections,
+    onCollectionClick,
+  }: {
+    collections: MockCollection[];
+    onCollectionClick: (collection: MockCollection) => void;
+  }) => (
     <div data-testid="collections-list">
-      {collections.map((col: any) => (
+      {collections.map((col) => (
         <button
           key={col.id}
           onClick={() => onCollectionClick(col)}
@@ -44,9 +82,19 @@ vi.mock('./CollectionsList', () => ({
 }));
 
 vi.mock('./SectionsList', () => ({
-  default: ({ sections, onSectionClick, onSelectItem, mode }: any) => (
+  default: ({
+    sections,
+    onSectionClick,
+    onSelectItem,
+    mode,
+  }: {
+    sections: MockSection[];
+    onSectionClick: (section: MockSection) => void;
+    onSelectItem: (item: MockSection, type: 'section') => void;
+    mode: string;
+  }) => (
     <div data-testid="sections-list">
-      {sections.map((sec: any) => (
+      {sections.map((sec) => (
         <div key={sec.id}>
           <button
             onClick={() =>
@@ -65,9 +113,15 @@ vi.mock('./SectionsList', () => ({
 }));
 
 vi.mock('./DocumentsGrid', () => ({
-  default: ({ documents, onSelectItem }: any) => (
+  default: ({
+    documents,
+    onSelectItem,
+  }: {
+    documents: MockDocument[];
+    onSelectItem: (item: MockDocument, type: 'document') => void;
+  }) => (
     <div data-testid="documents-grid">
-      {documents.map((doc: any) => (
+      {documents.map((doc) => (
         <button
           key={doc.id}
           onClick={() => onSelectItem(doc, 'document')}
@@ -81,7 +135,15 @@ vi.mock('./DocumentsGrid', () => ({
 }));
 
 vi.mock('./BrowserBreadcrumb', () => ({
-  default: ({ currentView, selectedCollection, selectedSection }: any) => (
+  default: ({
+    currentView,
+    selectedCollection,
+    selectedSection,
+  }: {
+    currentView: string;
+    selectedCollection: MockCollection | null;
+    selectedSection: MockSection | null;
+  }) => (
     <div data-testid="breadcrumb">
       <span data-testid="current-view">{currentView}</span>
       {selectedCollection && <span>{selectedCollection.name}</span>}
@@ -95,7 +157,15 @@ vi.mock('./SelectionToolbar', () => ({
 }));
 
 vi.mock('./ImportFooter', () => ({
-  default: ({ selectedItems, onCancel, onSubmit }: any) => (
+  default: ({
+    selectedItems,
+    onCancel,
+    onSubmit,
+  }: {
+    selectedItems: MockSelectedItem[];
+    onCancel: () => void;
+    onSubmit: () => void;
+  }) => (
     <div data-testid="import-footer">
       <span data-testid="selection-count">{selectedItems.length} selected</span>
       <button onClick={onCancel} data-testid="cancel-button">
@@ -113,7 +183,7 @@ vi.mock('./ImportFooter', () => ({
 }));
 
 // Mock hooks to provide controlled state
-let mockState = {
+let mockState: MockState = {
   collections: [],
   selectedCollection: null,
   selectedSection: null,
@@ -124,7 +194,7 @@ let mockState = {
   currentView: 'collections',
 };
 
-let mockSelectedItems: any[] = [];
+let mockSelectedItems: MockSelectedItem[] = [];
 let mockDispatch = vi.fn();
 
 vi.mock('@/hooks/documents/useImportBrowser', () => ({
@@ -150,8 +220,11 @@ vi.mock('@/hooks/documents/useImportDataFetching', () => ({
 
 vi.mock('@/hooks/documents/useImportSelection', () => ({
   default: () => ({
-    handleSelectItem: (item: any, type: string) => {
-      mockSelectedItems = [...mockSelectedItems, { ...item, type }];
+    handleSelectItem: (
+      item: MockSection | MockDocument,
+      type: 'section' | 'document'
+    ) => {
+      mockSelectedItems = [...mockSelectedItems, { id: item.id, type }];
     },
     isItemSelected: vi.fn(),
     areAllItemsSelected: vi.fn(),

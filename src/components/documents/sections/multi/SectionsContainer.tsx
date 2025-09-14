@@ -7,7 +7,7 @@ import { useFormDialog } from '@/hooks/useFormDialog';
 import { SectionDialog } from './SectionDialog';
 import { ImportDialog } from '@/components/documents/import';
 import { SectionsList } from './SectionsList';
-import type { Section } from '@/types/database';
+import type { Section, Document } from '@/types/database';
 
 interface ImportSource {
   collectionType: 'project' | 'library';
@@ -24,13 +24,16 @@ interface ImportItem {
   id: string;
   type: 'section' | 'document';
   targetSectionId?: string;
-  [key: string]: any;
+  title?: string;
+  name?: string;
+  order?: number;
+  [key: string]: unknown;
 }
 
 interface ImportResults {
-  sections: any[];
-  documents: any[];
-  errors: Array<{ item: any; error: string }>;
+  sections: Array<{ original: ImportItem; imported: string }>;
+  documents: Array<{ original: ImportItem; imported: string }>;
+  errors: Array<{ item?: ImportItem; error: string }>;
 }
 
 interface SectionsContainerProps {
@@ -50,12 +53,12 @@ export function SectionsContainer({
 
   const sectionsHook = useSections({
     entityType: collectionType,
-    entityId: collectionType === 'project' ? entityId : entityId || 'main',
+    entityId: collectionType === 'project' ? entityId! : entityId || 'main',
   });
 
   const documentsHook = useDocuments({
     entityType: collectionType,
-    entityId: collectionType === 'project' ? entityId : entityId || 'main',
+    entityId: collectionType === 'project' ? entityId! : entityId || 'main',
   });
 
   const { sections, sectionsLoading, sectionsError, moveSection, addSection } =
@@ -71,7 +74,7 @@ export function SectionsContainer({
 
   const { importItems, isImporting } = useDocumentImport(
     collectionType,
-    entityId
+    entityId || null
   );
 
   // Dialog state management using unified pattern
@@ -79,7 +82,10 @@ export function SectionsContainer({
   const importDialog = useFormDialog<ImportDialogEntity>();
 
   // Event Handlers
-  const handleMoveSection = async (sectionId: string, direction: 'up' | 'down') => {
+  const handleMoveSection = async (
+    sectionId: string,
+    direction: 'up' | 'down'
+  ) => {
     try {
       await moveSection(sectionId, direction, sections as Section[]);
       toast.success(t('sections.orderUpdateSuccess'));
@@ -100,7 +106,10 @@ export function SectionsContainer({
     });
   };
 
-  const handleOpenImportDocuments = (sectionId: string, sectionName: string) => {
+  const handleOpenImportDocuments = (
+    sectionId: string,
+    sectionName: string
+  ) => {
     importDialog.open({
       mode: 'document',
       targetSectionId: sectionId,
@@ -125,7 +134,7 @@ export function SectionsContainer({
       }));
 
       // Start the import process with progress tracking
-      const results = await importItems(itemsToImport) as ImportResults;
+      const results = (await importItems(itemsToImport)) as ImportResults;
 
       // Silently handle errors - they are already shown in toasts
 
@@ -172,7 +181,8 @@ export function SectionsContainer({
 
       importDialog.close();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t('errors.unknownError');
+      const errorMessage =
+        error instanceof Error ? error.message : t('errors.unknownError');
       toast.error(
         t('documents.importFailed', {
           error: errorMessage,
@@ -185,8 +195,8 @@ export function SectionsContainer({
     <div className="w-full">
       {/* Use the presentational component for the view */}
       <SectionsList
-        sections={sections}
-        allDocuments={allDocuments}
+        sections={sections as Section[]}
+        allDocuments={allDocuments as Document[]}
         isLoading={isLoading}
         error={error}
         onMoveSection={handleMoveSection}
@@ -209,13 +219,19 @@ export function SectionsContainer({
               // Success toast is handled by useFirestoreOperations
               addSectionDialog.close();
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Error toast is handled by useFirestoreOperations
             // Only show custom error messages for specific error codes
-            if (error.code === 'permission-denied') {
-              toast.error(t('documents.noPermissionToAddSections'));
-            } else if (error.code === 'not-found') {
-              toast.error(t('documents.parentDocumentNotFound'));
+            const isErrorWithCode = (err: unknown): err is { code: string } => {
+              return err !== null && typeof err === 'object' && 'code' in err;
+            };
+
+            if (isErrorWithCode(error)) {
+              if (error.code === 'permission-denied') {
+                toast.error(t('documents.noPermissionToAddSections'));
+              } else if (error.code === 'not-found') {
+                toast.error(t('documents.parentDocumentNotFound'));
+              }
             }
             // Generic errors are already handled by useFirestoreOperations
           }
@@ -228,10 +244,8 @@ export function SectionsContainer({
           onClose={importDialog.close}
           onSubmit={handleImportSubmit}
           mode={importDialog.entity?.mode || 'section'}
-          targetSectionId={importDialog.entity?.targetSectionId || undefined}
-          targetSectionName={importDialog.entity?.targetSectionName || undefined}
           isImporting={isImporting}
-          projectId={collectionType === 'project' ? entityId : undefined}
+          projectId={collectionType === 'project' ? entityId || null : null}
           hideProjectDocuments={collectionType === 'project'}
         />
       )}

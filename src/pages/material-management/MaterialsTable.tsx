@@ -1,7 +1,10 @@
-import React from 'react';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import {
+  createColumns,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Material } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -13,7 +16,11 @@ interface MaterialsTableProps {
   onTabChange: (tab: 'parent' | 'filler' | 'alloy') => void;
   onEdit: (material: Material) => void;
   onCreateNew: () => void;
-  onConfirmAction: (action: string, data: Material | Material[], isBulk?: boolean) => void;
+  onConfirmAction: (
+    action: string,
+    data: Material | Material[],
+    isBulk?: boolean
+  ) => void;
 }
 
 // Main materials table component with tabs for different material types
@@ -177,8 +184,10 @@ export function MaterialsTable({
           data={materials}
           tabs={tabs}
           activeTab={activeTab}
-          loading={loading}
-          onTabChange={onTabChange}
+          isLoading={loading}
+          onTabChange={(value: string) =>
+            onTabChange(value as 'parent' | 'filler' | 'alloy')
+          }
           actionButtons={getActionButton()}
           bulkActionButtons={bulkActionButtons}
           tableKey={`materials_${activeTab}`}

@@ -5,6 +5,7 @@ import React from 'react';
 import { AppLayout } from './AppLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useParams, useLocation } from 'react-router-dom';
+import type { Location } from 'react-router-dom';
 
 // Mock dependencies
 vi.mock('@/contexts/AppContext', () => ({
@@ -56,7 +57,13 @@ vi.mock('@/components/ui/sidebar', () => ({
     <div data-testid="sidebar-provider">{children}</div>
   ),
   SidebarTrigger: () => <button data-testid="sidebar-trigger">Menu</button>,
-  Sidebar: ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => (
+  Sidebar: ({
+    children,
+    ...props
+  }: {
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
     <div data-testid="sidebar" {...props}>
       {children}
     </div>
@@ -95,7 +102,7 @@ vi.mock('./SiteHeader', () => ({
   SiteHeader: () => (
     <header
       role="banner"
-      className="sticky top-0 z-50 w-full items-center border-b bg-background bg-card dark:bg-card border-border"
+      className="sticky top-0 z-50 w-full items-center border-b bg-background border-border"
     >
       Site Header
     </header>
@@ -107,7 +114,10 @@ interface RenderWithRouterOptions {
   initialEntries?: string[];
 }
 
-function renderWithRouter(ui: React.ReactElement, { initialEntries = ['/'] }: RenderWithRouterOptions = {}) {
+function renderWithRouter(
+  ui: React.ReactElement,
+  { initialEntries = ['/'] }: RenderWithRouterOptions = {}
+) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <Routes>
@@ -127,14 +137,23 @@ describe('AppLayout', () => {
   beforeEach(() => {
     // Reset mocks to default values
     vi.mocked(useParams).mockReturnValue({});
-    vi.mocked(useLocation).mockReturnValue({ pathname: '/' });
+    vi.mocked(useLocation).mockReturnValue({
+      pathname: '/',
+      search: '',
+      hash: '',
+      state: null,
+      key: 'default',
+    } as Location);
     vi.mocked(useApp).mockReturnValue({
       loggedInUser: {
+        uid: 'test-uid',
         displayName: 'Test User',
         email: 'test@example.com',
         role: 'admin',
-      },
-    });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   });
 
   describe('Basic Layout Structure', () => {
@@ -150,7 +169,12 @@ describe('AppLayout', () => {
 
       const header = screen.getByRole('banner');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('sticky', 'top-0', 'bg-card', 'border-border');
+      expect(header).toHaveClass(
+        'sticky',
+        'top-0',
+        'bg-background',
+        'border-border'
+      );
     });
 
     it('should have proper flex layout structure', () => {
@@ -182,7 +206,11 @@ describe('AppLayout', () => {
       // Set project route
       vi.mocked(useLocation).mockReturnValue({
         pathname: '/projects/123/overview',
-      });
+        search: '',
+        hash: '',
+        state: null,
+        key: 'default',
+      } as Location);
       vi.mocked(useParams).mockReturnValue({ projectId: '123' });
 
       renderWithRouter(<AppLayout />, {
@@ -197,11 +225,14 @@ describe('AppLayout', () => {
       // Mock basic user
       vi.mocked(useApp).mockReturnValue({
         loggedInUser: {
+          uid: 'basic-uid',
           displayName: 'Basic User',
           email: 'basic@example.com',
           role: 'user',
-        },
-      });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       renderWithRouter(<AppLayout />);
 

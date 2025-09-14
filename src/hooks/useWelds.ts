@@ -41,7 +41,11 @@ import { type Weld, type WeldFormData } from '@/types';
  * Return type for useWeldOperations hook
  */
 interface UseWeldOperationsReturn {
-  createWeld: (projectId: string, weldLogId: string, weldData: WeldFormData) => Promise<string>;
+  createWeld: (
+    projectId: string,
+    weldLogId: string,
+    weldData: WeldFormData
+  ) => Promise<string>;
   createWeldsRange: (
     projectId: string,
     weldLogId: string,
@@ -50,10 +54,22 @@ interface UseWeldOperationsReturn {
     sharedData: Partial<WeldFormData>,
     positions?: Record<number, string>
   ) => Promise<string[]>;
-  updateWeld: (weldId: string, updates: Partial<Weld>, weldLogId?: string | null) => Promise<void>;
+  updateWeld: (
+    weldId: string,
+    updates: Partial<Weld>,
+    weldLogId?: string | null
+  ) => Promise<void>;
   deleteWeld: (weldId: string) => Promise<void>;
-  isWeldNumberAvailable: (weldLogId: string, number: string, currentWeldId?: string | null) => Promise<boolean>;
-  isWeldNumberRangeAvailable: (weldLogId: string, start: number, end: number) => Promise<boolean>;
+  isWeldNumberAvailable: (
+    weldLogId: string,
+    number: string,
+    currentWeldId?: string | null
+  ) => Promise<boolean>;
+  isWeldNumberRangeAvailable: (
+    weldLogId: string,
+    start: number,
+    end: number
+  ) => Promise<boolean>;
 }
 
 /**
@@ -69,13 +85,15 @@ interface UseWeldOperationsReturn {
  *   - Loading state
  *   - Error if any
  */
-export const useWeld = (weldId?: string | null): [Weld | null, boolean, FirestoreError | undefined] => {
+export const useWeld = (
+  weldId?: string | null
+): [Weld | null, boolean, FirestoreError | undefined] => {
   const [snapshot, loading, error] = useDocument(
     weldId ? doc(db, 'welds', weldId) : null
   );
 
   const weld = snapshot?.exists()
-    ? { id: snapshot.id, ...snapshot.data() } as Weld
+    ? ({ id: snapshot.id, ...snapshot.data() } as Weld)
     : null;
 
   return [weld, loading, error];
@@ -91,7 +109,9 @@ export const useWeld = (weldId?: string | null): [Weld | null, boolean, Firestor
  *   - Loading state
  *   - Error if any
  */
-export const useWelds = (weldLogId?: string | null): [Weld[], boolean, FirestoreError | undefined] => {
+export const useWelds = (
+  weldLogId?: string | null
+): [Weld[], boolean, FirestoreError | undefined] => {
   // Build constraints based on weldLogId
   // Default constraints now include ordering by number
   const constraints: QueryConstraint[] = weldLogId
@@ -109,7 +129,7 @@ export const useWelds = (weldLogId?: string | null): [Weld[], boolean, Firestore
   });
 
   // Return in the expected format [welds, loading, error]
-  return [weldLogId ? documents as Weld[] : [], loading, error];
+  return [weldLogId ? (documents as Weld[]) : [], loading, error];
 };
 
 /**
@@ -173,7 +193,11 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
    * @param end - End of number range
    * @returns True if all numbers in range are available
    */
-  const isWeldNumberRangeAvailable = async (weldLogId: string, start: number, end: number): Promise<boolean> => {
+  const isWeldNumberRangeAvailable = async (
+    weldLogId: string,
+    start: number,
+    end: number
+  ): Promise<boolean> => {
     if (!weldLogId || isNaN(start) || isNaN(end) || start > end) return false;
 
     // Fetch all welds for the weld log once
@@ -205,12 +229,19 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
    * @param weldData - The weld data
    * @returns The ID of the created weld
    */
-  const createWeld = async (projectId: string, weldLogId: string, weldData: WeldFormData): Promise<string> => {
+  const createWeld = async (
+    projectId: string,
+    weldLogId: string,
+    weldData: WeldFormData
+  ): Promise<string> => {
     if (!loggedInUser)
       throw new Error('User must be logged in to create welds');
 
     // Verify the weld number is available
-    const isAvailable = await isWeldNumberAvailable(weldLogId, weldData.number || '');
+    const isAvailable = await isWeldNumberAvailable(
+      weldLogId,
+      weldData.number || ''
+    );
     if (!isAvailable) {
       throw new Error(t('welds.numberInUse', { number: weldData.number }));
     }
@@ -288,8 +319,8 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
           id: docId, // Add explicit id field matching document ID
           number,
           ...sharedData,
-          // Use position from positions object if provided, otherwise use shared position
-          position: positions[i] || sharedData.position || '',
+          // Use position from positions object if provided
+          ...(positions[i] ? { position: positions[i] } : {}),
           projectId, // Add foreign key
           weldLogId, // Add foreign key
           status: 'active',
@@ -308,7 +339,8 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
       toast.success(t('welds.createRangeSuccess', { count }));
       return createdIds;
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('welds.createRangeError');
+      const message =
+        error instanceof Error ? error.message : t('welds.createRangeError');
       toast.error(message);
       throw error;
     }
@@ -320,7 +352,11 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
    * @param updates - The fields to update
    * @param weldLogId - The weld log ID (needed for number validation)
    */
-  const updateWeld = async (weldId: string, updates: Partial<Weld>, weldLogId: string | null = null): Promise<void> => {
+  const updateWeld = async (
+    weldId: string,
+    updates: Partial<Weld>,
+    weldLogId: string | null = null
+  ): Promise<void> => {
     if (!loggedInUser)
       throw new Error('User must be logged in to update welds');
 

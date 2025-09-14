@@ -1,9 +1,12 @@
-import { describe, it, expect, vi, MockedFunction } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import useImportDataFetching from './useImportDataFetching';
 import type { BrowserState } from './useImportBrowser';
-import type { CollectionData, SectionData } from '@/types/database';
-import { getDocs } from 'firebase/firestore';
+import type { FirestoreSection } from '@/types/database';
+
+// Type aliases for compatibility
+type CollectionData = { id: string; name: string; [key: string]: unknown };
+type SectionData = FirestoreSection;
 
 // Mock Firebase
 vi.mock('@/config/firebase', () => ({
@@ -36,8 +39,6 @@ vi.mock('./useImportBrowser', () => ({
   },
 }));
 
-const _mockGetDocs = getDocs as MockedFunction<typeof getDocs>;
-
 describe('useImportDataFetching', () => {
   const mockDispatch = vi.fn();
 
@@ -59,13 +60,16 @@ describe('useImportDataFetching', () => {
     );
 
     // Hook should initialize without errors
-    expect(result.error).toBeUndefined();
+    expect(result.current).toBeDefined();
   });
 
   it('does not crash when initialized with project library source', () => {
     const state: BrowserState = {
       currentView: 'sections',
-      selectedCollection: { id: 'main', name: 'Project Documents' } as CollectionData,
+      selectedCollection: {
+        id: 'main',
+        name: 'Project Documents',
+      } as CollectionData,
       selectedSection: null,
       collections: [],
       sections: [],
@@ -80,7 +84,7 @@ describe('useImportDataFetching', () => {
     );
 
     // Hook should initialize without errors
-    expect(result.error).toBeUndefined();
+    expect(result.current).toBeDefined();
   });
 
   it('does not crash when view changes', () => {
@@ -96,7 +100,10 @@ describe('useImportDataFetching', () => {
       currentView: 'sections',
     };
 
-    const { rerender, result } = renderHook<void, { view: 'collections' | 'sections' | 'documents' }>(
+    const { rerender, result } = renderHook<
+      void,
+      { view: 'collections' | 'sections' | 'documents' }
+    >(
       ({ view }) =>
         useImportDataFetching(
           { ...baseState, currentView: view },
@@ -113,7 +120,7 @@ describe('useImportDataFetching', () => {
     rerender({ view: 'documents' });
 
     // Hook should handle view change without errors
-    expect(result.error).toBeUndefined();
+    expect(result.current).toBeDefined();
   });
 
   it('does not crash when section is selected', () => {
@@ -134,13 +141,16 @@ describe('useImportDataFetching', () => {
     );
 
     // Hook should handle section selection without errors
-    expect(result.error).toBeUndefined();
+    expect(result.current).toBeDefined();
   });
 
   it('handles missing projectId gracefully for project library', () => {
     const state: BrowserState = {
       currentView: 'sections',
-      selectedCollection: { id: 'main', name: 'Project Documents' } as CollectionData,
+      selectedCollection: {
+        id: 'main',
+        name: 'Project Documents',
+      } as CollectionData,
       selectedSection: null,
       collections: [],
       sections: [],
@@ -155,7 +165,7 @@ describe('useImportDataFetching', () => {
     );
 
     // Hook should handle missing projectId without errors
-    expect(result.error).toBeUndefined();
+    expect(result.current).toBeDefined();
   });
 
   it('dispatches loading state for document library collections', () => {

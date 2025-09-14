@@ -16,7 +16,9 @@ vi.mock('@/hooks/documents', () => ({
   useDragAndDrop: vi.fn(),
 }));
 
-const mockUseDragAndDrop = useDragAndDrop as MockedFunction<typeof useDragAndDrop>;
+const mockUseDragAndDrop = useDragAndDrop as MockedFunction<
+  typeof useDragAndDrop
+>;
 
 describe('UploadCard', () => {
   const defaultProps = {
@@ -30,7 +32,7 @@ describe('UploadCard', () => {
     mockUseDragAndDrop.mockReturnValue({
       isDragging: false,
       dragProps: {},
-    } as any);
+    } as ReturnType<typeof useDragAndDrop>);
   });
 
   it('should display default upload text when not dragging', () => {
@@ -43,7 +45,7 @@ describe('UploadCard', () => {
     mockUseDragAndDrop.mockReturnValue({
       isDragging: true,
       dragProps: {},
-    } as any);
+    } as ReturnType<typeof useDragAndDrop>);
 
     renderWithI18n(<UploadCard {...defaultProps} />);
 
@@ -76,7 +78,7 @@ describe('UploadCard', () => {
     mockUseDragAndDrop.mockReturnValue({
       isDragging: true,
       dragProps: {},
-    } as any);
+    } as ReturnType<typeof useDragAndDrop>);
 
     renderWithI18n(<UploadCard {...defaultProps} />);
 

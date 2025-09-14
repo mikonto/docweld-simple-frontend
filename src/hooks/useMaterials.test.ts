@@ -6,9 +6,7 @@ import {
   useMaterialOperations,
   type MaterialType,
 } from './useMaterials';
-import {
-  resetFirebaseMocks,
-} from '@/test/mocks/firebase';
+import { resetFirebaseMocks } from '@/test/mocks/firebase';
 import { useApp } from '@/contexts/AppContext';
 import type { Material, MaterialFormData } from '@/types';
 import type { FirestoreError } from 'firebase/firestore';
@@ -91,12 +89,12 @@ describe('useMaterials Hook', () => {
         {
           id: '1',
           name: 'Material 1',
-          status: 'active',
+          type: 'carbon-steel',
         },
         {
           id: '2',
           name: 'Material 2',
-          status: 'active',
+          type: 'stainless-steel',
         },
       ];
 
@@ -135,7 +133,7 @@ describe('useMaterials Hook', () => {
         {
           id: '1',
           name: 'Alloy 1',
-          status: 'active',
+          type: 'aluminum',
         },
       ];
 
@@ -183,7 +181,8 @@ describe('useMaterials Hook', () => {
 
         const materialData: MaterialFormData = {
           name: 'Test Material',
-          description: 'Test description',
+          type: 'carbon-steel',
+          grade: 'A36',
         };
 
         await act(async () => {
@@ -202,7 +201,10 @@ describe('useMaterials Hook', () => {
 
         await act(async () => {
           await expect(
-            result.current.createMaterial('invalid' as MaterialType, { name: 'Test' } as MaterialFormData)
+            result.current.createMaterial(
+              'invalid' as MaterialType,
+              { name: 'Test', type: 'carbon-steel' } as MaterialFormData
+            )
           ).rejects.toThrow('Invalid material type: invalid');
         });
       });
@@ -214,7 +216,10 @@ describe('useMaterials Hook', () => {
 
         await act(async () => {
           await expect(
-            result.current.createMaterial('parent', { name: 'Test' } as MaterialFormData)
+            result.current.createMaterial('parent', {
+              name: 'Test',
+              type: 'carbon-steel',
+            } as MaterialFormData)
           ).rejects.toThrow('Network error');
         });
       });
@@ -228,7 +233,7 @@ describe('useMaterials Hook', () => {
 
         const updates: Partial<Material> = {
           name: 'Updated Name',
-          description: 'Updated description',
+          grade: 'A572',
         };
 
         await act(async () => {
@@ -243,7 +248,9 @@ describe('useMaterials Hook', () => {
 
         await act(async () => {
           await expect(
-            result.current.updateMaterial('invalid' as MaterialType, 'id', { name: 'Test' })
+            result.current.updateMaterial('invalid' as MaterialType, 'id', {
+              name: 'Test',
+            })
           ).rejects.toThrow('Invalid material type: invalid');
         });
       });
@@ -306,6 +313,7 @@ describe('useMaterials Hook', () => {
       await act(async () => {
         const materialId = await result.current.createMaterial('filler', {
           name: 'Test Filler',
+          type: 'carbon-steel',
         } as MaterialFormData);
         expect(materialId).toBe('new-filler-id');
       });
@@ -319,6 +327,7 @@ describe('useMaterials Hook', () => {
       await act(async () => {
         const materialId = await result.current.createMaterial('alloy', {
           name: 'Test Alloy',
+          type: 'aluminum',
         } as MaterialFormData);
         expect(materialId).toBe('new-alloy-id');
       });
@@ -354,17 +363,21 @@ describe('useMaterialOperations i18n messages', () => {
       await act(async () => {
         await result.current.createMaterial('parent', {
           name: 'Test Material',
+          type: 'carbon-steel',
         } as MaterialFormData);
       });
 
       expect(mockParentOps.create).toHaveBeenCalledWith({
         name: 'Test Material',
+        type: 'carbon-steel',
       });
       // Success toast is handled by useFirestoreOperations
     });
 
     it('should handle error message when creating material fails', async () => {
-      (mockParentOps.create as Mock).mockRejectedValueOnce(new Error('Network error'));
+      (mockParentOps.create as Mock).mockRejectedValueOnce(
+        new Error('Network error')
+      );
 
       const { result } = renderHook(() => useMaterialOperations());
 
@@ -372,6 +385,7 @@ describe('useMaterialOperations i18n messages', () => {
         try {
           await result.current.createMaterial('parent', {
             name: 'Test Material',
+            type: 'carbon-steel',
           } as MaterialFormData);
         } catch (error) {
           expect((error as Error).message).toBe('Network error');
@@ -434,7 +448,9 @@ describe('useMaterialOperations i18n messages', () => {
     });
 
     it('should handle error message when deleting material fails', async () => {
-      (mockParentOps.remove as Mock).mockRejectedValueOnce(new Error('Material in use'));
+      (mockParentOps.remove as Mock).mockRejectedValueOnce(
+        new Error('Material in use')
+      );
 
       const { result } = renderHook(() => useMaterialOperations());
 

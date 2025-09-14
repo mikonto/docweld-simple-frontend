@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Project } from '@/types/database';
+import type { Project } from '@/types';
 
 // Default values for a new project
 const defaultValues = {
@@ -58,8 +58,8 @@ export function ProjectFormDialog({
     customer: z.string().min(1, t('validation.required')),
     externalReference: z.string().optional(),
     description: z.string().optional(),
-    parentMaterialTraceable: z.boolean().default(false),
-    fillerMaterialTraceable: z.boolean().default(false),
+    parentMaterialTraceable: z.boolean(),
+    fillerMaterialTraceable: z.boolean(),
   });
 
   type FormData = z.infer<typeof formSchema>;

@@ -1,5 +1,10 @@
 import { useReducer, Dispatch } from 'react';
-import type { DocumentData, SectionData, CollectionData } from '@/types/database';
+import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+
+// Type aliases for import browser context
+type CollectionData = { id: string; name: string; [key: string]: unknown };
+type SectionData = FirestoreSection;
+type DocumentData = FirestoreDocument;
 
 // Action types
 export const ACTIONS = {
@@ -29,7 +34,7 @@ export interface SelectedItem {
   collectionId?: string | null;
   sectionId?: string | null;
   projectId?: string;
-  [key: string]: any; // Allow additional properties from the original item
+  [key: string]: unknown; // Allow additional properties from the original item
 }
 
 // Browser state
@@ -55,7 +60,10 @@ export type BrowserAction =
   | { type: typeof ACTIONS.SET_LOADING; payload: boolean }
   | { type: typeof ACTIONS.SET_VIEW; payload: ViewType }
   | { type: typeof ACTIONS.SET_COLLECTIONS; payload: CollectionData[] }
-  | { type: typeof ACTIONS.SET_SELECTED_COLLECTION; payload: CollectionData | null }
+  | {
+      type: typeof ACTIONS.SET_SELECTED_COLLECTION;
+      payload: CollectionData | null;
+    }
   | { type: typeof ACTIONS.SET_SECTIONS; payload: SectionData[] }
   | { type: typeof ACTIONS.SET_SELECTED_SECTION; payload: SectionData | null }
   | { type: typeof ACTIONS.SET_DOCUMENTS; payload: DocumentData[] }
@@ -64,7 +72,7 @@ export type BrowserAction =
   | {
       type: typeof ACTIONS.TOGGLE_ITEM_SELECTION;
       payload: {
-        item: any;
+        item: SectionData | DocumentData;
         type: 'section' | 'document';
         allowMultiple: boolean;
         sourceType: string;
@@ -103,7 +111,10 @@ const initialState: BrowserState = {
 };
 
 // Reducer function
-function browserReducer(state: BrowserState, action: BrowserAction): BrowserState {
+function browserReducer(
+  state: BrowserState,
+  action: BrowserAction
+): BrowserState {
   switch (action.type) {
     case ACTIONS.SET_LOADING:
       return { ...state, isLoading: action.payload };
@@ -169,7 +180,10 @@ function browserReducer(state: BrowserState, action: BrowserAction): BrowserStat
             ...item,
             type: 'section',
             collectionId: selectedCollection?.id || null,
-            projectId: sourceType === 'projectLibrary' ? projectId || undefined : undefined,
+            projectId:
+              sourceType === 'projectLibrary'
+                ? projectId || undefined
+                : undefined,
           };
         } else {
           newItem = {
@@ -177,7 +191,10 @@ function browserReducer(state: BrowserState, action: BrowserAction): BrowserStat
             type: 'document',
             collectionId: selectedCollection?.id || null,
             sectionId: selectedSection?.id || null,
-            projectId: sourceType === 'projectLibrary' ? projectId || undefined : undefined,
+            projectId:
+              sourceType === 'projectLibrary'
+                ? projectId || undefined
+                : undefined,
           };
         }
 

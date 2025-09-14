@@ -2,7 +2,6 @@ import React from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -41,34 +40,45 @@ const defaultValues = {
 };
 
 // User form dialog for creating and editing user accounts
-export function UserFormDialog({ 
-  open, 
-  onOpenChange, 
-  user = null, 
-  onSubmit 
+export function UserFormDialog({
+  open,
+  onOpenChange,
+  user = null,
+  onSubmit,
 }: UserFormDialogProps) {
   const { t } = useTranslation();
 
-  // Initialize form with either existing user data or default values
-  const formSchema = z.object({
+  // Define form schemas - separate for create and edit modes
+  const createSchema = z.object({
     firstName: z.string().min(1, t('validation.firstNameRequired')),
     lastName: z.string().min(1, t('validation.lastNameRequired')),
     email: z.string().email(t('validation.invalidEmail')),
-    password: user
-      ? z.string().optional() // Password is optional when editing
-      : z.string().min(6, t('validation.passwordMinLength', { min: 6 })), // Required for new users
-    isAdmin: z.boolean().default(false),
+    password: z.string().min(6, t('validation.passwordMinLength', { min: 6 })),
+    isAdmin: z.boolean(),
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const editSchema = z.object({
+    firstName: z.string().min(1, t('validation.firstNameRequired')),
+    lastName: z.string().min(1, t('validation.lastNameRequired')),
+    email: z.string().email(t('validation.invalidEmail')),
+    password: z.string().optional(),
+    isAdmin: z.boolean(),
+  });
+
+  // Use the appropriate schema based on mode
+  const formSchema = user ? editSchema : createSchema;
+
+  type FormData = z.infer<typeof editSchema>; // Use edit schema type (superset)
+
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: user
       ? {
           firstName: user.firstName || '',
           lastName: user.lastName || '',
           email: user.email || '',
+          password: '',
           isAdmin: user.role === 'admin',
-          password: '', // Ensure the password field is controlled
         }
       : defaultValues,
   });
@@ -100,6 +110,7 @@ export function UserFormDialog({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
+        displayName: `${data.firstName} ${data.lastName}`,
         role: data.isAdmin ? 'admin' : 'user',
       };
 

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { useProjects, useProject, useProjectOperations } from './useProjects';
 import { resetFirebaseMocks } from '@/test/mocks/firebase';
 import { useApp } from '@/contexts/AppContext';
+import { STATUS, type Status } from '@/constants/firestore';
 
 // Mock the AppContext
 vi.mock('@/contexts/AppContext', () => ({
@@ -96,7 +97,7 @@ describe('useProjects Hook', () => {
         error: null,
       });
 
-      const { result } = renderHook(() => useProjects('active'));
+      const { result } = renderHook(() => useProjects(STATUS.ACTIVE));
 
       expect(result.current[0]).toHaveLength(1);
       expect(result.current[0][0].status).toBe('active');
@@ -235,7 +236,7 @@ describe('useProjects Hook', () => {
 
     describe('updateProject', () => {
       it('should update project successfully', async () => {
-        mockUpdate.mockResolvedValue();
+        mockUpdate.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useProjectOperations());
 
@@ -286,7 +287,7 @@ describe('useProjects Hook', () => {
 
     describe('project lifecycle management', () => {
       it('should archive project', async () => {
-        mockArchive.mockResolvedValue();
+        mockArchive.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useProjectOperations());
 
@@ -298,7 +299,7 @@ describe('useProjects Hook', () => {
       });
 
       it('should restore archived project', async () => {
-        mockRestore.mockResolvedValue();
+        mockRestore.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useProjectOperations());
 
@@ -317,7 +318,7 @@ describe('useProjects Hook', () => {
 describe('Real-world app scenarios', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useApp.mockReturnValue({
+    (useApp as Mock).mockReturnValue({
       loggedInUser: { uid: 'test-user-id', email: 'test@example.com' },
     });
   });
@@ -334,28 +335,28 @@ describe('Real-world app scenarios', () => {
     ];
 
     // First render with 'active' status
-    useFirestoreOperations.mockReturnValue({
+    (useFirestoreOperations as Mock).mockReturnValue({
       documents: activeProjects,
       loading: false,
       error: null,
     });
 
     const { result, rerender } = renderHook(
-      ({ status }) => useProjects(status),
-      { initialProps: { status: 'active' } }
+      ({ status }: { status: Status }) => useProjects(status),
+      { initialProps: { status: STATUS.ACTIVE as Status } }
     );
 
     expect(result.current[0]).toHaveLength(2);
     expect(result.current[0][0].status).toBe('active');
 
     // Switch to 'archived' tab
-    useFirestoreOperations.mockReturnValue({
+    (useFirestoreOperations as Mock).mockReturnValue({
       documents: archivedProjects,
       loading: false,
       error: null,
     });
 
-    rerender({ status: 'archived' });
+    rerender({ status: STATUS.ARCHIVED });
 
     expect(result.current[0]).toHaveLength(1);
     expect(result.current[0][0].status).toBe('archived');
@@ -363,7 +364,7 @@ describe('Real-world app scenarios', () => {
 
   it('should handle project not found scenario gracefully', () => {
     // Simulate navigating to non-existent project
-    useDocument.mockReturnValue([null, false, null]);
+    (useDocument as Mock).mockReturnValue([null, false, null]);
 
     const { result } = renderHook(() => useProject('non-existent-id'));
 
@@ -377,13 +378,13 @@ describe('Real-world app scenarios', () => {
 
   it('should provide default empty array when no projects exist', () => {
     // Simulate new user with no projects
-    useFirestoreOperations.mockReturnValue({
+    (useFirestoreOperations as Mock).mockReturnValue({
       documents: [],
       loading: false,
       error: null,
     });
 
-    const { result } = renderHook(() => useProjects('active'));
+    const { result } = renderHook(() => useProjects(STATUS.ACTIVE));
 
     const [projects, loading] = result.current;
 
@@ -393,17 +394,17 @@ describe('Real-world app scenarios', () => {
   });
 
   it('should handle rapid project status changes', async () => {
-    const mockArchive = vi.fn().mockResolvedValue();
-    const mockRestore = vi.fn().mockResolvedValue();
+    const mockArchive = vi.fn().mockResolvedValue(undefined);
+    const mockRestore = vi.fn().mockResolvedValue(undefined);
 
-    useFirestoreOperations.mockReturnValue({
+    (useFirestoreOperations as Mock).mockReturnValue({
       create: vi.fn(),
       update: vi.fn(),
       archive: mockArchive,
       restore: mockRestore,
     });
 
-    useCascadingSoftDelete.mockReturnValue({
+    (useCascadingSoftDelete as Mock).mockReturnValue({
       deleteProject: vi.fn(),
     });
 
@@ -431,9 +432,9 @@ describe('useProjectOperations i18n messages', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useApp.mockReturnValue({ loggedInUser: mockUser });
+    (useApp as Mock).mockReturnValue({ loggedInUser: mockUser });
 
-    useFirestoreOperations.mockReturnValue({
+    (useFirestoreOperations as Mock).mockReturnValue({
       documents: [],
       loading: false,
       error: null,
@@ -441,7 +442,7 @@ describe('useProjectOperations i18n messages', () => {
       update: mockUpdate,
     });
 
-    useCascadingSoftDelete.mockReturnValue({
+    (useCascadingSoftDelete as Mock).mockReturnValue({
       deleteProject: mockDeleteProject,
     });
   });
@@ -469,7 +470,7 @@ describe('useProjectOperations i18n messages', () => {
         try {
           await result.current.createProject({ projectName: 'Test Project' });
         } catch (error) {
-          expect(error.message).toBe('Network error');
+          expect((error as Error).message).toBe('Network error');
         }
       });
       // Error toast is handled by useFirestoreOperations
@@ -478,7 +479,7 @@ describe('useProjectOperations i18n messages', () => {
 
   describe('updateProject', () => {
     it('should handle success message when updating project', async () => {
-      mockUpdate.mockResolvedValueOnce();
+      mockUpdate.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useProjectOperations());
 
@@ -505,7 +506,7 @@ describe('useProjectOperations i18n messages', () => {
             projectName: 'Updated Project',
           });
         } catch (error) {
-          expect(error.message).toBe('Permission denied');
+          expect((error as Error).message).toBe('Permission denied');
         }
       });
       // Error toast is handled by useFirestoreOperations
@@ -514,7 +515,7 @@ describe('useProjectOperations i18n messages', () => {
 
   describe('deleteProject', () => {
     it('should handle success message when deleting project', async () => {
-      mockDeleteProject.mockResolvedValueOnce();
+      mockDeleteProject.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useProjectOperations());
 
@@ -537,7 +538,9 @@ describe('useProjectOperations i18n messages', () => {
         try {
           await result.current.deleteProject('project-id');
         } catch (error) {
-          expect(error.message).toBe('Cannot delete project with active welds');
+          expect((error as Error).message).toBe(
+            'Cannot delete project with active welds'
+          );
         }
       });
       // Error toast is handled by useCascadingSoftDelete

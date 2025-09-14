@@ -2,8 +2,10 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Section } from '@/types/database';
-import useImportBrowser, { SelectedItem } from '@/hooks/documents/useImportBrowser';
+import { Section, Document } from '@/types/database';
+import useImportBrowser, {
+  SelectedItem,
+} from '@/hooks/documents/useImportBrowser';
 import useImportDataFetching from '@/hooks/documents/useImportDataFetching';
 import useImportSelection from '@/hooks/documents/useImportSelection';
 import CollectionsList from './CollectionsList';
@@ -172,7 +174,7 @@ function ImportBrowser({
       case 'sections':
         return (
           <SectionsList
-            sections={sections}
+            sections={sections as Section[]}
             mode={mode}
             onSectionClick={handleSectionClick}
             onSelectItem={handleSelectItem}
@@ -182,7 +184,7 @@ function ImportBrowser({
       case 'documents':
         return (
           <DocumentsGrid
-            documents={documents}
+            documents={documents as Document[]}
             thumbnails={thumbnails}
             mode={mode}
             onSelectItem={handleSelectItem}
@@ -205,16 +207,16 @@ function ImportBrowser({
           <BrowserBreadcrumb
             sourceType={sourceType}
             currentView={currentView}
-            selectedCollection={selectedCollection}
-            selectedSection={selectedSection}
+            selectedCollection={selectedCollection || undefined}
+            selectedSection={selectedSection || undefined}
             onNavigate={handleNavigate}
           />
         </div>
         <SelectionToolbar
           mode={mode}
           currentView={currentView}
-          sections={sections}
-          documents={documents}
+          sections={sections as Section[]}
+          documents={documents as Document[]}
           allowMultiple={allowMultiple}
           areAllItemsSelected={areAllItemsSelected}
           toggleAllItems={toggleAllItems}

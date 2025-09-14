@@ -18,7 +18,12 @@ interface ImportFooterProps {
 /**
  * Footer with selection count and action buttons
  */
-function ImportFooter({ selectedItems, onClearSelection, onCancel, onSubmit }: ImportFooterProps) {
+function ImportFooter({
+  selectedItems,
+  onClearSelection,
+  onCancel,
+  onSubmit,
+}: ImportFooterProps) {
   const { t } = useTranslation();
 
   return (

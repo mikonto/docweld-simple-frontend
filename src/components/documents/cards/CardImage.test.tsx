@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CardImage } from './CardImage';
@@ -21,7 +20,7 @@ describe('CardImage', () => {
         <CardImage
           {...defaultProps}
           isLoading={true}
-          processingState={PROCESSING_STATES.PROCESSING}
+          processingState={PROCESSING_STATES.COMPLETED}
         />
       );
 

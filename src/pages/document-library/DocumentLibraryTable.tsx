@@ -1,22 +1,25 @@
-import React from 'react';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import {
+  createColumns,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
-import type { DocumentLibraryCollection } from '@/types/database';
+import type { DocumentLibrary } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 export interface DocumentLibraryTableProps {
-  documents: DocumentLibraryCollection[];
+  documents: DocumentLibrary[];
   loading: boolean;
-  onEdit: (document: DocumentLibraryCollection) => void;
+  onEdit: (document: DocumentLibrary) => void;
   onCreateNew: () => void;
   onConfirmAction: (
     action: 'delete',
-    data: DocumentLibraryCollection | DocumentLibraryCollection[],
+    data: DocumentLibrary | DocumentLibrary[],
     isBulk?: boolean
   ) => void;
-  onRowClick: (document: DocumentLibraryCollection) => void;
+  onRowClick: (document: DocumentLibrary) => void;
 }
 
 // Main document library table component for displaying document collections
@@ -31,7 +34,7 @@ export function DocumentLibraryTable({
   const { t } = useTranslation();
 
   // Define document columns
-  const documentColumns: ColumnDef<DocumentLibraryCollection>[] = [
+  const documentColumns: ColumnDef<DocumentLibrary>[] = [
     {
       accessorKey: 'name',
       header: ({ column }) => (
@@ -56,12 +59,12 @@ export function DocumentLibraryTable({
   const getActionMenuItems = () => [
     {
       label: t('common.edit'),
-      action: (rowData: DocumentLibraryCollection) => onEdit(rowData),
+      action: (rowData: DocumentLibrary) => onEdit(rowData),
     },
     {
       label: t('common.delete'),
       separator: true,
-      action: (rowData: DocumentLibraryCollection) => onConfirmAction('delete', rowData),
+      action: (rowData: DocumentLibrary) => onConfirmAction('delete', rowData),
     },
   ];
 
@@ -80,7 +83,7 @@ export function DocumentLibraryTable({
     {
       label: t('common.deleteSelected'),
       icon: <Trash className="h-4 w-4" />,
-      onClick: (selectedRows: DocumentLibraryCollection[]) => {
+      onClick: (selectedRows: DocumentLibrary[]) => {
         onConfirmAction('delete', selectedRows, true);
       },
       variant: 'destructive' as const,
@@ -102,7 +105,7 @@ export function DocumentLibraryTable({
           title={t('documentLibrary.documentCollections')}
           columns={columns}
           data={documents}
-          loading={loading}
+          isLoading={loading}
           actionButtons={actionButtons}
           bulkActionButtons={bulkActionButtons}
           onRowClick={onRowClick}

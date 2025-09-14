@@ -1,4 +1,3 @@
-import React from 'react';
 import { screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import { ImageViewDialog } from './ImageViewDialog';
@@ -17,7 +16,10 @@ describe('ImageViewDialog', () => {
 
     expect(screen.getByText('Test Image')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Test Image' })).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://example.com/image.jpg');
+    expect(screen.getByRole('img')).toHaveAttribute(
+      'src',
+      'https://example.com/image.jpg'
+    );
   });
 
   it('should not render when isOpen is false', () => {
@@ -41,8 +43,10 @@ describe('ImageViewDialog', () => {
     );
 
     // Close the dialog by changing isOpen to false
-    rerender(<ImageViewDialog {...defaultProps} isOpen={false} onClose={onClose} />);
-    
+    rerender(
+      <ImageViewDialog {...defaultProps} isOpen={false} onClose={onClose} />
+    );
+
     // In a real scenario, the onClose would be called by the Dialog component
     // when the user clicks outside or presses ESC
   });
@@ -60,6 +64,11 @@ describe('ImageViewDialog', () => {
     renderWithProviders(<ImageViewDialog {...defaultProps} />);
 
     const image = screen.getByRole('img');
-    expect(image).toHaveClass('w-full', 'h-auto', 'max-h-[70vh]', 'object-contain');
+    expect(image).toHaveClass(
+      'w-full',
+      'h-auto',
+      'max-h-[70vh]',
+      'object-contain'
+    );
   });
 });

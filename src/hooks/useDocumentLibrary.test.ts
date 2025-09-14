@@ -53,6 +53,9 @@ describe('useDocumentLibrary', () => {
         documents: mockDocs,
         loading: false,
         error: null,
+        create: vi.fn(),
+        update: vi.fn(),
+        remove: vi.fn(),
       });
 
       const { result } = renderHook(() => useDocumentCollections());
@@ -68,6 +71,9 @@ describe('useDocumentLibrary', () => {
         documents: [],
         loading: false,
         error: mockError,
+        create: vi.fn(),
+        update: vi.fn(),
+        remove: vi.fn(),
       });
 
       const { result } = renderHook(() => useDocumentCollections());
@@ -96,7 +102,11 @@ describe('useDocumentLibrary', () => {
     });
 
     it('should return null when document not found', () => {
-      const mockDoc = { exists: () => false };
+      const mockDoc = {
+        id: '123',
+        exists: () => false,
+        data: () => null,
+      };
       (useDocument as Mock).mockReturnValue([mockDoc, false, null]);
 
       const { result } = renderHook(() => useDocumentCollection('123'));
@@ -179,7 +189,9 @@ describe('useDocumentLibrary', () => {
       const { result } = renderHook(() => useDocumentCollectionOperations());
 
       await expect(
-        result.current.createDocumentCollection({ name: 'Test' } as DocumentLibraryFormData)
+        result.current.createDocumentCollection({
+          name: 'Test',
+        } as DocumentLibraryFormData)
       ).rejects.toThrow('User must be logged in');
 
       await expect(

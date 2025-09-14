@@ -38,7 +38,10 @@
  * });
  */
 
-import { useBaseDocumentOperations, UseBaseDocumentOperationsReturn } from './useBaseDocumentOperations';
+import {
+  useBaseDocumentOperations,
+  UseBaseDocumentOperationsReturn,
+} from './useBaseDocumentOperations';
 import { useDocumentData } from './useDocumentData';
 import { DocumentData, FirestoreError } from 'firebase/firestore';
 
@@ -51,7 +54,11 @@ interface UseDocumentsConfig {
   additionalForeignKeys?: Record<string, string>;
 }
 
-interface UseDocumentsReturn extends Omit<UseBaseDocumentOperationsReturn, 'documents' | 'loading' | 'error'> {
+interface UseDocumentsReturn
+  extends Omit<
+    UseBaseDocumentOperationsReturn,
+    'documents' | 'loading' | 'error'
+  > {
   documents: DocumentData[];
   documentsLoading: boolean;
   documentsError: FirestoreError | undefined;

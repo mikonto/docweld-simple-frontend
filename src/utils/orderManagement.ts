@@ -26,7 +26,7 @@ type MoveDirection = 'up' | 'down';
  * Generic item with an identifiable field
  */
 interface IdentifiableItem {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -34,7 +34,9 @@ interface IdentifiableItem {
  * @param highestOrder - The current highest order value
  * @returns The next order value
  */
-export function getNextDescendingOrder(highestOrder: number | null | undefined): number {
+export function getNextDescendingOrder(
+  highestOrder: number | null | undefined
+): number {
   if (highestOrder === null || highestOrder === undefined) {
     return DEFAULT_ORDER;
   }
@@ -46,7 +48,9 @@ export function getNextDescendingOrder(highestOrder: number | null | undefined):
  * @param highestOrder - The current highest order value
  * @returns The next order value
  */
-export function getNextAscendingOrder(highestOrder: number | null | undefined): number {
+export function getNextAscendingOrder(
+  highestOrder: number | null | undefined
+): number {
   if (highestOrder === null || highestOrder === undefined) {
     return DEFAULT_ORDER;
   }
@@ -82,7 +86,10 @@ export function calculateAscendingOrderValues(count: number): number[] {
  * @param total - Total number of items
  * @returns Order value for the position
  */
-export function getDescendingOrderForPosition(position: number, total: number): number {
+export function getDescendingOrderForPosition(
+  position: number,
+  total: number
+): number {
   return (total - position) * ORDER_GAP;
 }
 
@@ -111,7 +118,11 @@ export function getFallbackOrder(): number {
  * @param toIndex - Target index for the item
  * @returns New reordered array
  */
-export function reorderArray<T>(items: T[], fromIndex: number, toIndex: number): T[] {
+export function reorderArray<T>(
+  items: T[],
+  fromIndex: number,
+  toIndex: number
+): T[] {
   if (fromIndex < 0 || fromIndex >= items.length) return items;
   if (toIndex < 0 || toIndex >= items.length) return items;
 

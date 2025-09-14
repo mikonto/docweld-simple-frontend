@@ -1,13 +1,16 @@
 # Firebase Hooks Migration Status
 
 ## Overview
+
 This document tracks the migration from direct Firebase SDK calls to hook-based patterns where appropriate, following our hybrid approach philosophy.
 
 **Last Updated**: 2025-07-05
 **Overall Progress**: ~70% Complete
 
 ## Migration Philosophy
+
 We follow a **hybrid approach**:
+
 - ✅ Use hooks wherever possible (React components and custom hooks)
 - ✅ Keep direct SDK for utility functions, batch operations, and conditional logic
 - ✅ Document WHY certain areas must remain as direct SDK calls
@@ -16,40 +19,44 @@ We follow a **hybrid approach**:
 ## Completed Migrations ✅
 
 ### 1. Authentication Hooks (100% Complete)
+
 All authentication operations have been migrated to hooks:
 
-| Component/Hook | Migration | Hook Used |
-|----------------|-----------|-----------|
-| Login.jsx | ✅ Complete | `useSignInWithEmailAndPassword` |
-| AppProvider.jsx | ✅ Complete | `useAuthState` |
-| Logout functionality | ✅ Complete | `useSignOut` |
+| Component/Hook       | Migration   | Hook Used                       |
+| -------------------- | ----------- | ------------------------------- |
+| Login.jsx            | ✅ Complete | `useSignInWithEmailAndPassword` |
+| AppProvider.jsx      | ✅ Complete | `useAuthState`                  |
+| Logout functionality | ✅ Complete | `useSignOut`                    |
 
 ### 2. Storage Hooks (100% Complete)
 
 #### useFileUrl Hook
+
 - **Status**: ✅ Implemented
 - **Location**: `src/components/documents/shared/utils/storageUtils.js`
 - **Replaces**: Direct `getDownloadURL()` calls for fetching file URLs
 - **Usage**: Components that need to display files from Firebase Storage
 
 #### DocumentThumbnail Component
+
 - **Status**: ✅ Created
 - **Location**: `src/components/documents/shared/import/DocumentThumbnail.jsx`
-- **Features**: 
+- **Features**:
   - Uses `useFileUrl` hook for thumbnail URLs
   - Handles loading/error states
   - Fully tested with 6 passing tests
 
 ### 3. Firestore Real-time Listeners (100% Complete)
 
-| Hook | Migration | Hook Used |
-|------|-----------|-----------|
+| Hook            | Migration   | Hook Used           |
+| --------------- | ----------- | ------------------- |
 | useDocumentData | ✅ Complete | `useCollectionData` |
-| useSectionData | ✅ Complete | `useCollectionData` |
+| useSectionData  | ✅ Complete | `useCollectionData` |
 
 ### 4. Firestore CRUD Operations (75% Complete)
 
 #### useFirestoreOperations Hook
+
 - **Status**: ✅ Implemented
 - **Location**: `src/hooks/firebase/useFirestoreOperations.js`
 - **Features**:
@@ -59,25 +66,28 @@ All authentication operations have been migrated to hooks:
   - Real-time data updates
 
 #### Migrated Hooks
-| Hook | Status | Notes |
-|------|--------|-------|
-| useMaterials | ✅ Complete | Including useAlloyMaterials sub-hook |
-| useProjects | ✅ Complete | Full CRUD operations |
-| useWelds | ✅ Partial | CRUD migrated, validation functions use direct SDK |
-| useDocumentLibrary | ✅ Complete | Full migration |
-| useWeldLogs | ✅ Complete | Full migration |
-| useProjectParticipants | ✅ Complete | Full migration |
+
+| Hook                   | Status      | Notes                                              |
+| ---------------------- | ----------- | -------------------------------------------------- |
+| useMaterials           | ✅ Complete | Including useAlloyMaterials sub-hook               |
+| useProjects            | ✅ Complete | Full CRUD operations                               |
+| useWelds               | ✅ Partial  | CRUD migrated, validation functions use direct SDK |
+| useDocumentLibrary     | ✅ Complete | Full migration                                     |
+| useWeldLogs            | ✅ Complete | Full migration                                     |
+| useProjectParticipants | ✅ Complete | Full migration                                     |
 
 #### Not Yet Migrated
-| Hook | Status | Priority | Estimated Time |
-|------|--------|----------|----------------|
-| useVendors | ❌ Pending | Medium | 2 hours |
-| useWeldingProcesses | ❌ Pending | Medium | 2 hours |
-| useUsers | ❌ Pending | Medium | 3 hours |
+
+| Hook                | Status     | Priority | Estimated Time |
+| ------------------- | ---------- | -------- | -------------- |
+| useVendors          | ❌ Pending | Medium   | 2 hours        |
+| useWeldingProcesses | ❌ Pending | Medium   | 2 hours        |
+| useUsers            | ❌ Pending | Medium   | 3 hours        |
 
 ## Partially Compatible Hooks ⚠️
 
 ### useWelds Hook
+
 - **Location**: `src/hooks/useWelds.js`
 - **Migrated**:
   - ✅ Basic CRUD operations use `useFirestoreOperations`
@@ -88,6 +98,7 @@ All authentication operations have been migrated to hooks:
   - ❌ `createWeldsRange()` - Uses `writeBatch()` for transactions
 
 ### useCompanyInformation Hook
+
 - **Location**: `src/hooks/useCompanyInformation.js`
 - **Can Migrate**:
   - ✅ Could use `useDocument` for fetching company data
@@ -97,6 +108,7 @@ All authentication operations have been migrated to hooks:
 ## Components Requiring Refactoring 🔧
 
 ### DocumentBrowser Component
+
 - **Status**: ❌ Needs Major Refactoring
 - **Location**: `src/components/documents/shared/import/DocumentBrowser.jsx`
 - **Current Issues**:
@@ -105,10 +117,11 @@ All authentication operations have been migrated to hooks:
   - Maintains complex state that doesn't fit hook patterns
 
 - **Proposed Solution**:
+
   ```
   DocumentBrowser (parent - manages navigation state)
   ├── CollectionsList (uses hooks for collections)
-  ├── SectionsList (uses hooks for sections)  
+  ├── SectionsList (uses hooks for sections)
   ├── DocumentsList (uses hooks for documents)
   └── DocumentThumbnail (already created, uses useFileUrl)
   ```
@@ -121,7 +134,9 @@ All authentication operations have been migrated to hooks:
 ## Hook Limitations Discovered 📚
 
 ### 1. React Rules of Hooks
+
 Hooks can only be called:
+
 - ✅ At the top level of React function components
 - ✅ At the top level of custom hooks
 - ❌ NOT inside conditions, loops, or nested functions
@@ -131,6 +146,7 @@ Hooks can only be called:
 ### 2. Specific Limitations by Category
 
 #### Conditional Hook Calls
+
 ```javascript
 // ❌ CANNOT DO THIS
 if (document.thumbnail) {
@@ -138,21 +154,25 @@ if (document.thumbnail) {
 }
 
 // ✅ SOLUTION: Create wrapper component
-<DocumentThumbnail storagePath={document.thumbnail} />
+<DocumentThumbnail storagePath={document.thumbnail} />;
 ```
 
 #### Loops and Iterations
+
 ```javascript
 // ❌ CANNOT DO THIS
-documents.forEach(doc => {
+documents.forEach((doc) => {
   const [url] = useDownloadURL(ref); // ERROR!
 });
 
 // ✅ SOLUTION: Map to components
-{documents.map(doc => <DocWithThumbnail key={doc.id} doc={doc} />)}
+{
+  documents.map((doc) => <DocWithThumbnail key={doc.id} doc={doc} />);
+}
 ```
 
 #### Async Functions and Event Handlers
+
 ```javascript
 // ❌ CANNOT DO THIS
 const handleUpload = async (file) => {
@@ -166,6 +186,7 @@ const handleUpload = async (file) => {
 ```
 
 #### Utility Functions
+
 ```javascript
 // ❌ CANNOT DO THIS
 export function validateData() {
@@ -181,7 +202,9 @@ export async function validateData() {
 ## Best Practices Established ✨
 
 ### 1. Documentation Requirements
+
 Every direct SDK usage must have a comment explaining why:
+
 ```javascript
 // NOTE: Using direct SDK because this is a utility function
 // that may be called conditionally - hooks cannot be used here
@@ -189,17 +212,20 @@ const snapshot = await getDocs(query);
 ```
 
 ### 2. Component Design Patterns
+
 - Break complex components into smaller, hook-friendly pieces
 - Use wrapper components to enable hook usage in lists
 - Keep validation and utility logic separate from components
 
 ### 3. Testing Strategy
+
 - Write tests BEFORE migrating
 - Test both success and error scenarios
 - Ensure loading states are properly tested
 - Verify real-time updates work correctly
 
 ### 4. Performance Considerations
+
 - Memoize queries to prevent unnecessary re-renders
 - Use constraints wisely to limit data fetched
 - Let hooks handle subscription cleanup automatically
@@ -207,32 +233,32 @@ const snapshot = await getDocs(query);
 ## Migration Patterns Reference 📖
 
 ### Pattern 1: Simple Collection Display
+
 ```javascript
 // Before: Direct SDK
 const [items, setItems] = useState([]);
 const [loading, setLoading] = useState(true);
 
 useEffect(() => {
-  getDocs(collection(db, 'items')).then(snapshot => {
-    setItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  getDocs(collection(db, 'items')).then((snapshot) => {
+    setItems(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     setLoading(false);
   });
 }, []);
 
 // After: Hook
-const [items, loading, error] = useCollectionData(
-  collection(db, 'items')
-);
+const [items, loading, error] = useCollectionData(collection(db, 'items'));
 ```
 
 ### Pattern 2: CRUD Operations
+
 ```javascript
 // Before: Direct SDK
 const createItem = async (data) => {
   try {
     await addDoc(collection(db, 'items'), {
       ...data,
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     });
     toast.success('Created!');
   } catch (error) {
@@ -246,6 +272,7 @@ const { create } = useFirestoreOperations('items');
 ```
 
 ### Pattern 3: File Display
+
 ```javascript
 // Before: Direct SDK
 const [url, setUrl] = useState(null);
@@ -266,18 +293,21 @@ const { url, loading, error } = useFileUrl(storagePath);
 ## Next Steps 🚀
 
 ### Immediate Priority (4-6 hours)
+
 1. **Refactor DocumentBrowser Component**
    - Create sub-components design
    - Implement one sub-component at a time
    - Write comprehensive tests
 
 ### Medium Priority (6-8 hours)
+
 2. **Complete Remaining CRUD Migrations**
    - useVendors (2 hours)
    - useWeldingProcesses (2 hours)
    - useUsers (3 hours)
 
 ### Low Priority (2-3 hours)
+
 3. **Documentation and Cleanup**
    - Update all code comments
    - Create visual diagrams

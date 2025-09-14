@@ -3,7 +3,7 @@ import { useState } from 'react';
 /**
  * Return type for useFormDialog hook
  */
-interface UseFormDialogReturn<T = any> {
+interface UseFormDialogReturn<T = unknown> {
   isOpen: boolean;
   entity: T | null;
   open: (entity?: T | null) => void;
@@ -35,7 +35,7 @@ interface UseFormDialogReturn<T = any> {
  *   onClose={formDialog.close}
  * />
  */
-export function useFormDialog<T = any>(): UseFormDialogReturn<T> {
+export function useFormDialog<T = unknown>(): UseFormDialogReturn<T> {
   const [isOpen, setIsOpen] = useState(false);
   const [entity, setEntity] = useState<T | null>(null);
 

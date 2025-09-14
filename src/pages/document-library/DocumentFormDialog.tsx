@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import type { DocumentLibraryCollection } from '@/types/database';
+import type { DocumentLibrary, DocumentLibraryFormData } from '@/types';
 
 // Default values for a new document collection
 const defaultValues = {
@@ -32,8 +32,8 @@ const defaultValues = {
 interface DocumentFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  document?: DocumentLibraryCollection | null;
-  onSubmit: (data: Partial<DocumentLibraryCollection>) => Promise<void>;
+  document?: DocumentLibrary | null;
+  onSubmit: (data: DocumentLibraryFormData) => Promise<void>;
 }
 
 // Document form dialog for creating and editing document collections

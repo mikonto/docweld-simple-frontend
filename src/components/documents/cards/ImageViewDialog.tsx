@@ -1,4 +1,3 @@
-import React from 'react';
 import { X } from 'lucide-react';
 import {
   Dialog,
@@ -15,7 +14,12 @@ interface ImageViewDialogProps {
   title: string;
 }
 
-export function ImageViewDialog({ isOpen, onClose, imageUrl, title }: ImageViewDialogProps) {
+export function ImageViewDialog({
+  isOpen,
+  onClose,
+  imageUrl,
+  title,
+}: ImageViewDialogProps) {
   if (!imageUrl) {
     return null;
   }

@@ -1,28 +1,39 @@
-import React from 'react'
-import { Plus, Trash } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { createColumns } from '@/components/data-table/ColumnDef'
-import { DataTable } from '@/components/data-table/DataTable'
-import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader'
-import { Card, CardContent } from '@/components/ui/card'
+import React from 'react';
+import { Plus, Trash } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createColumns } from '@/components/data-table/ColumnDef';
+import { DataTable } from '@/components/data-table/DataTable';
+import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from '@/components/ui/tooltip'
-import { useMaterials } from '@/hooks/useMaterials'
-import { useTranslation } from 'react-i18next'
-import type { Weld, Material } from '@/types/app'
-import type { ColumnDef } from '@tanstack/react-table'
+} from '@/components/ui/tooltip';
+import { useMaterials } from '@/hooks/useMaterials';
+import { useTranslation } from 'react-i18next';
+import type { Weld, Material } from '@/types/app';
+import type { ColumnDef } from '@tanstack/react-table';
+
+// Extended Weld type with additional Firestore fields
+interface ExtendedWeld extends Weld {
+  parentMaterials?: string[];
+  fillerMaterials?: string[];
+  heatTreatment?: boolean;
+}
 
 interface WeldsProps {
-  welds: Weld[]
-  loading: boolean
-  onEdit: (weld: Weld) => void
-  onCreateNew: () => void
-  onConfirmAction: (action: string, data: Weld | Weld[], isBulk?: boolean) => void
-  projectId: string
-  weldLogId: string
+  welds: Weld[];
+  loading: boolean;
+  onEdit: (weld: Weld) => void;
+  onCreateNew: () => void;
+  onConfirmAction: (
+    action: string,
+    data: Weld | Weld[],
+    isBulk?: boolean
+  ) => void;
+  projectId: string;
+  weldLogId: string;
 }
 
 // Format an array of materials to a comma-separated string with tooltip
@@ -31,36 +42,36 @@ const formatMaterialsWithTooltip = (
   materialsList: Material[] | undefined,
   useTooltip = true
 ): React.ReactNode | string => {
-  if (!materialIds || materialIds.length === 0 || !materialsList) return '—'
+  if (!materialIds || materialIds.length === 0 || !materialsList) return '—';
 
   // Map IDs to material names/info
   const materialInfos = materialIds.map((id) => {
-    const material = materialsList.find((m) => m.id === id)
-    if (!material) return id // Fallback to ID if material not found
+    const material = materialsList.find((m) => m.id === id);
+    if (!material) return id; // Fallback to ID if material not found
 
     // Format based on material type
     const materialWithType = material as Material & {
-      type?: string
-      dimensions?: string
-      alloyMaterial?: string
-    }
+      type?: string;
+      dimensions?: string;
+      alloyMaterial?: string;
+    };
 
     if (materialWithType.type) {
       // Parent material with more details
       return `${materialWithType.type} - ${materialWithType.dimensions || 'N/A'} - ${
         materialWithType.alloyMaterial || 'N/A'
-      }`
+      }`;
     } else {
       // Filler material with just name
-      return material.name
+      return material.name;
     }
-  })
+  });
 
-  const displayText = materialInfos.join(', ')
+  const displayText = materialInfos.join(', ');
 
   // If tooltip is not needed or the text is short enough, return plain text
   if (!useTooltip || displayText.length < 50) {
-    return displayText
+    return displayText;
   }
 
   // If text is too long, use tooltip
@@ -75,8 +86,8 @@ const formatMaterialsWithTooltip = (
         {displayText}
       </TooltipContent>
     </Tooltip>
-  )
-}
+  );
+};
 
 // Main welds component for displaying and managing individual welds
 export function Welds({
@@ -88,15 +99,15 @@ export function Welds({
   projectId,
   weldLogId,
 }: WeldsProps): React.ReactElement {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Fetch parent and filler materials for display
-  const [parentMaterials, parentLoading] = useMaterials('parent')
-  const [fillerMaterials, fillerLoading] = useMaterials('filler')
+  const [parentMaterials, parentLoading] = useMaterials('parent');
+  const [fillerMaterials, fillerLoading] = useMaterials('filler');
 
   // Define weld columns
-  const weldColumns: ColumnDef<Weld>[] = [
+  const weldColumns: ColumnDef<ExtendedWeld>[] = [
     {
       accessorKey: 'number',
       header: ({ column }) => (
@@ -126,7 +137,7 @@ export function Welds({
       cell: ({ row }) => (
         <div className="max-w-md">
           {formatMaterialsWithTooltip(
-            (row.original as any).parentMaterials,
+            row.original.parentMaterials,
             parentMaterials,
             true
           )}
@@ -144,7 +155,7 @@ export function Welds({
       cell: ({ row }) => (
         <div className="max-w-md">
           {formatMaterialsWithTooltip(
-            (row.original as any).fillerMaterials,
+            row.original.fillerMaterials,
             fillerMaterials,
             true
           )}
@@ -161,11 +172,11 @@ export function Welds({
       ),
       cell: ({ row }) => (
         <div>
-          {(row.original as any).heatTreatment ? t('common.yes') : t('common.no')}
+          {row.original.heatTreatment ? t('common.yes') : t('common.no')}
         </div>
       ),
     },
-  ]
+  ];
 
   // Get row action menu items
   const getActionMenuItems = () => {
@@ -173,18 +184,18 @@ export function Welds({
       {
         label: t('common.edit'),
         action: (rowData: Weld) => {
-          onEdit(rowData)
+          onEdit(rowData);
         },
       },
       {
         label: t('common.delete'),
         separator: true,
         action: (rowData: Weld) => {
-          onConfirmAction('delete', rowData)
+          onConfirmAction('delete', rowData);
         },
       },
-    ]
-  }
+    ];
+  };
 
   // Create action buttons
   const actionButtons = [
@@ -194,7 +205,7 @@ export function Welds({
       onClick: onCreateNew,
       variant: 'default' as const,
     },
-  ]
+  ];
 
   // Define bulk action buttons
   const bulkActionButtons = [
@@ -202,11 +213,11 @@ export function Welds({
       label: t('common.deleteSelected'),
       icon: <Trash className="h-4 w-4" />,
       onClick: (selectedRows: Weld[]) => {
-        onConfirmAction('delete', selectedRows, true)
+        onConfirmAction('delete', selectedRows, true);
       },
       variant: 'destructive' as const,
     },
-  ]
+  ];
 
   // Create columns for the table
   const columns = createColumns({
@@ -214,12 +225,12 @@ export function Welds({
     enableRowActions: true,
     rowMenuItems: getActionMenuItems(),
     columns: weldColumns,
-  })
+  });
 
   // Handle row click to navigate to weld overview
   const handleRowClick = (weld: Weld): void => {
-    navigate(`/projects/${projectId}/weld-logs/${weldLogId}/welds/${weld.id}`)
-  }
+    navigate(`/projects/${projectId}/weld-logs/${weldLogId}/welds/${weld.id}`);
+  };
 
   return (
     <Card className="h-full flex flex-col">
@@ -236,5 +247,5 @@ export function Welds({
         />
       </CardContent>
     </Card>
-  )
+  );
 }

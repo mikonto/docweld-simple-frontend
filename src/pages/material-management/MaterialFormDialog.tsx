@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/ui/combobox';
 import { useAlloyMaterials } from '@/hooks/useMaterials';
-import type { Material } from '@/types/database';
+import type { Material } from '@/types';
 import type { TFunction } from 'i18next';
 
 // Get schema and default values based on material type
@@ -74,7 +74,7 @@ interface MaterialFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   material?: Material | null;
-  materialType: 'parent' | 'filler' | 'alloys';
+  materialType: 'parent' | 'filler' | 'alloy';
   onSubmit: (data: Partial<Material>) => Promise<void>;
   description?: string | null;
 }
@@ -141,7 +141,7 @@ export function MaterialFormDialog({
           <>
             <FormField
               control={form.control}
-              name="type" 
+              name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('materials.type')}</FormLabel>
@@ -214,7 +214,7 @@ export function MaterialFormDialog({
           </>
         );
       case 'filler':
-      case 'alloys':
+      case 'alloy':
         return (
           <FormField
             control={form.control}
@@ -250,7 +250,8 @@ export function MaterialFormDialog({
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await onSubmit(data);
+      // Pass the form data directly - it now matches the Material interface
+      await onSubmit(data as Partial<Material>);
       form.reset();
       onOpenChange(false);
       // Success toast is handled by useFirestoreOperations

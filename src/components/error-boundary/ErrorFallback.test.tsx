@@ -1,7 +1,14 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import {
+  vi,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from 'vitest';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from './ErrorFallback';
 
@@ -51,8 +58,8 @@ describe('ErrorFallback', () => {
 
   it('hides error details in production mode', () => {
     const originalDev = import.meta.env.DEV;
-    // @ts-expect-error - We're manipulating import.meta.env for testing
-    import.meta.env.DEV = false;
+    // Temporarily override for testing
+    (import.meta.env as { DEV: boolean }).DEV = false;
 
     render(<ErrorFallback error={testError} resetErrorBoundary={mockReset} />);
 
@@ -61,8 +68,8 @@ describe('ErrorFallback', () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText('Stack Trace')).not.toBeInTheDocument();
 
-    // @ts-expect-error - We're manipulating import.meta.env for testing
-    import.meta.env.DEV = originalDev;
+    // Restore original value
+    (import.meta.env as { DEV: boolean }).DEV = originalDev;
   });
 
   it('calls resetErrorBoundary when Try Again is clicked', async () => {

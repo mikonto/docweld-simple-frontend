@@ -31,12 +31,12 @@ describe('sectionOperations', () => {
     });
 
     it('should handle document delete', () => {
-      const mockDialog = { 
-        open: vi.fn(), 
-        close: vi.fn() 
-      };
+      const mockDialog = {
+        open: vi.fn(),
+        close: vi.fn(),
+      } as unknown as operations.DeleteDialog;
 
-      operations.handleDelete(mockDialog as any, 'doc-456', 'Document Name');
+      operations.handleDelete(mockDialog, 'doc-456', 'Document Name');
 
       expect(mockDialog.open).toHaveBeenCalledWith(
         'delete',
@@ -122,8 +122,8 @@ describe('sectionOperations', () => {
 
     it('should reorder documents when dragged', async () => {
       const mockDocuments: Document[] = [
-        { 
-          id: 'doc-1', 
+        {
+          id: 'doc-1',
           title: 'Doc 1',
           storageRef: 'ref1',
           thumbStorageRef: null,
@@ -137,8 +137,8 @@ describe('sectionOperations', () => {
           createdBy: 'user1',
           updatedBy: 'user1',
         },
-        { 
-          id: 'doc-2', 
+        {
+          id: 'doc-2',
           title: 'Doc 2',
           storageRef: 'ref2',
           thumbStorageRef: null,
@@ -152,8 +152,8 @@ describe('sectionOperations', () => {
           createdBy: 'user1',
           updatedBy: 'user1',
         },
-        { 
-          id: 'doc-3', 
+        {
+          id: 'doc-3',
           title: 'Doc 3',
           storageRef: 'ref3',
           thumbStorageRef: null,
@@ -176,7 +176,7 @@ describe('sectionOperations', () => {
       const event = {
         active: { id: 'doc-1' },
         over: { id: 'doc-3' },
-      } as any;
+      } as unknown as Parameters<typeof operations.handleDragEnd>[0];
 
       await operations.handleDragEnd(
         event,
@@ -194,8 +194,8 @@ describe('sectionOperations', () => {
 
     it('should not reorder when dropped in same position', async () => {
       const mockDocuments: Document[] = [
-        { 
-          id: 'doc-1', 
+        {
+          id: 'doc-1',
           title: 'Doc 1',
           storageRef: 'ref1',
           thumbStorageRef: null,
@@ -208,7 +208,7 @@ describe('sectionOperations', () => {
           updatedAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
           createdBy: 'user1',
           updatedBy: 'user1',
-        }
+        },
       ];
       const mockSetDraggedDocuments = vi.fn();
       const mockUpdateDocumentOrder = vi.fn();
@@ -216,7 +216,7 @@ describe('sectionOperations', () => {
       const event = {
         active: { id: 'doc-1' },
         over: { id: 'doc-1' },
-      } as any;
+      } as unknown as Parameters<typeof operations.handleDragEnd>[0];
 
       await operations.handleDragEnd(
         event,
@@ -243,7 +243,7 @@ describe('sectionOperations', () => {
 
     it('should handle successful file upload', async () => {
       const mockHandleUpload = vi.fn().mockResolvedValue({ heicFileCount: 0 });
-      const files = ['file1.pdf', 'file2.jpg'] as any as File[];
+      const files = [new File([''], 'file1.pdf'), new File([''], 'file2.jpg')];
 
       await operations.handleUploadFiles(files, mockHandleUpload, mockT);
 
@@ -257,7 +257,7 @@ describe('sectionOperations', () => {
         .mockRejectedValue(new Error('Files exceed size limit'));
 
       await operations.handleUploadFiles(
-        ['large.pdf'] as any as File[],
+        [new File([''], 'large.pdf')],
         mockHandleUpload,
         mockT
       );
@@ -266,11 +266,15 @@ describe('sectionOperations', () => {
     });
 
     it('should show permission error when unauthorized', async () => {
-      const error: any = new Error('Unauthorized');
+      const error = new Error('Unauthorized') as Error & { code: string };
       error.code = 'storage/unauthorized';
       const mockHandleUpload = vi.fn().mockRejectedValue(error);
 
-      await operations.handleUploadFiles(['file.pdf'] as any as File[], mockHandleUpload, mockT);
+      await operations.handleUploadFiles(
+        [new File([''], 'file.pdf')],
+        mockHandleUpload,
+        mockT
+      );
 
       expect(toast.error).toHaveBeenCalledWith('No permission');
     });

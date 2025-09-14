@@ -6,8 +6,14 @@ import type { ProjectParticipant, ProjectParticipantFormData } from '@/types';
  * Return type for useParticipantOperations hook
  */
 interface UseParticipantOperationsReturn {
-  addParticipant: (projectId: string, participantData: ProjectParticipantFormData) => Promise<string>;
-  updateParticipant: (participantId: string, updates: Partial<ProjectParticipant>) => Promise<void>;
+  addParticipant: (
+    projectId: string,
+    participantData: ProjectParticipantFormData
+  ) => Promise<string>;
+  updateParticipant: (
+    participantId: string,
+    updates: Partial<ProjectParticipant>
+  ) => Promise<void>;
   removeParticipant: (participantId: string) => Promise<void>;
 }
 
@@ -23,7 +29,9 @@ export const useProjectParticipants = (
   projectId?: string | null
 ): [ProjectParticipant[], boolean, FirestoreError | undefined] => {
   // Use useFirestoreOperations with constraints for projectId
-  const constraints: QueryConstraint[] = projectId ? [where('projectId', '==', projectId)] : [];
+  const constraints: QueryConstraint[] = projectId
+    ? [where('projectId', '==', projectId)]
+    : [];
 
   const { documents, loading, error } = useFirestoreOperations(
     'project-participants',

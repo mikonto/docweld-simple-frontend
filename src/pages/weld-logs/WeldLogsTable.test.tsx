@@ -5,11 +5,13 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { WeldLogsTable } from './WeldLogsTable';
 import type { WeldLog } from '@/types/app';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
+import type { Timestamp } from 'firebase/firestore';
 
 // Define mock component interfaces
 interface MockRowMenuItems {
   label: string;
-  action: (row: any) => void;
+  action: (row: WeldLog) => void;
 }
 
 interface MockActionButton {
@@ -30,7 +32,12 @@ vi.mock('@/components/data-table/DataTable', () => ({
     bulkActionButtons,
     onRowClick,
   }: {
-    columns: any[];
+    columns: Array<{
+      id?: string;
+      accessorKey?: string;
+      header?: (props: { column: { id: string } }) => React.ReactNode;
+      cell?: (props: { row: { original: WeldLog } }) => React.ReactNode;
+    }>;
     data: WeldLog[];
     actionButtons?: MockActionButton[];
     bulkActionButtons?: MockBulkActionButton[];
@@ -46,7 +53,11 @@ vi.mock('@/components/data-table/DataTable', () => ({
         <thead>
           <tr>
             {columns.map((col, idx) => (
-              <th key={idx}>{col.header?.({ column: col })}</th>
+              <th key={idx}>
+                {col.header?.({
+                  column: { id: col.id || col.accessorKey || 'unknown' },
+                })}
+              </th>
             ))}
           </tr>
         </thead>
@@ -58,11 +69,20 @@ vi.mock('@/components/data-table/DataTable', () => ({
                   {col.cell
                     ? col.cell({
                         row: {
-                          getValue: () => (row as any)[col.accessorKey],
+                          getValue: () =>
+                            String(
+                              (row as Record<string, unknown>)[
+                                col.accessorKey || ''
+                              ] || ''
+                            ),
                           original: row,
-                        },
+                        } as { getValue: () => unknown; original: WeldLog },
                       })
-                    : (row as any)[col.accessorKey]}
+                    : String(
+                        (row as Record<string, unknown>)[
+                          col.accessorKey || ''
+                        ] || ''
+                      )}
                 </td>
               ))}
             </tr>
@@ -87,12 +107,18 @@ vi.mock('@/components/data-table/DataTableColumnHeader', () => ({
 }));
 
 vi.mock('@/components/data-table/ColumnDef', () => ({
-  createColumns: ({ columns, rowMenuItems }: { columns: any[]; rowMenuItems: () => MockRowMenuItems[] }) => {
+  createColumns: ({
+    columns,
+    rowMenuItems,
+  }: {
+    columns: unknown[];
+    rowMenuItems: () => MockRowMenuItems[];
+  }) => {
     const actionsColumn = rowMenuItems
       ? {
           id: 'actions',
           header: () => 'Actions',
-          cell: ({ row }: { row: any }) => (
+          cell: ({ row }: { row: { original: WeldLog } }) => (
             <div>
               {(typeof rowMenuItems === 'function'
                 ? rowMenuItems()
@@ -120,24 +146,24 @@ const renderWithI18n = (component: React.ReactElement) => {
 
 describe('WeldLogsTable', () => {
   const mockWeldLogs: WeldLog[] = [
-    { 
-      id: '1', 
-      name: 'WL-001', 
+    {
+      id: '1',
+      name: 'WL-001',
       description: 'Main pipeline welds',
       projectId: 'project-123',
       status: 'active',
-      createdAt: new Date() as any,
-      updatedAt: new Date() as any,
+      createdAt: mockTimestamp as Timestamp,
+      updatedAt: mockTimestamp as Timestamp,
       createdBy: 'user-123',
     },
-    { 
-      id: '2', 
-      name: 'WL-002', 
+    {
+      id: '2',
+      name: 'WL-002',
       description: 'Secondary connections',
       projectId: 'project-123',
       status: 'active',
-      createdAt: new Date() as any,
-      updatedAt: new Date() as any,
+      createdAt: mockTimestamp as Timestamp,
+      updatedAt: mockTimestamp as Timestamp,
       createdBy: 'user-123',
     },
   ];

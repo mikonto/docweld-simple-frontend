@@ -1,10 +1,14 @@
-import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
+import { FirestoreError } from 'firebase/firestore';
 import UserManagement from './index';
 import { renderWithProviders } from '@/test/utils/testUtils';
-import { useUsers, useUserOperations } from '@/hooks/useUsers';
-import type { User } from '@/types';
+import {
+  useUsers,
+  useUserOperations,
+  type UserWithName,
+} from '@/hooks/useUsers';
+import { createMockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock hooks
 vi.mock('@/hooks/useUsers');
@@ -41,7 +45,17 @@ vi.mock('./UserFormDialog', () => ({
 }));
 
 vi.mock('./UsersTable', () => ({
-  UsersTable: ({ users, activeTab, onTabChange, onCreateNew }: any) => (
+  UsersTable: ({
+    users,
+    activeTab,
+    onTabChange,
+    onCreateNew,
+  }: {
+    users: unknown[];
+    activeTab: string;
+    onTabChange: (tab: string) => void;
+    onCreateNew: () => void;
+  }) => (
     <div data-testid="users-table">
       <div>Active Tab: {activeTab}</div>
       <div>Users Count: {users.length}</div>
@@ -54,9 +68,32 @@ vi.mock('./UsersTable', () => ({
 }));
 
 describe('UserManagement', () => {
-  const mockUsers: Partial<User>[] = [
-    { id: '1', displayName: 'John Doe', role: 'user', isActive: true },
-    { id: '2', displayName: 'Jane Admin', role: 'admin', isActive: true },
+  const mockTimestamp = createMockTimestamp();
+  const mockUsers: UserWithName[] = [
+    {
+      id: '1',
+      displayName: 'John Doe',
+      firstName: 'John',
+      lastName: 'Doe',
+      name: 'John Doe',
+      email: 'john@example.com',
+      role: 'user',
+      isActive: true,
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+    },
+    {
+      id: '2',
+      displayName: 'Jane Admin',
+      firstName: 'Jane',
+      lastName: 'Admin',
+      name: 'Jane Admin',
+      email: 'jane@example.com',
+      role: 'admin',
+      isActive: true,
+      createdAt: mockTimestamp,
+      updatedAt: mockTimestamp,
+    },
   ];
 
   const mockUserOperations = {
@@ -75,7 +112,7 @@ describe('UserManagement', () => {
 
   // Basic rendering and data flow
   it('should display page title and users table', () => {
-    vi.mocked(useUsers).mockReturnValue([mockUsers as User[], false, null]);
+    vi.mocked(useUsers).mockReturnValue([mockUsers, false, undefined]);
 
     renderWithProviders(<UserManagement />);
 
@@ -88,7 +125,7 @@ describe('UserManagement', () => {
 
   // Loading state
   it('should show loading state', () => {
-    vi.mocked(useUsers).mockReturnValue([[], true, null]);
+    vi.mocked(useUsers).mockReturnValue([[], true, undefined]);
 
     renderWithProviders(<UserManagement />);
 
@@ -97,7 +134,12 @@ describe('UserManagement', () => {
 
   // Error state
   it('should display error when loading fails', () => {
-    vi.mocked(useUsers).mockReturnValue([[], false, new Error('Failed to load users')]);
+    const firestoreError: FirestoreError = {
+      code: 'permission-denied',
+      message: 'Failed to load users',
+      name: 'FirestoreError',
+    };
+    vi.mocked(useUsers).mockReturnValue([[], false, firestoreError]);
 
     renderWithProviders(<UserManagement />);
 
@@ -108,7 +150,7 @@ describe('UserManagement', () => {
 
   // Basic user interactions
   it('should handle tab switching', () => {
-    vi.mocked(useUsers).mockReturnValue([mockUsers as User[], false, null]);
+    vi.mocked(useUsers).mockReturnValue([mockUsers, false, undefined]);
 
     renderWithProviders(<UserManagement />);
 
@@ -117,7 +159,7 @@ describe('UserManagement', () => {
   });
 
   it('should handle add user action', () => {
-    vi.mocked(useUsers).mockReturnValue([mockUsers as User[], false, null]);
+    vi.mocked(useUsers).mockReturnValue([mockUsers, false, undefined]);
 
     renderWithProviders(<UserManagement />);
 

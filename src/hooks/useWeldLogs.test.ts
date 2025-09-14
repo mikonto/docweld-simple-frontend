@@ -231,7 +231,9 @@ describe('useWeldLogs Hook', () => {
 
         await act(async () => {
           await expect(
-            result.current.createWeldLog('project123', { name: 'Test' } as WeldLogFormData)
+            result.current.createWeldLog('project123', {
+              name: 'Test',
+            } as WeldLogFormData)
           ).rejects.toThrow('Network error');
         });
       });
@@ -278,10 +280,7 @@ describe('useWeldLogs Hook', () => {
           await result.current.deleteWeldLog('weldlog123', 'project123');
         });
 
-        expect(mockCascading.deleteWeldLog).toHaveBeenCalledWith(
-          'weldlog123',
-          'project123'
-        );
+        expect(mockCascading.deleteWeldLog).toHaveBeenCalledWith('weldlog123');
       });
 
       it('should handle deletion failure', async () => {
@@ -333,14 +332,16 @@ describe('useWeldLogOperations i18n messages', () => {
 
       await act(async () => {
         await result.current.createWeldLog('project-id', {
-          weldNumber: 'W001',
-          weldType: 'TIG',
+          name: 'Weld Log W001',
+          description: 'TIG welding log',
+          status: 'active',
         } as WeldLogFormData);
       });
 
       expect(mockCreate).toHaveBeenCalledWith({
-        weldNumber: 'W001',
-        weldType: 'TIG',
+        name: 'Weld Log W001',
+        description: 'TIG welding log',
+        status: 'active',
         projectId: 'project-id',
       });
     });
@@ -354,7 +355,7 @@ describe('useWeldLogOperations i18n messages', () => {
       await expect(
         act(async () => {
           await result.current.createWeldLog('project-id', {
-            weldNumber: 'W001',
+            name: 'Weld Log W001',
           } as WeldLogFormData);
         })
       ).rejects.toThrow('Network error');
@@ -369,12 +370,14 @@ describe('useWeldLogOperations i18n messages', () => {
 
       await act(async () => {
         await result.current.updateWeldLog('weld-log-id', {
-          weldNumber: 'W002',
+          name: 'Updated Weld Log',
+          description: 'Updated description',
         });
       });
 
       expect(mockUpdate).toHaveBeenCalledWith('weld-log-id', {
-        weldNumber: 'W002',
+        name: 'Updated Weld Log',
+        description: 'Updated description',
       });
     });
 
@@ -387,7 +390,7 @@ describe('useWeldLogOperations i18n messages', () => {
       await expect(
         act(async () => {
           await result.current.updateWeldLog('weld-log-id', {
-            weldNumber: 'W002',
+            name: 'Updated Log',
           });
         })
       ).rejects.toThrow('Permission denied');
@@ -404,10 +407,7 @@ describe('useWeldLogOperations i18n messages', () => {
         await result.current.deleteWeldLog('weld-log-id', 'project-id');
       });
 
-      expect(mockCascadeDelete).toHaveBeenCalledWith(
-        'weld-log-id',
-        'project-id'
-      );
+      expect(mockCascadeDelete).toHaveBeenCalledWith('weld-log-id');
     });
 
     it('should handle error messages when deletion fails', async () => {
@@ -438,17 +438,19 @@ describe('useWeldLogOperations i18n messages', () => {
     it('should handle authentication errors for operations', async () => {
       const { result } = renderHook(() => useWeldLogOperations());
 
-      await expect(
-        act(async () => {
-          await result.current.createWeldLog('project-id', {} as WeldLogFormData);
-        })
-      ).rejects.toThrow('User must be logged in to perform this operation');
+      // Test createWeldLog authentication error
+      await act(async () => {
+        await expect(
+          result.current.createWeldLog('project-id', {} as WeldLogFormData)
+        ).rejects.toThrow('User must be logged in to perform this operation');
+      });
 
-      await expect(
-        act(async () => {
-          await result.current.updateWeldLog('weld-log-id', {});
-        })
-      ).rejects.toThrow('User must be logged in to perform this operation');
+      // Test updateWeldLog authentication error
+      await act(async () => {
+        await expect(
+          result.current.updateWeldLog('weld-log-id', {})
+        ).rejects.toThrow('User must be logged in to perform this operation');
+      });
     });
   });
 });

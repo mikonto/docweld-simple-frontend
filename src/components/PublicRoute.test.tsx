@@ -8,6 +8,7 @@ import PublicRoute from './PublicRoute';
 import i18n from '@/i18n/config';
 import { useApp } from '@/contexts/AppContext';
 import { ReactNode } from 'react';
+import type { UseAuthWithFirestoreReturn } from '@/hooks/useAuthWithFirestore';
 
 // Mock dependencies
 vi.mock('sonner', () => ({
@@ -28,7 +29,10 @@ vi.mock('@/config/firebase', () => ({
 }));
 
 const mockUseApp = useApp as MockedFunction<typeof useApp>;
-const mockToast = toast as any;
+const mockToast = toast as unknown as {
+  error: MockedFunction<(message: string) => void>;
+  success: MockedFunction<(message: string) => void>;
+};
 
 describe('PublicRoute', () => {
   beforeEach(() => {
@@ -47,7 +51,7 @@ describe('PublicRoute', () => {
       userAuth: { uid: 'test-user' },
       isAuthorized: false,
       loading: false,
-    } as any);
+    } as UseAuthWithFirestoreReturn);
 
     render(
       <PublicRoute>
@@ -70,7 +74,7 @@ describe('PublicRoute', () => {
       userAuth: { uid: 'test-user' },
       isAuthorized: true,
       loading: false,
-    } as any);
+    } as UseAuthWithFirestoreReturn);
 
     render(
       <PublicRoute>
@@ -91,7 +95,7 @@ describe('PublicRoute', () => {
       userAuth: null,
       isAuthorized: false,
       loading: false,
-    } as any);
+    } as UseAuthWithFirestoreReturn);
 
     render(
       <PublicRoute>
@@ -114,7 +118,7 @@ describe('PublicRoute', () => {
       userAuth: null,
       isAuthorized: false,
       loading: true,
-    } as any);
+    } as UseAuthWithFirestoreReturn);
 
     const { container } = render(
       <PublicRoute>

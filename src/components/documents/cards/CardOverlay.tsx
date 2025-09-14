@@ -1,4 +1,3 @@
-import React from 'react';
 import { UPLOAD_STATES, PROCESSING_STATES } from '../constants';
 
 interface CardOverlayProps {
@@ -6,7 +5,10 @@ interface CardOverlayProps {
   processingState?: string | null;
 }
 
-export function CardOverlay({ uploadStatus, processingState }: CardOverlayProps) {
+export function CardOverlay({
+  uploadStatus,
+  processingState,
+}: CardOverlayProps) {
   const isLoading =
     uploadStatus === UPLOAD_STATES.UPLOADING ||
     processingState === PROCESSING_STATES.PENDING;

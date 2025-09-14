@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageHeader from '@/components/layouts/PageHeader';
@@ -14,9 +13,10 @@ import {
 } from '@/hooks/useDocumentLibrary';
 import { DocumentFormDialog } from './DocumentFormDialog';
 import { DocumentLibraryTable } from './DocumentLibraryTable';
-import type { DocumentLibraryCollection } from '@/types/database';
+import type { DocumentLibrary, DocumentLibraryFormData } from '@/types';
+import type { IdentifiableEntity } from '@/hooks/useConfirmationDialog';
 
-export default function DocumentLibrary() {
+export default function DocumentLibraryPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -29,21 +29,23 @@ export default function DocumentLibrary() {
   } = useDocumentCollectionOperations();
 
   // Hooks for managing dialogs
-  const formDialog = useFormDialog<DocumentLibraryCollection>();
+  const formDialog = useFormDialog<DocumentLibrary>();
   const confirmDialog = useConfirmationDialog({
-    delete: deleteDocumentCollection,
+    delete: async (id: string) => {
+      await deleteDocumentCollection(id);
+    },
   });
 
   // Navigate to collection details when a row is clicked
-  const handleRowClick = (rowData: DocumentLibraryCollection) => {
+  const handleRowClick = (rowData: DocumentLibrary) => {
     navigate(`/document-library/collection/${rowData.id}`);
   };
 
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
-  const count = isBulk ? (data as any[])?.length : 1;
+  const count = isBulk && Array.isArray(data) ? data.length : 1;
   const confirmationContent = getConfirmationContent(
-    type,
+    type || 'delete',
     isBulk,
     count,
     t,
@@ -51,7 +53,7 @@ export default function DocumentLibrary() {
   );
 
   // Handler for document form submission
-  const handleDocumentSubmit = async (data: Partial<DocumentLibraryCollection>) => {
+  const handleDocumentSubmit = async (data: DocumentLibraryFormData) => {
     try {
       if (formDialog.entity) {
         // Edit existing document collection
@@ -74,7 +76,7 @@ export default function DocumentLibrary() {
       />
 
       <ErrorLoadingWrapper
-        error={error}
+        error={error || null}
         loading={loading}
         resourceName={t('navigation.documentLibrary').toLowerCase()}
       >
@@ -84,7 +86,11 @@ export default function DocumentLibrary() {
           onEdit={(document) => formDialog.open(document)}
           onCreateNew={() => formDialog.open()}
           onConfirmAction={(type, data, isBulk) =>
-            confirmDialog.open(type, data, isBulk)
+            confirmDialog.open(
+              type,
+              data as unknown as IdentifiableEntity | IdentifiableEntity[],
+              isBulk
+            )
           }
           onRowClick={handleRowClick}
         />

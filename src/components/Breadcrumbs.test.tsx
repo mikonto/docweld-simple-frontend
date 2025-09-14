@@ -7,7 +7,10 @@ import { Breadcrumbs } from './Breadcrumbs';
 import type { BreadcrumbData } from './Breadcrumbs';
 
 // Helper function to render with router and i18n
-const renderWithRouter = (initialEntries = ['/'], breadcrumbData: BreadcrumbData = {}) => {
+const renderWithRouter = (
+  initialEntries = ['/'],
+  breadcrumbData: BreadcrumbData = {}
+) => {
   return render(
     <I18nextProvider i18n={i18n}>
       <MemoryRouter initialEntries={initialEntries}>

@@ -15,7 +15,10 @@ describe('ImportFooter', () => {
   it('renders with selected items count', () => {
     renderWithProviders(
       <ImportFooter
-        selectedItems={[{ id: '1' } as any, { id: '2' } as any]}
+        selectedItems={[
+          { id: '1', type: 'document' as const },
+          { id: '2', type: 'section' as const },
+        ]}
         onClearSelection={mockOnClearSelection}
         onCancel={mockOnCancel}
         onSubmit={mockOnSubmit}
@@ -49,7 +52,7 @@ describe('ImportFooter', () => {
   it('calls onClearSelection when clear button is clicked', () => {
     renderWithProviders(
       <ImportFooter
-        selectedItems={[{ id: '1' } as any]}
+        selectedItems={[{ id: '1', type: 'document' as const }]}
         onClearSelection={mockOnClearSelection}
         onCancel={mockOnCancel}
         onSubmit={mockOnSubmit}
@@ -81,7 +84,7 @@ describe('ImportFooter', () => {
   it('calls onSubmit when import button is clicked with selected items', () => {
     renderWithProviders(
       <ImportFooter
-        selectedItems={[{ id: '1' } as any]}
+        selectedItems={[{ id: '1', type: 'document' as const }]}
         onClearSelection={mockOnClearSelection}
         onCancel={mockOnCancel}
         onSubmit={mockOnSubmit}
@@ -111,7 +114,7 @@ describe('ImportFooter', () => {
   it('enables import button when items are selected', () => {
     renderWithProviders(
       <ImportFooter
-        selectedItems={[{ id: '1' } as any]}
+        selectedItems={[{ id: '1', type: 'document' as const }]}
         onClearSelection={mockOnClearSelection}
         onCancel={mockOnCancel}
         onSubmit={mockOnSubmit}

@@ -1,6 +1,6 @@
 /**
  * Database Types - Firestore Data Models
- * 
+ *
  * These types represent the actual data structure stored in Firestore.
  * They serve as the source of truth for all database operations.
  */
@@ -20,17 +20,22 @@ export interface FirestoreDocument {
   fileSize: number;
   storageRef: string;
   thumbStorageRef: string | null;
-  processingState: 'uploading' | 'pending' | 'processing' | 'completed' | 'error';
+  processingState:
+    | 'uploading'
+    | 'pending'
+    | 'processing'
+    | 'completed'
+    | 'error';
   status: 'active' | 'deleted';
   order: number;
-  
+
   // Foreign keys (only one will be set based on context)
   sectionId?: string | null;
   projectId?: string;
   libraryId?: string;
   weldLogId?: string;
   weldId?: string;
-  
+
   // Timestamps
   createdAt: Timestamp | FieldValue;
   createdBy: string;
@@ -42,7 +47,8 @@ export interface FirestoreDocument {
  * Document type for application usage
  * Extends Firestore type with computed properties
  */
-export interface Document extends Omit<FirestoreDocument, 'createdAt' | 'updatedAt'> {
+export interface Document
+  extends Omit<FirestoreDocument, 'createdAt' | 'updatedAt'> {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -55,15 +61,15 @@ export interface Document extends Omit<FirestoreDocument, 'createdAt' | 'updated
  */
 export interface FirestoreSection {
   id: string;
-  name: string;        // Display name of the section
+  name: string; // Display name of the section
   description: string; // Section description
   status: 'active' | 'deleted';
   order: number;
-  
+
   // Foreign keys (only one will be set)
   projectId?: string;
   libraryId?: string;
-  
+
   // Timestamps
   createdAt: Timestamp | FieldValue;
   createdBy: string;
@@ -74,9 +80,12 @@ export interface FirestoreSection {
 /**
  * Section type for application usage
  */
-export interface Section extends Omit<FirestoreSection, 'createdAt' | 'updatedAt'> {
+export interface Section
+  extends Omit<FirestoreSection, 'createdAt' | 'updatedAt'> {
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  documentOrder?: string[]; // Array of document IDs in order
+  documentCount?: number; // Number of documents in this section
 }
 
 // ============== Upload Types ==============
@@ -96,6 +105,52 @@ export interface UploadingFile {
 //   documentId?: string;
 //   error?: Error;
 // }
+
+// ============== Company Types ==============
+
+/**
+ * Company information data structure
+ * Represents company profile information
+ */
+export interface CompanyInformation {
+  id?: string;
+  companyName: string;
+  address: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  website?: string;
+  logoUrl?: string;
+  createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
+}
+
+// ============== Document Library Types ==============
+
+/**
+ * Document Library (Collection) data structure
+ * Represents a collection of documents organized in sections
+ */
+export interface DocumentLibrary {
+  id: string;
+  name: string;
+  description?: string;
+  status: 'active' | 'deleted';
+
+  // Timestamps
+  createdAt: Timestamp | FieldValue;
+  createdBy: string;
+  updatedAt: Timestamp | FieldValue;
+  updatedBy: string;
+}
+
+/**
+ * Form data for creating/updating document libraries
+ */
+export interface DocumentLibraryFormData {
+  name: string;
+  description?: string;
+}
 
 // ============== Import Types ==============
 

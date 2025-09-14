@@ -9,6 +9,9 @@ import i18n from '@/i18n/config';
 import { useSignOut } from 'react-firebase-hooks/auth';
 import { useApp } from '@/contexts/AppContext';
 import { ReactNode } from 'react';
+import type { User as FirebaseUser } from 'firebase/auth';
+import type { Timestamp } from 'firebase/firestore';
+import type { User } from '@/types';
 
 // Mock dependencies
 vi.mock('sonner', () => ({
@@ -29,16 +32,24 @@ vi.mock('@/config/firebase', () => ({
   auth: {},
 }));
 
+type SignOutHook = [() => Promise<boolean>, boolean, Error | undefined];
 const mockUseSignOut = useSignOut as MockedFunction<typeof useSignOut>;
 const mockUseApp = useApp as MockedFunction<typeof useApp>;
-const mockToast = toast as any;
+interface MockToast {
+  error: MockedFunction<(message: string) => void>;
+}
+const mockToast = toast as unknown as MockToast;
 
 describe('PrivateRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Set up default mock for useSignOut
     const mockSignOut = vi.fn().mockResolvedValue(true);
-    mockUseSignOut.mockReturnValue([mockSignOut, false, null] as any);
+    mockUseSignOut.mockReturnValue([
+      mockSignOut,
+      false,
+      undefined,
+    ] as SignOutHook);
   });
 
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -50,15 +61,22 @@ describe('PrivateRoute', () => {
   it('should store error message in sessionStorage when user is authenticated but not authorized', async () => {
     // Mock the signOut function
     const mockSignOut = vi.fn().mockResolvedValue(true);
-    mockUseSignOut.mockReturnValue([mockSignOut, false, null] as any);
+    mockUseSignOut.mockReturnValue([
+      mockSignOut,
+      false,
+      undefined,
+    ] as SignOutHook);
 
     // Mock authenticated but unauthorized user (no userDb means unauthorized)
     mockUseApp.mockReturnValue({
-      userAuth: { uid: 'test-user' },
+      loggedInUser: null,
+      userAuth: { uid: 'test-user' } as FirebaseUser,
+      userDb: null, // This triggers the unauthorized flow
+      userStatus: null,
       isAuthorized: false,
       loading: false,
-      userDb: null, // This triggers the unauthorized flow
-    } as any);
+      error: undefined,
+    });
 
     // Clear sessionStorage before test
     sessionStorage.clear();
@@ -87,14 +105,22 @@ describe('PrivateRoute', () => {
   it('should not show error message when user is not authenticated', () => {
     // Mock the signOut function
     const mockSignOut = vi.fn();
-    mockUseSignOut.mockReturnValue([mockSignOut, false, null] as any);
+    mockUseSignOut.mockReturnValue([
+      mockSignOut,
+      false,
+      undefined,
+    ] as SignOutHook);
 
     // Mock unauthenticated user
     mockUseApp.mockReturnValue({
+      loggedInUser: null,
       userAuth: null,
+      userDb: null,
+      userStatus: null,
       isAuthorized: false,
       loading: false,
-    } as any);
+      error: undefined,
+    });
 
     render(
       <PrivateRoute>
@@ -113,10 +139,14 @@ describe('PrivateRoute', () => {
   it('should show loading spinner when loading', () => {
     // Mock loading state
     mockUseApp.mockReturnValue({
+      loggedInUser: null,
       userAuth: null,
+      userDb: null,
+      userStatus: null,
       isAuthorized: false,
       loading: true,
-    } as any);
+      error: undefined,
+    });
 
     const { container } = render(
       <PrivateRoute>
@@ -137,16 +167,30 @@ describe('PrivateRoute', () => {
   it('should render children when user is authorized', () => {
     // Mock the signOut function
     const mockSignOut = vi.fn();
-    mockUseSignOut.mockReturnValue([mockSignOut, false, null] as any);
+    mockUseSignOut.mockReturnValue([
+      mockSignOut,
+      false,
+      undefined,
+    ] as SignOutHook);
 
     // Mock authorized user with active status
     mockUseApp.mockReturnValue({
-      userAuth: { uid: 'test-user' },
-      userDb: { status: 'active' }, // Need userDb for authorized user
+      loggedInUser: null,
+      userAuth: { uid: 'test-user' } as FirebaseUser,
+      userDb: {
+        id: 'test-user',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        role: 'user',
+        isActive: true,
+        createdAt: { seconds: 0, nanoseconds: 0 } as unknown as Timestamp,
+        updatedAt: { seconds: 0, nanoseconds: 0 } as unknown as Timestamp,
+      } as User,
+      userStatus: 'active',
       isAuthorized: true,
       loading: false,
-      error: null,
-    } as any);
+      error: undefined,
+    });
 
     render(
       <PrivateRoute>

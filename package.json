@@ -7,6 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:test": "npm run type-check && npm run lint && npm run format:check",
+    "lint:test:fix": "npm run format && npm run lint:fix && npm run type-check",
+    "lint:strict": "npm run type-check && eslint . --max-warnings 0 && npm run format:check",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -17,7 +21,10 @@
     "knip": "knip",
     "prepare": "husky",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "pre-commit": "npm run lint:test",
+    "pre-push": "npm run lint:strict && npm run test:run",
+    "check-all": "npm run lint:strict && npm run test:run && npm run build"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

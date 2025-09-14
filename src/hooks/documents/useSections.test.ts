@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, MockedFunction } from 'vitest';
-import { useSections } from './useSections';
+import { useSections, type UseSectionsConfig } from './useSections';
 
 // Mock dependencies
 vi.mock('./useSectionOperations');
@@ -9,8 +9,12 @@ vi.mock('./useSectionData');
 import { useSectionOperations } from './useSectionOperations';
 import { useSectionData } from './useSectionData';
 
-const mockUseSectionOperations = useSectionOperations as MockedFunction<typeof useSectionOperations>;
-const mockUseSectionData = useSectionData as MockedFunction<typeof useSectionData>;
+const mockUseSectionOperations = useSectionOperations as MockedFunction<
+  typeof useSectionOperations
+>;
+const mockUseSectionData = useSectionData as MockedFunction<
+  typeof useSectionData
+>;
 
 describe('useSections', () => {
   const mockOperations = {
@@ -90,7 +94,7 @@ describe('useSections', () => {
         renderHook(() =>
           useSections({
             entityId: '123',
-          } as any)
+          } as UseSectionsConfig)
         );
       }).toThrow('useSections requires entityType and entityId');
     });
@@ -100,7 +104,7 @@ describe('useSections', () => {
         renderHook(() =>
           useSections({
             entityType: 'project',
-          } as any)
+          } as UseSectionsConfig)
         );
       }).toThrow('useSections requires entityType and entityId');
     });
@@ -109,7 +113,7 @@ describe('useSections', () => {
       expect(() => {
         renderHook(() =>
           useSections({
-            entityType: 'weldLog' as any,
+            entityType: 'weldLog' as unknown as 'project' | 'library',
             entityId: '123',
           })
         );

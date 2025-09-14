@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -9,7 +9,10 @@ import {
 } from '@/hooks/useProjectParticipants';
 import { useUsers } from '@/hooks/useUsers';
 import { useFormDialog } from '@/hooks/useFormDialog';
-import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import {
+  useConfirmationDialog,
+  type IdentifiableEntity,
+} from '@/hooks/useConfirmationDialog';
 import { getConfirmationContent } from '@/utils/confirmationContent';
 
 import PageHeader from '@/components/layouts/PageHeader';
@@ -19,7 +22,11 @@ import { ProjectFormDialog } from '../projects/ProjectFormDialog';
 import { ProjectDetailsCard } from './ProjectDetailsCard';
 import { ParticipantsTable } from './ParticipantsTable';
 import { ParticipantFormDialog } from './ParticipantFormDialog';
-import type { Project, ProjectParticipant } from '@/types/database';
+import type {
+  Project,
+  ProjectParticipant,
+  ProjectParticipantFormData,
+} from '@/types';
 
 export default function ProjectOverview() {
   const { t } = useTranslation();
@@ -57,9 +64,9 @@ export default function ProjectOverview() {
 
   // Get confirmation content for the dialog
   const { type, isBulk, data } = participantConfirmDialog.dialog;
-  const count = isBulk ? (data as ProjectParticipant[])?.length : 1;
+  const count = isBulk ? (data as unknown as ProjectParticipant[])?.length : 1;
   const confirmContent = getConfirmationContent(
-    type,
+    type || '',
     isBulk,
     count,
     t,
@@ -72,10 +79,17 @@ export default function ProjectOverview() {
       // Check if we have an existing participant to update
       const existingParticipant = participantFormDialog.entity;
 
-      if (existingParticipant) {
-        await updateParticipant(existingParticipant.id, data);
+      if (existingParticipant && 'id' in existingParticipant) {
+        await updateParticipant(existingParticipant.id as string, data);
       } else {
-        await addParticipant(projectId!, data);
+        // For new participants, we need to convert to ProjectParticipantFormData
+        const formData: ProjectParticipantFormData = {
+          userId: data.userId!,
+          role: data.role!,
+          participatingAs: data.participatingAs,
+          permissions: data.permissions,
+        };
+        await addParticipant(projectId!, formData);
       }
 
       // Close the dialog on success
@@ -134,7 +148,7 @@ export default function ProjectOverview() {
         )}
 
         <ErrorLoadingWrapper
-          error={error}
+          error={error || null}
           loading={loading}
           resourceName={t('common.project')}
         >
@@ -146,7 +160,7 @@ export default function ProjectOverview() {
               />
 
               <ErrorLoadingWrapper
-                error={participantsError}
+                error={participantsError || null}
                 loading={participantsLoading}
                 resourceName={t('projects.participants')}
               >
@@ -156,7 +170,15 @@ export default function ProjectOverview() {
                   loading={usersLoading}
                   onAddParticipant={() => participantFormDialog.open()}
                   onEdit={participantFormDialog.open}
-                  onConfirmAction={participantConfirmDialog.open}
+                  onConfirmAction={(action, data, isBulk) =>
+                    participantConfirmDialog.open(
+                      action,
+                      data as unknown as
+                        | IdentifiableEntity
+                        | IdentifiableEntity[],
+                      isBulk
+                    )
+                  }
                 />
               </ErrorLoadingWrapper>
             </div>

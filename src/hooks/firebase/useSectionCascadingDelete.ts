@@ -22,8 +22,14 @@ interface SectionDeleteResult {
  * Return type for useSectionCascadingDelete hook
  */
 interface UseSectionCascadingDeleteReturn {
-  deleteProjectSection: (sectionId: string, projectId: string) => Promise<SectionDeleteResult>;
-  deleteLibrarySection: (sectionId: string, libraryId: string) => Promise<SectionDeleteResult>;
+  deleteProjectSection: (
+    sectionId: string,
+    projectId: string
+  ) => Promise<SectionDeleteResult>;
+  deleteLibrarySection: (
+    sectionId: string,
+    libraryId: string
+  ) => Promise<SectionDeleteResult>;
 }
 
 /**

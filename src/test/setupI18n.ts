@@ -5,7 +5,7 @@ import i18n from '@/i18n/config';
 
 /**
  * Initialize i18n for test environment
- * 
+ *
  * Configuration ensures:
  * - English as default language
  * - No suspense (for synchronous testing)

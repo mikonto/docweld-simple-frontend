@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { getConfirmationContent } from './confirmationContent';
 
 describe('getConfirmationContent', () => {
-  const mockT = vi.fn((key: string, options?: Record<string, any>) => {
+  const mockT = vi.fn((key: string, options?: Record<string, unknown>) => {
     // Mock translation function that returns the key with options
     if (options) {
       return `${key}_${JSON.stringify(options)}`;
@@ -116,7 +116,13 @@ describe('getConfirmationContent', () => {
   });
 
   it('should return remove content for participant operations', () => {
-    const result = getConfirmationContent('remove', false, 1, mockT, 'projects');
+    const result = getConfirmationContent(
+      'remove',
+      false,
+      1,
+      mockT,
+      'projects'
+    );
 
     expect(result).toEqual({
       title: 'projects.removeFromProject',
@@ -138,7 +144,13 @@ describe('getConfirmationContent', () => {
   });
 
   it('should return deactivate content', () => {
-    const result = getConfirmationContent('deactivate', true, 3, mockT, 'users');
+    const result = getConfirmationContent(
+      'deactivate',
+      true,
+      3,
+      mockT,
+      'users'
+    );
 
     expect(result).toEqual({
       title: 'users.deactivateSelected',
@@ -149,7 +161,13 @@ describe('getConfirmationContent', () => {
   });
 
   it('should handle custom operation types with fallback', () => {
-    const result = getConfirmationContent('custom-action', false, 1, mockT, 'items');
+    const result = getConfirmationContent(
+      'custom-action',
+      false,
+      1,
+      mockT,
+      'items'
+    );
 
     expect(result).toEqual({
       title: 'common.confirmAction_{"action":"custom-action"}',
@@ -160,11 +178,18 @@ describe('getConfirmationContent', () => {
   });
 
   it('should handle custom bulk operation types with fallback', () => {
-    const result = getConfirmationContent('custom-bulk', true, 10, mockT, 'items');
+    const result = getConfirmationContent(
+      'custom-bulk',
+      true,
+      10,
+      mockT,
+      'items'
+    );
 
     expect(result).toEqual({
       title: 'common.confirmBulkAction_{"action":"custom-bulk","count":10}',
-      description: 'common.bulkActionDescription_{"action":"custom-bulk","count":10}',
+      description:
+        'common.bulkActionDescription_{"action":"custom-bulk","count":10}',
       actionLabel: 'common.confirm',
       actionVariant: 'default',
     });

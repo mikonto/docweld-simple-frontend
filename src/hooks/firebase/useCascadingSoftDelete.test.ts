@@ -14,7 +14,10 @@ vi.mock('firebase/firestore', () => ({
   })),
   writeBatch: vi.fn(),
   serverTimestamp: vi.fn(() => 'mock-timestamp'),
-  doc: vi.fn((db: any, collection: string, id: string) => ({ id, collection })),
+  doc: vi.fn((_db: unknown, collection: string, id: string) => ({
+    id,
+    collection,
+  })),
 }));
 
 vi.mock('@/config/firebase', () => ({
@@ -46,7 +49,7 @@ describe('useCascadingSoftDelete', () => {
     // Simple batch mock
     mockBatch = {
       update: vi.fn(),
-      commit: vi.fn().mockResolvedValue(),
+      commit: vi.fn().mockResolvedValue(undefined),
     };
     (writeBatch as Mock).mockReturnValue(mockBatch);
 
@@ -89,7 +92,9 @@ describe('useCascadingSoftDelete', () => {
         if (callCount === 2) {
           // Second call is for weld logs - return 35 items
           return {
-            forEach: (callback: (doc: any) => void) => {
+            forEach: (
+              callback: (doc: { id: string; ref: { id: string } }) => void
+            ) => {
               mockWeldLogIds.forEach((id) => callback({ id, ref: { id } }));
             },
             empty: false,
@@ -112,7 +117,7 @@ describe('useCascadingSoftDelete', () => {
       // Should have made multiple queries due to chunking (35 items = 2 chunks: 30 + 5)
       // Check that where was called with 'in' operator multiple times for welds
       const whereCalls = (where as Mock).mock.calls;
-      const inCalls = whereCalls.filter((call: any[]) => call[1] === 'in');
+      const inCalls = whereCalls.filter((call: unknown[]) => call[1] === 'in');
 
       // Should have at least 2 'in' calls for the chunked weld queries
       expect(inCalls.length).toBeGreaterThanOrEqual(2);
@@ -190,7 +195,7 @@ describe('useCascadingSoftDelete', () => {
       const { result } = renderHook(() => useCascadingSoftDelete());
 
       const success = await act(async () => {
-        return await result.current.deleteMaterial('material-123');
+        return await result.current.deleteMaterial('material-123', 'parent');
       });
 
       // Should have called batch operations

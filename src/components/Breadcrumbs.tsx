@@ -38,7 +38,10 @@ interface BreadcrumbItem {
 /**
  * Breadcrumbs component that displays navigation trail
  */
-export function Breadcrumbs({ className, breadcrumbData = {} }: BreadcrumbsProps) {
+export function Breadcrumbs({
+  className,
+  breadcrumbData = {},
+}: BreadcrumbsProps) {
   const location = useLocation();
   const params = useParams();
   const { t } = useTranslation();

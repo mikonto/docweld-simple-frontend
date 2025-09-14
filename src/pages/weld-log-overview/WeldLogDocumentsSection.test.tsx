@@ -1,31 +1,33 @@
-import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { WeldLogDocumentsSection } from './WeldLogDocumentsSection'
-import type { Document, UploadingFile } from '@/types/database'
-import type { Timestamp } from 'firebase/firestore'
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { WeldLogDocumentsSection } from './WeldLogDocumentsSection';
+import type { Document, UploadingFile } from '@/types/database';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
-}))
+}));
 
 interface MockStandaloneSectionProps {
-  title: string
-  documents: Document[]
-  documentsLoading: boolean
-  documentsError: Error | null
-  onDragEnd: (event: any) => void
-  onUpload: (files: any) => void
-  onRenameDocument: (id: string, title: string) => void
-  onDeleteDocument: (id: string, title: string) => void
+  title: string;
+  documents: Document[];
+  documentsLoading: boolean;
+  documentsError: Error | null;
+  onDragEnd: (event: {
+    active?: { id: string };
+    over?: { id: string };
+  }) => void;
+  onUpload: (files: File[]) => void;
+  onRenameDocument: (id: string, title: string) => void;
+  onDeleteDocument: (id: string, title: string) => void;
   dropdownActions: Array<{
-    key: string
-    label: string
-    onSelect: () => void
-  }>
+    key: string;
+    label: string;
+    onSelect: () => void;
+  }>;
 }
 
 // Mock StandaloneSection to test the integration
@@ -54,23 +56,14 @@ vi.mock('@/components/documents/sections', () => ({
       <button onClick={() => onDragEnd({ active: { id: 'doc1' } })}>
         Drag End
       </button>
-      <button onClick={() => onUpload(['file'])}>Upload</button>
+      <button onClick={() => onUpload([new File([''], 'file')])}>Upload</button>
       <button onClick={() => onRenameDocument('doc1', 'New Name')}>
         Rename
       </button>
       <button onClick={() => onDeleteDocument('doc1', 'Title')}>Delete</button>
     </div>
   ),
-}))
-
-const mockTimestamp: Timestamp = {
-  toDate: () => new Date('2024-01-01'),
-  toMillis: () => 1704067200000,
-  seconds: 1704067200,
-  nanoseconds: 0,
-  isEqual: vi.fn(),
-  valueOf: vi.fn(),
-}
+}));
 
 describe('WeldLogDocumentsSection', () => {
   const defaultProps = {
@@ -83,16 +76,16 @@ describe('WeldLogDocumentsSection', () => {
     uploadingFiles: {} as Record<string, UploadingFile>,
     onRenameDocument: vi.fn(),
     onDeleteDocument: vi.fn(),
-  }
+  };
 
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   it('should render the section header with title', () => {
-    render(<WeldLogDocumentsSection {...defaultProps} />)
-    expect(screen.getByText('weldLogs.weldLogDocuments')).toBeInTheDocument()
-  })
+    render(<WeldLogDocumentsSection {...defaultProps} />);
+    expect(screen.getByText('weldLogs.weldLogDocuments')).toBeInTheDocument();
+  });
 
   it('should show document count', () => {
     const mockDocuments: Document[] = [
@@ -126,15 +119,15 @@ describe('WeldLogDocumentsSection', () => {
         updatedAt: mockTimestamp,
         updatedBy: 'user1',
       },
-    ]
+    ];
 
     const props = {
       ...defaultProps,
       documents: mockDocuments,
-    }
-    render(<WeldLogDocumentsSection {...props} />)
-    expect(screen.getByText('Documents: 2')).toBeInTheDocument()
-  })
+    };
+    render(<WeldLogDocumentsSection {...props} />);
+    expect(screen.getByText('Documents: 2')).toBeInTheDocument();
+  });
 
   it('should pass documents to StandaloneSection', () => {
     const mockDocument: Document = {
@@ -151,83 +144,83 @@ describe('WeldLogDocumentsSection', () => {
       createdBy: 'user1',
       updatedAt: mockTimestamp,
       updatedBy: 'user1',
-    }
+    };
 
     const props = {
       ...defaultProps,
       documents: [mockDocument],
-    }
-    render(<WeldLogDocumentsSection {...props} />)
-    expect(screen.getByTestId('standalone-section')).toBeInTheDocument()
-    expect(screen.getByText('Documents: 1')).toBeInTheDocument()
-  })
+    };
+    render(<WeldLogDocumentsSection {...props} />);
+    expect(screen.getByTestId('standalone-section')).toBeInTheDocument();
+    expect(screen.getByText('Documents: 1')).toBeInTheDocument();
+  });
 
   it('should show loading state', () => {
     const props = {
       ...defaultProps,
       documentsLoading: true,
-    }
-    render(<WeldLogDocumentsSection {...props} />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
-  })
+    };
+    render(<WeldLogDocumentsSection {...props} />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
 
   it('should show error state', () => {
     const props = {
       ...defaultProps,
       documentsError: new Error('Failed to load'),
-    }
-    render(<WeldLogDocumentsSection {...props} />)
-    expect(screen.getByText('Error: Failed to load')).toBeInTheDocument()
-  })
+    };
+    render(<WeldLogDocumentsSection {...props} />);
+    expect(screen.getByText('Error: Failed to load')).toBeInTheDocument();
+  });
 
   it('should handle drag end', () => {
-    render(<WeldLogDocumentsSection {...defaultProps} />)
+    render(<WeldLogDocumentsSection {...defaultProps} />);
 
-    const dragButton = screen.getByText('Drag End')
-    fireEvent.click(dragButton)
+    const dragButton = screen.getByText('Drag End');
+    fireEvent.click(dragButton);
 
     expect(defaultProps.onDragEnd).toHaveBeenCalledWith({
       active: { id: 'doc1' },
-    })
-  })
+    });
+  });
 
   it('should handle import documents click', () => {
-    render(<WeldLogDocumentsSection {...defaultProps} />)
+    render(<WeldLogDocumentsSection {...defaultProps} />);
 
     // Find and click the import option (now directly rendered due to mock)
-    const importOption = screen.getByText('documents.importDocuments')
-    fireEvent.click(importOption)
+    const importOption = screen.getByText('documents.importDocuments');
+    fireEvent.click(importOption);
 
-    expect(defaultProps.onImportClick).toHaveBeenCalledTimes(1)
-  })
+    expect(defaultProps.onImportClick).toHaveBeenCalledTimes(1);
+  });
 
   it('should handle document rename', () => {
-    render(<WeldLogDocumentsSection {...defaultProps} />)
+    render(<WeldLogDocumentsSection {...defaultProps} />);
 
-    const renameButton = screen.getByText('Rename')
-    fireEvent.click(renameButton)
+    const renameButton = screen.getByText('Rename');
+    fireEvent.click(renameButton);
 
     expect(defaultProps.onRenameDocument).toHaveBeenCalledWith(
       'doc1',
       'New Name'
-    )
-  })
+    );
+  });
 
   it('should handle document delete', () => {
-    render(<WeldLogDocumentsSection {...defaultProps} />)
+    render(<WeldLogDocumentsSection {...defaultProps} />);
 
-    const deleteButton = screen.getByText('Delete')
-    fireEvent.click(deleteButton)
+    const deleteButton = screen.getByText('Delete');
+    fireEvent.click(deleteButton);
 
-    expect(defaultProps.onDeleteDocument).toHaveBeenCalledWith('doc1', 'Title')
-  })
+    expect(defaultProps.onDeleteDocument).toHaveBeenCalledWith('doc1', 'Title');
+  });
 
   it('should handle file upload', () => {
-    render(<WeldLogDocumentsSection {...defaultProps} />)
+    render(<WeldLogDocumentsSection {...defaultProps} />);
 
-    const uploadButton = screen.getByText('Upload')
-    fireEvent.click(uploadButton)
+    const uploadButton = screen.getByText('Upload');
+    fireEvent.click(uploadButton);
 
-    expect(defaultProps.onUpload).toHaveBeenCalledWith(['file'])
-  })
-})
+    expect(defaultProps.onUpload).toHaveBeenCalledWith([expect.any(File)]);
+  });
+});

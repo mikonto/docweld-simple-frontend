@@ -5,74 +5,155 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { vi } from 'vitest';
 import type { DocumentLibraryTableProps } from './DocumentLibraryTable';
-import type { DocumentLibraryCollection } from '@/types/database';
+import type { DocumentLibrary } from '@/types';
 import type { Timestamp } from 'firebase/firestore';
+import type { MockDataTableProps } from '@/test/types/mockTypes';
+import type { ColumnDef } from '@tanstack/react-table';
 
 // Mock the DataTable component to simplify testing
 vi.mock('@/components/data-table/DataTable', () => ({
-  DataTable: ({
+  DataTable: <TData,>({
     columns,
     data,
     actionButtons,
     bulkActionButtons,
     onRowClick,
-  }: any) => (
-    <div data-testid="data-table">
-      {/* Render action buttons */}
-      {actionButtons?.map((button: any, index: number) => (
-        <button key={index} onClick={button.onClick}>
-          {button.label}
-        </button>
-      ))}
+  }: MockDataTableProps<TData>) => {
+    // Helper to get column accessor key safely
+    const getAccessorKey = (
+      col: ColumnDef<TData, unknown>
+    ): string | undefined => {
+      // Type guard to check if this is an accessor column
+      if ('accessorKey' in col && typeof col.accessorKey === 'string') {
+        return col.accessorKey;
+      }
+      return undefined;
+    };
 
-      {/* Render column headers */}
-      <table>
-        <thead>
-          <tr>
-            {columns.map((col: any, index: number) => (
-              <th key={index}>
-                {col.header && typeof col.header === 'function'
-                  ? col.header({ column: {} }).props.title
-                  : col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row: any, rowIndex: number) => (
-            <tr key={rowIndex} onClick={() => onRowClick?.(row)}>
-              {columns.map((col: any, colIndex: number) => (
-                <td key={colIndex}>
-                  {col.cell
-                    ? col.cell({
-                        row: { getValue: () => row[col.accessorKey] },
-                      })
-                    : row[col.accessorKey]}
-                </td>
+    // Helper to render header content
+    const renderHeader = (col: ColumnDef<TData, unknown>) => {
+      if (col.header && typeof col.header === 'function') {
+        // Call the header function with a minimal context
+        const headerElement = col.header(
+          {} as Parameters<NonNullable<typeof col.header>>[0]
+        );
+        // Extract title from DataTableColumnHeader if it's a React element
+        if (React.isValidElement(headerElement)) {
+          const props = headerElement.props as Record<string, unknown>;
+          return (props.title as string) || 'Column Header';
+        }
+        return 'Column Header';
+      }
+      if (typeof col.header === 'string') {
+        return col.header;
+      }
+      return '';
+    };
+
+    // Helper to render cell content
+    const renderCell = (col: ColumnDef<TData, unknown>, row: TData) => {
+      const accessorKey = getAccessorKey(col);
+
+      if (col.cell && typeof col.cell === 'function') {
+        // Create a minimal row context
+        const mockRow = {
+          getValue: (key: string) => {
+            const record = row as Record<string, unknown>;
+            return record[key];
+          },
+          original: row,
+        };
+
+        const cellElement = col.cell({
+          row: mockRow,
+          getValue: () => {
+            if (accessorKey) {
+              const record = row as Record<string, unknown>;
+              return record[accessorKey];
+            }
+            return undefined;
+          },
+          renderValue: () => {
+            if (accessorKey) {
+              const record = row as Record<string, unknown>;
+              return record[accessorKey];
+            }
+            return undefined;
+          },
+        } as Parameters<NonNullable<typeof col.cell>>[0]);
+
+        // Extract text content from React elements
+        if (React.isValidElement(cellElement)) {
+          const props = cellElement.props as Record<string, unknown>;
+          const children = props.children;
+          return typeof children === 'string' ? children : '';
+        }
+        return String(cellElement || '');
+      }
+
+      // Fallback to accessor key value
+      if (accessorKey) {
+        const record = row as Record<string, unknown>;
+        return String(record[accessorKey] || '');
+      }
+
+      return '';
+    };
+
+    return (
+      <div data-testid="data-table">
+        {/* Render action buttons */}
+        {actionButtons?.map((button, index) => (
+          <button key={index} onClick={button.onClick}>
+            {button.label}
+          </button>
+        ))}
+
+        {/* Render column headers */}
+        <table>
+          <thead>
+            <tr>
+              {columns.map((col, index) => (
+                <th key={index}>{renderHeader(col)}</th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((row, rowIndex) => (
+              <tr key={rowIndex} onClick={() => onRowClick?.(row)}>
+                {columns.map((col, colIndex) => (
+                  <td key={colIndex}>{String(renderCell(col, row))}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {/* Render bulk actions when needed */}
-      {bulkActionButtons?.map((button: any, index: number) => (
-        <button
-          key={index}
-          onClick={() => button.onClick([])}
-          data-testid={`bulk-action-${index}`}
-        >
-          {button.label}
-        </button>
-      ))}
-    </div>
-  ),
+        {/* Render bulk actions when needed */}
+        {bulkActionButtons?.map((button, index) => (
+          <button
+            key={index}
+            onClick={() => button.onClick([])}
+            data-testid={`bulk-action-${index}`}
+          >
+            {button.label}
+          </button>
+        ))}
+      </div>
+    );
+  },
 }));
 
 // Mock other components
 vi.mock('@/components/data-table/ColumnDef', () => ({
-  createColumns: ({ columns, rowMenuItems }: any) => {
-    return columns.map((col: any) => ({
+  createColumns: <TData,>({
+    columns,
+    rowMenuItems,
+  }: {
+    columns: ColumnDef<TData, unknown>[];
+    rowMenuItems?: Array<{ label: string; action: (row: TData) => void }>;
+  }) => {
+    return columns.map((col) => ({
       ...col,
       // Add mock for row actions if needed
       ...(rowMenuItems && { rowMenuItems }),
@@ -89,7 +170,7 @@ const renderWithI18n = (component: React.ReactElement) => {
 };
 
 describe('DocumentLibraryTable', () => {
-  const mockDocuments: DocumentLibraryCollection[] = [
+  const mockDocuments: DocumentLibrary[] = [
     {
       id: '1',
       name: 'Test Collection 1',

@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
@@ -7,7 +6,7 @@ import { MultiCombobox, type MultiComboboxProps } from './multi-combobox';
 // Mock the translation hook
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, params?: Record<string, any>) => {
+    t: (key: string, params?: Record<string, unknown>) => {
       if (key === 'common.removeItem' && params?.item) {
         return `Remove ${params.item}`;
       }
@@ -20,8 +19,8 @@ vi.mock('react-i18next', () => ({
 Element.prototype.scrollIntoView = vi.fn();
 
 describe('MultiCombobox', () => {
-  const mockOnValueChange = vi.fn<[string[]], void>();
-  const mockOnAddNew = vi.fn<[], void>();
+  const mockOnValueChange = vi.fn<(value: string[]) => void>();
+  const mockOnAddNew = vi.fn<() => void>();
 
   const defaultProps: MultiComboboxProps = {
     options: [

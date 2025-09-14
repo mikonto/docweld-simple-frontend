@@ -1,4 +1,4 @@
-import React from 'react';
+import type { CSSProperties } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -14,6 +14,7 @@ import {
   SECTION_SIZE_CONFIG,
 } from '@/components/documents/constants';
 import type { Document } from '@/types/database';
+import type { ProcessingState } from '@/components/documents/constants';
 
 export interface StandaloneSectionContentProps {
   documents: Document[];
@@ -46,13 +47,13 @@ export function StandaloneSectionContent({
     })
   );
 
-  const gridStyle: React.CSSProperties = {
+  const gridStyle: CSSProperties = {
     display: 'grid',
     gridTemplateColumns: `repeat(auto-fill, minmax(${SECTION_SIZE_CONFIG.STANDALONE.CARD_MIN_WIDTH}px, 1fr))`,
     gap: '1rem',
   };
 
-  const cardStyle: React.CSSProperties = {
+  const cardStyle: CSSProperties = {
     aspectRatio: 1 / SECTION_SIZE_CONFIG.STANDALONE.CARD_HEIGHT_RATIO,
   };
 
@@ -85,7 +86,9 @@ export function StandaloneSectionContent({
                   title={doc.title}
                   storageRef={doc.storageRef}
                   thumbStorageRef={doc.thumbStorageRef}
-                  processingState={doc.processingState}
+                  processingState={
+                    doc.processingState as ProcessingState | null | undefined
+                  }
                   fileType={doc.fileType}
                   fileSize={doc.fileSize}
                   createdAt={doc.createdAt}

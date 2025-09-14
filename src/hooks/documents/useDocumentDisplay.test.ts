@@ -3,6 +3,11 @@ import { renderHook, act } from '@testing-library/react';
 import { useDocumentDisplay } from './useDocumentDisplay';
 import { getStorage, ref as storageRefFunc } from 'firebase/storage';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
+import type {
+  FirebaseStorage,
+  StorageReference,
+  StorageError,
+} from 'firebase/storage';
 
 // Mock Firebase modules
 vi.mock('firebase/storage', () => ({
@@ -15,8 +20,12 @@ vi.mock('react-firebase-hooks/storage', () => ({
 }));
 
 const mockGetStorage = getStorage as MockedFunction<typeof getStorage>;
-const mockStorageRefFunc = storageRefFunc as MockedFunction<typeof storageRefFunc>;
-const mockUseDownloadURL = useDownloadURL as MockedFunction<typeof useDownloadURL>;
+const mockStorageRefFunc = storageRefFunc as MockedFunction<
+  typeof storageRefFunc
+>;
+const mockUseDownloadURL = useDownloadURL as MockedFunction<
+  typeof useDownloadURL
+>;
 
 // Mock Image constructor
 const mockImage = {
@@ -25,15 +34,23 @@ const mockImage = {
   src: '',
 };
 
-global.Image = vi.fn().mockImplementation(() => mockImage) as any;
+global.Image = vi
+  .fn()
+  .mockImplementation(() => mockImage) as unknown as typeof Image;
 
 describe('useDocumentDisplay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetStorage.mockReturnValue({} as any);
-    mockStorageRefFunc.mockImplementation((storage: any, path: string) => ({ path, storage } as any));
+    mockGetStorage.mockReturnValue({} as FirebaseStorage);
+    mockStorageRefFunc.mockImplementation(
+      (storage, path) =>
+        ({
+          path,
+          storage,
+        }) as unknown as StorageReference
+    );
     // Default mock - return array for each call
-    mockUseDownloadURL.mockReturnValue([null, false, undefined]);
+    mockUseDownloadURL.mockReturnValue([undefined, false, undefined]);
   });
 
   describe('Core Document Display', () => {
@@ -77,7 +94,7 @@ describe('useDocumentDisplay', () => {
     });
 
     it('should handle loading states correctly', () => {
-      mockUseDownloadURL.mockReturnValue([null, true, undefined]); // Loading state
+      mockUseDownloadURL.mockReturnValue([undefined, true, undefined]); // Loading state
 
       const { result } = renderHook(() =>
         useDocumentDisplay('documents/test/image.jpg')
@@ -121,9 +138,17 @@ describe('useDocumentDisplay', () => {
     });
 
     it('should handle storage fetch errors gracefully', () => {
-      const mockError = new Error('Storage error');
+      const mockError = {
+        code: 'storage/object-not-found',
+        message: 'Storage error',
+        status_: 404,
+        customData: {},
+        serverResponse: null,
+        name: 'StorageError',
+        status: 404,
+      } as unknown as StorageError;
 
-      mockUseDownloadURL.mockReturnValue([null, false, mockError]);
+      mockUseDownloadURL.mockReturnValue([undefined, false, mockError]);
 
       // Test that hook handles error gracefully without crashing
       const { result } = renderHook(() =>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil, MoreHorizontal } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -18,7 +17,10 @@ interface ProjectDetailsCardProps {
 }
 
 // Project details card component for displaying project information
-export function ProjectDetailsCard({ project, onEdit }: ProjectDetailsCardProps) {
+export function ProjectDetailsCard({
+  project,
+  onEdit,
+}: ProjectDetailsCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -87,7 +89,7 @@ export function ProjectDetailsCard({ project, onEdit }: ProjectDetailsCardProps)
               </h4>
               <Badge
                 variant={
-                  project.fillerMaterialTraceable ? 'success' : 'secondary'
+                  project.fillerMaterialTraceable ? 'default' : 'secondary'
                 }
                 className="text-sm"
               >
@@ -104,7 +106,7 @@ export function ProjectDetailsCard({ project, onEdit }: ProjectDetailsCardProps)
               </h4>
               <Badge
                 variant={
-                  project.parentMaterialTraceable ? 'success' : 'secondary'
+                  project.parentMaterialTraceable ? 'default' : 'secondary'
                 }
                 className="text-sm"
               >

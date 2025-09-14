@@ -1,9 +1,11 @@
-import * as React from 'react'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { WeldDocumentsSection } from './WeldDocumentsSection'
-import type { Document, UploadingFile } from '@/types/database'
+import * as React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { WeldDocumentsSection } from './WeldDocumentsSection';
+import type { Document, UploadingFile } from '@/types/database';
+import { mockTimestamp } from '@/test/utils/mockTimestamp';
+import type { Timestamp } from 'firebase/firestore';
 
 // Mock i18n
 vi.mock('react-i18next', () => ({
@@ -15,69 +17,90 @@ vi.mock('react-i18next', () => ({
     },
   }),
   Trans: ({ children }: { children: React.ReactNode }) => children,
-}))
+}));
 
 // Mock the StandaloneSection component
 vi.mock('@/components/documents/sections/standalone/StandaloneSection', () => ({
   default: vi.fn(),
-  StandaloneSection: vi.fn(({ title, dropdownActions, ...props }: any) => (
-    <div data-testid="standalone-section">
-      <h2>{title}</h2>
-      {dropdownActions && (
-        <div data-testid="dropdown-actions">
-          {dropdownActions.map((action: any) => (
-            <button key={action.key} onClick={action.onSelect}>
-              {action.label}
-            </button>
-          ))}
+  StandaloneSection: vi.fn(
+    ({
+      title,
+      dropdownActions,
+      ...props
+    }: {
+      title: string;
+      dropdownActions?: Array<{
+        key: string;
+        label: string;
+        onSelect: () => void;
+      }>;
+      documents?: unknown[];
+      documentsLoading?: boolean;
+      documentsError?: Error | null;
+      [key: string]: unknown;
+    }) => (
+      <div data-testid="standalone-section">
+        <h2>{title}</h2>
+        {dropdownActions && (
+          <div data-testid="dropdown-actions">
+            {dropdownActions.map((action) => (
+              <button key={action.key} onClick={action.onSelect}>
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div data-testid="documents">
+          {props.documents?.length || 0} documents
         </div>
-      )}
-      <div data-testid="documents">
-        {props.documents?.length || 0} documents
+        <div data-testid="loading">
+          {props.documentsLoading ? 'Loading' : 'Not loading'}
+        </div>
+        <div data-testid="error">
+          {props.documentsError ? 'Error' : 'No error'}
+        </div>
       </div>
-      <div data-testid="loading">
-        {props.documentsLoading ? 'Loading' : 'Not loading'}
-      </div>
-      <div data-testid="error">
-        {props.documentsError ? 'Error' : 'No error'}
-      </div>
-    </div>
-  )),
-}))
+    )
+  ),
+}));
 
 describe('WeldDocumentsSection', () => {
   const mockDocuments: Document[] = [
-    { 
-      id: 'doc-1', 
+    {
+      id: 'doc-1',
       title: 'Document 1',
-      fileName: 'doc1.pdf',
+      fileType: 'pdf',
       fileSize: 1024,
-      mimeType: 'application/pdf',
-      entityType: 'weld',
-      entityId: 'weld-123',
-      projectId: 'project-123',
+      storageRef: 'storage/ref/1',
+      thumbStorageRef: null,
+      processingState: 'completed',
+      status: 'active',
       order: 1,
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'user-123',
-      archivedAt: null,
-      archivedBy: null,
-    },
-    { 
-      id: 'doc-2', 
-      title: 'Document 2',
-      fileName: 'doc2.pdf',
-      fileSize: 2048,
-      mimeType: 'application/pdf',
-      entityType: 'weld',
-      entityId: 'weld-123',
+      weldId: 'weld-123',
       projectId: 'project-123',
-      order: 2,
-      createdAt: new Date('2024-01-01'),
+      createdAt: mockTimestamp as Timestamp,
       createdBy: 'user-123',
-      archivedAt: null,
-      archivedBy: null,
+      updatedAt: mockTimestamp as Timestamp,
+      updatedBy: 'user-123',
     },
-  ]
+    {
+      id: 'doc-2',
+      title: 'Document 2',
+      fileType: 'pdf',
+      fileSize: 2048,
+      storageRef: 'storage/ref/2',
+      thumbStorageRef: null,
+      processingState: 'completed',
+      status: 'active',
+      order: 2,
+      weldId: 'weld-123',
+      projectId: 'project-123',
+      createdAt: mockTimestamp as Timestamp,
+      createdBy: 'user-123',
+      updatedAt: mockTimestamp as Timestamp,
+      updatedBy: 'user-123',
+    },
+  ];
 
   const defaultProps = {
     documents: mockDocuments,
@@ -89,50 +112,50 @@ describe('WeldDocumentsSection', () => {
     uploadingFiles: [] as UploadingFile[],
     onRenameDocument: vi.fn(),
     onDeleteDocument: vi.fn(),
-  }
+  };
 
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   it('renders with correct title', () => {
-    render(<WeldDocumentsSection {...defaultProps} />)
-    expect(screen.getByText('welds.weldDocuments')).toBeInTheDocument()
-  })
+    render(<WeldDocumentsSection {...defaultProps} />);
+    expect(screen.getByText('welds.weldDocuments')).toBeInTheDocument();
+  });
 
   it('passes documents to StandaloneSection', () => {
-    render(<WeldDocumentsSection {...defaultProps} />)
-    expect(screen.getByText('2 documents')).toBeInTheDocument()
-  })
+    render(<WeldDocumentsSection {...defaultProps} />);
+    expect(screen.getByText('2 documents')).toBeInTheDocument();
+  });
 
   it('passes loading state correctly', () => {
-    const props = { ...defaultProps, documentsLoading: true }
-    render(<WeldDocumentsSection {...props} />)
-    expect(screen.getByText('Loading')).toBeInTheDocument()
-  })
+    const props = { ...defaultProps, documentsLoading: true };
+    render(<WeldDocumentsSection {...props} />);
+    expect(screen.getByText('Loading')).toBeInTheDocument();
+  });
 
   it('passes error state correctly', () => {
-    const props = { ...defaultProps, documentsError: new Error('Test error') }
-    render(<WeldDocumentsSection {...props} />)
-    expect(screen.getByText('Error')).toBeInTheDocument()
-  })
+    const props = { ...defaultProps, documentsError: new Error('Test error') };
+    render(<WeldDocumentsSection {...props} />);
+    expect(screen.getByText('Error')).toBeInTheDocument();
+  });
 
   it('includes import action in dropdown', async () => {
-    const user = userEvent.setup()
-    render(<WeldDocumentsSection {...defaultProps} />)
+    const user = userEvent.setup();
+    render(<WeldDocumentsSection {...defaultProps} />);
 
-    const importButton = screen.getByText('documents.importDocuments')
-    expect(importButton).toBeInTheDocument()
+    const importButton = screen.getByText('documents.importDocuments');
+    expect(importButton).toBeInTheDocument();
 
-    await user.click(importButton)
-    expect(defaultProps.onImportClick).toHaveBeenCalledTimes(1)
-  })
+    await user.click(importButton);
+    expect(defaultProps.onImportClick).toHaveBeenCalledTimes(1);
+  });
 
   it('handles empty documents array', () => {
-    const props = { ...defaultProps, documents: [] }
-    render(<WeldDocumentsSection {...props} />)
-    expect(screen.getByText('0 documents')).toBeInTheDocument()
-  })
+    const props = { ...defaultProps, documents: [] };
+    render(<WeldDocumentsSection {...props} />);
+    expect(screen.getByText('0 documents')).toBeInTheDocument();
+  });
 
   // NOTE: The following tests check implementation details (HOW props are passed internally)
   // rather than user-facing behavior. For a commercial MVP, these are commented out
@@ -202,4 +225,4 @@ describe('WeldDocumentsSection', () => {
   //     {}
   //   );
   // });
-})
+});

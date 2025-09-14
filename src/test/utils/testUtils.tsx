@@ -19,6 +19,7 @@ interface AllTheProvidersProps {
   children: React.ReactNode;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 const AllTheProviders: React.FC<AllTheProvidersProps> = ({ children }) => {
   return (
     <I18nextProvider i18n={i18n}>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { PROCESSING_STATES } from '../constants';
 
 interface CardImageProps {

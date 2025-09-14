@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +12,8 @@ import { ErrorLoadingWrapper } from '@/components/shared/ErrorLoadingWrapper';
 import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import { ProjectsTable } from './ProjectsTable';
-import type { Project } from '@/types/database';
+import type { Project, ProjectFormData } from '@/types';
+import type { IdentifiableEntity } from '@/hooks/useConfirmationDialog';
 
 export default function Projects() {
   const { t } = useTranslation();
@@ -35,9 +36,9 @@ export default function Projects() {
   // Hooks for managing dialogs
   const formDialog = useFormDialog<Project>();
   const confirmDialog = useConfirmationDialog({
-    delete: deleteProject,
-    archive: archiveProject,
-    restore: restoreProject,
+    delete: (id: string) => deleteProject(id).then(() => {}),
+    archive: (id: string) => archiveProject(id).then(() => {}),
+    restore: (id: string) => restoreProject(id).then(() => {}),
   });
 
   // Navigate to project overview when a row is clicked
@@ -48,9 +49,9 @@ export default function Projects() {
 
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
-  const count = isBulk ? (data as any[])?.length : 1;
+  const count = isBulk && Array.isArray(data) ? data.length : 1;
   const confirmContent = getConfirmationContent(
-    type,
+    type || '',
     isBulk,
     count,
     t,
@@ -66,7 +67,17 @@ export default function Projects() {
       if (existingProject) {
         await updateProject(existingProject.id, data);
       } else {
-        await createProject(data);
+        // Convert to ProjectFormData for creation
+        const formData: ProjectFormData = {
+          projectName: data.projectName!,
+          projectNumber: data.projectNumber,
+          client: data.client,
+          customer: data.customer,
+          location: data.location,
+          externalReference: data.externalReference,
+          status: data.status,
+        };
+        await createProject(formData);
       }
 
       // Close the dialog on success
@@ -92,7 +103,7 @@ export default function Projects() {
       <PageHeader title={t('projects.title')} />
 
       <ErrorLoadingWrapper
-        error={error}
+        error={error || null}
         loading={loading}
         resourceName="projects"
       >
@@ -103,7 +114,13 @@ export default function Projects() {
           onTabChange={setActiveTab}
           onEdit={formDialog.open}
           onCreateNew={() => formDialog.open()}
-          onConfirmAction={confirmDialog.open}
+          onConfirmAction={(action, data, isBulk) =>
+            confirmDialog.open(
+              action,
+              data as unknown as IdentifiableEntity | IdentifiableEntity[],
+              isBulk
+            )
+          }
           onRowClick={handleRowClick}
         />
       </ErrorLoadingWrapper>

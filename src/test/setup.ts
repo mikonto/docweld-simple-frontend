@@ -1,11 +1,12 @@
 import '@testing-library/jest-dom';
 import { vi, beforeAll, afterAll } from 'vitest';
+import * as React from 'react';
 import './mocks/firebaseConfig';
 import './setupI18n';
 
 // ============== Mock next-themes ==============
 vi.mock('next-themes', () => ({
-  ThemeProvider: ({ children }: any) => children,
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
   useTheme: () => ({
     theme: 'light',
     setTheme: vi.fn(),
@@ -32,18 +33,21 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-(global as any).IntersectionObserver = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
+  vi.fn(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
 
 // Mock ResizeObserver
-(global as any).ResizeObserver = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+(global as unknown as { ResizeObserver: unknown }).ResizeObserver = vi.fn(
+  () => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  })
+);
 
 // ============== Console Suppression Setup ==============
 
@@ -68,7 +72,7 @@ function shouldSuppressError(message: string): boolean {
     'Batch operation limit exceeded',
   ];
 
-  return suppressedErrors.some(suppressedError => 
+  return suppressedErrors.some((suppressedError) =>
     message.includes(suppressedError)
   );
 }
@@ -82,7 +86,7 @@ function shouldSuppressI18nMessage(message: string): boolean {
 
 beforeAll(() => {
   // Suppress specific error messages that are expected in tests
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     const errorMessage = typeof args[0] === 'string' ? args[0] : '';
 
     if (shouldSuppressError(errorMessage)) {
@@ -92,7 +96,7 @@ beforeAll(() => {
   };
 
   // Suppress i18next logs
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     const warnMessage = typeof args[0] === 'string' ? args[0] : '';
     if (shouldSuppressI18nMessage(warnMessage)) {
       return;
@@ -100,7 +104,7 @@ beforeAll(() => {
     originalWarn.call(console, ...args);
   };
 
-  console.log = (...args: any[]) => {
+  console.log = (...args: unknown[]) => {
     const logMessage = typeof args[0] === 'string' ? args[0] : '';
     if (shouldSuppressI18nMessage(logMessage)) {
       return;

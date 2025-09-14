@@ -1,6 +1,6 @@
 /**
  * Theme context - re-exports from next-themes
- * 
+ *
  * next-themes works perfectly with Vite projects!
  * It provides:
  * - System theme detection

@@ -1,9 +1,60 @@
 import { describe, it, expect, vi, beforeEach, MockedFunction } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useImportSelection from './useImportSelection';
-import type { BrowserState, BrowserAction, SelectedItem } from './useImportBrowser';
-import type { CollectionData, SectionData, DocumentData } from '@/types/database';
+import type {
+  BrowserState,
+  BrowserAction,
+  SelectedItem,
+} from './useImportBrowser';
+import type { FirestoreSection, FirestoreDocument } from '@/types/database';
 import { Dispatch } from 'react';
+
+// Type aliases for compatibility
+type CollectionData = { id: string; name: string; [key: string]: unknown };
+type SectionData = FirestoreSection;
+type DocumentData = FirestoreDocument;
+
+// Helper function to create mock documents
+const createMockDocument = (id: string, title: string): DocumentData => ({
+  id,
+  title,
+  fileType: 'PDF',
+  fileSize: 1024,
+  storageRef: `documents/${id}/file.pdf`,
+  thumbStorageRef: null,
+  processingState: 'completed',
+  status: 'active',
+  order: 1,
+  createdAt: {
+    seconds: 0,
+    nanoseconds: 0,
+  } as unknown as import('firebase/firestore').Timestamp,
+  createdBy: 'user',
+  updatedAt: {
+    seconds: 0,
+    nanoseconds: 0,
+  } as unknown as import('firebase/firestore').Timestamp,
+  updatedBy: 'user',
+});
+
+// Helper function to create mock sections
+const createMockSection = (id: string, name: string): SectionData => ({
+  id,
+  name,
+  description: '',
+  status: 'active',
+  order: 1,
+  createdAt: {
+    seconds: 0,
+    nanoseconds: 0,
+  } as unknown as import('firebase/firestore').Timestamp,
+  createdBy: 'user',
+  updatedAt: {
+    seconds: 0,
+    nanoseconds: 0,
+  } as unknown as import('firebase/firestore').Timestamp,
+  updatedBy: 'user',
+});
 
 // Mock the ACTIONS from useImportBrowser
 vi.mock('./useImportBrowser', () => ({
@@ -27,15 +78,24 @@ describe('useImportSelection', () => {
         selectedItems: [],
         sections: [],
         documents: [],
-        selectedCollection: { id: 'col-1', name: 'Collection' } as CollectionData,
+        selectedCollection: {
+          id: 'col-1',
+          name: 'Collection',
+        } as CollectionData,
         selectedSection: { id: 'sec-1', name: 'Section' } as SectionData,
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
-      const item = { id: 'doc-1', title: 'Document 1' };
+      const item = createMockDocument('doc-1', 'Document 1');
       act(() => {
         result.current.handleSelectItem(item, 'document');
       });
@@ -64,10 +124,16 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, false, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          false,
+          'documentLibrary',
+          null
+        )
       );
 
-      const item = { id: 'doc-1', title: 'Document 1' };
+      const item = createMockDocument('doc-1', 'Document 1');
       act(() => {
         result.current.handleSelectItem(item, 'document');
       });
@@ -105,7 +171,7 @@ describe('useImportSelection', () => {
         )
       );
 
-      const item = { id: 'doc-1', title: 'Document 1' };
+      const item = createMockDocument('doc-1', 'Document 1');
       act(() => {
         result.current.handleSelectItem(item, 'document');
       });
@@ -137,34 +203,60 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
-      expect(result.current.isItemSelected({ id: 'doc-1' }, 'document')).toBe(
-        true
-      );
-      expect(result.current.isItemSelected({ id: 'sec-1' }, 'section')).toBe(
-        true
-      );
+      expect(
+        result.current.isItemSelected(
+          createMockDocument('doc-1', 'Document 1'),
+          'document'
+        )
+      ).toBe(true);
+      expect(
+        result.current.isItemSelected(
+          createMockSection('sec-1', 'Section 1'),
+          'section'
+        )
+      ).toBe(true);
     });
 
     it('returns false when item is not selected', () => {
       const state: Partial<BrowserState> = {
-        selectedItems: [{ id: 'doc-1', title: 'Document 1', type: 'document' }] as SelectedItem[],
+        selectedItems: [
+          { id: 'doc-1', title: 'Document 1', type: 'document' },
+        ] as SelectedItem[],
         sections: [],
         documents: [],
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
-      expect(result.current.isItemSelected({ id: 'doc-2' }, 'document')).toBe(
-        false
-      );
-      expect(result.current.isItemSelected({ id: 'sec-1' }, 'section')).toBe(
-        false
-      );
+      expect(
+        result.current.isItemSelected(
+          createMockDocument('doc-2', 'Document 2'),
+          'document'
+        )
+      ).toBe(false);
+      expect(
+        result.current.isItemSelected(
+          createMockSection('sec-1', 'Section 1'),
+          'section'
+        )
+      ).toBe(false);
     });
 
     it('returns false when no items are selected', () => {
@@ -175,21 +267,30 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
-      expect(result.current.isItemSelected({ id: 'doc-1' }, 'document')).toBe(
-        false
-      );
+      expect(
+        result.current.isItemSelected(
+          createMockDocument('doc-1', 'Document 1'),
+          'document'
+        )
+      ).toBe(false);
     });
   });
 
   describe('areAllItemsSelected', () => {
     it('returns true when all documents are selected', () => {
       const documents = [
-        { id: 'doc-1', title: 'Document 1' },
-        { id: 'doc-2', title: 'Document 2' },
-      ] as DocumentData[];
+        createMockDocument('doc-1', 'Document 1'),
+        createMockDocument('doc-2', 'Document 2'),
+      ];
 
       const state: Partial<BrowserState> = {
         selectedItems: [
@@ -201,7 +302,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       expect(result.current.areAllItemsSelected('document')).toBe(true);
@@ -209,10 +316,10 @@ describe('useImportSelection', () => {
 
     it('returns false when only some documents are selected', () => {
       const documents = [
-        { id: 'doc-1', title: 'Document 1' },
-        { id: 'doc-2', title: 'Document 2' },
-        { id: 'doc-3', title: 'Document 3' },
-      ] as DocumentData[];
+        createMockDocument('doc-1', 'Document 1'),
+        createMockDocument('doc-2', 'Document 2'),
+        createMockDocument('doc-3', 'Document 3'),
+      ];
 
       const state: Partial<BrowserState> = {
         selectedItems: [
@@ -224,7 +331,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       expect(result.current.areAllItemsSelected('document')).toBe(false);
@@ -232,9 +345,9 @@ describe('useImportSelection', () => {
 
     it('returns true when all sections are selected', () => {
       const sections = [
-        { id: 'sec-1', name: 'Section 1' },
-        { id: 'sec-2', name: 'Section 2' },
-      ] as SectionData[];
+        createMockSection('sec-1', 'Section 1'),
+        createMockSection('sec-2', 'Section 2'),
+      ];
 
       const state: Partial<BrowserState> = {
         selectedItems: [
@@ -246,7 +359,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       expect(result.current.areAllItemsSelected('section')).toBe(true);
@@ -260,7 +379,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       expect(result.current.areAllItemsSelected('document')).toBe(false);
@@ -271,9 +396,9 @@ describe('useImportSelection', () => {
   describe('toggleAllItems', () => {
     it('selects all documents when none are selected', () => {
       const documents = [
-        { id: 'doc-1', title: 'Document 1' },
-        { id: 'doc-2', title: 'Document 2' },
-      ] as DocumentData[];
+        createMockDocument('doc-1', 'Document 1'),
+        createMockDocument('doc-2', 'Document 2'),
+      ];
 
       const state: Partial<BrowserState> = {
         selectedItems: [],
@@ -284,7 +409,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       act(() => {
@@ -316,9 +447,9 @@ describe('useImportSelection', () => {
 
     it('deselects all documents when all are selected', () => {
       const documents = [
-        { id: 'doc-1', title: 'Document 1' },
-        { id: 'doc-2', title: 'Document 2' },
-      ] as DocumentData[];
+        createMockDocument('doc-1', 'Document 1'),
+        createMockDocument('doc-2', 'Document 2'),
+      ];
 
       const state: Partial<BrowserState> = {
         selectedItems: [
@@ -330,7 +461,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       act(() => {
@@ -346,9 +483,9 @@ describe('useImportSelection', () => {
 
     it('selects all sections when toggling sections', () => {
       const sections = [
-        { id: 'sec-1', name: 'Section 1' },
-        { id: 'sec-2', name: 'Section 2' },
-      ] as SectionData[];
+        createMockSection('sec-1', 'Section 1'),
+        createMockSection('sec-2', 'Section 2'),
+      ];
 
       const state: Partial<BrowserState> = {
         selectedItems: [],
@@ -359,7 +496,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       act(() => {
@@ -389,12 +532,14 @@ describe('useImportSelection', () => {
 
     it('preserves other type selections when toggling', () => {
       const documents = [
-        { id: 'doc-1', title: 'Document 1' },
-        { id: 'doc-2', title: 'Document 2' },
-      ] as DocumentData[];
+        createMockDocument('doc-1', 'Document 1'),
+        createMockDocument('doc-2', 'Document 2'),
+      ];
 
       const state: Partial<BrowserState> = {
-        selectedItems: [{ id: 'sec-1', name: 'Section 1', type: 'section' }] as SelectedItem[],
+        selectedItems: [
+          { id: 'sec-1', name: 'Section 1', type: 'section' },
+        ] as SelectedItem[],
         sections: [],
         documents,
         selectedCollection: null,
@@ -402,7 +547,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       act(() => {
@@ -446,7 +597,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       act(() => {
@@ -473,7 +630,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       expect(result.current.selectedItems).toEqual(selectedItems);
@@ -487,7 +650,13 @@ describe('useImportSelection', () => {
       };
 
       const { result } = renderHook(() =>
-        useImportSelection(state as BrowserState, mockDispatch, true, 'documentLibrary', null)
+        useImportSelection(
+          state as BrowserState,
+          mockDispatch,
+          true,
+          'documentLibrary',
+          null
+        )
       );
 
       expect(result.current.selectedItems).toEqual([]);

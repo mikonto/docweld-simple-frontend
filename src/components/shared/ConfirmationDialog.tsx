@@ -9,6 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -31,7 +33,7 @@ export function ConfirmationDialog({
   actionVariant = 'default',
 }: ConfirmationDialogProps) {
   const { t } = useTranslation();
-  
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -41,7 +43,10 @@ export function ConfirmationDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-          <AlertDialogAction variant={actionVariant} onClick={onConfirm}>
+          <AlertDialogAction
+            className={cn(buttonVariants({ variant: actionVariant }))}
+            onClick={onConfirm}
+          >
             {actionLabel || t('common.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -17,7 +17,11 @@ interface CollectionsListProps {
 /**
  * Displays a list of document collections
  */
-function CollectionsList({ collections, onCollectionClick, isLoading }: CollectionsListProps) {
+function CollectionsList({
+  collections,
+  onCollectionClick,
+  isLoading,
+}: CollectionsListProps) {
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -45,7 +49,8 @@ function CollectionsList({ collections, onCollectionClick, isLoading }: Collecti
             <div>
               <h3 className="text-sm font-medium">{col.name}</h3>
               <p className="text-xs text-muted-foreground">
-                {col.sectionCount !== undefined && col.sectionCount >= 0 &&
+                {col.sectionCount !== undefined &&
+                  col.sectionCount >= 0 &&
                   t(
                     col.sectionCount === 1
                       ? 'documents.sections_one'
@@ -53,7 +58,8 @@ function CollectionsList({ collections, onCollectionClick, isLoading }: Collecti
                     { count: col.sectionCount }
                   )}
                 {' • '}
-                {col.documentCount !== undefined && col.documentCount >= 0 &&
+                {col.documentCount !== undefined &&
+                  col.documentCount >= 0 &&
                   t(
                     col.documentCount === 1
                       ? 'documents.documents_one'

@@ -93,14 +93,14 @@ const getCurrentLocaleConfig = (): LocaleConfig => {
 /**
  * Type for acceptable timestamp inputs
  */
-type TimestampInput = 
-  | Timestamp 
-  | Date 
-  | number 
-  | string 
+type TimestampInput =
+  | Timestamp
+  | Date
+  | number
+  | string
   | { toDate: () => Date }
   | { seconds: number }
-  | null 
+  | null
   | undefined;
 
 /**
@@ -112,7 +112,12 @@ export const convertToDate = (timestamp: TimestampInput): Date | null => {
   if (!timestamp) return null;
 
   // Handle Firestore timestamp
-  if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function') {
+  if (
+    timestamp &&
+    typeof timestamp === 'object' &&
+    'toDate' in timestamp &&
+    typeof timestamp.toDate === 'function'
+  ) {
     return timestamp.toDate();
   }
 
@@ -146,7 +151,10 @@ export const convertToDate = (timestamp: TimestampInput): Date | null => {
  * @param format - Format type: "date", "dateTime", "shortDate", "time"
  * @returns Formatted date string
  */
-export const formatDate = (timestamp: TimestampInput, format: DateFormat = 'date'): string => {
+export const formatDate = (
+  timestamp: TimestampInput,
+  format: DateFormat = 'date'
+): string => {
   const date = convertToDate(timestamp);
   if (!date) return '—';
 
@@ -197,7 +205,15 @@ export const formatRelativeDate = (timestamp: TimestampInput): string => {
 
     interface Division {
       amount: number;
-      name: Intl.RelativeTimeFormatUnit | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years';
+      name:
+        | Intl.RelativeTimeFormatUnit
+        | 'seconds'
+        | 'minutes'
+        | 'hours'
+        | 'days'
+        | 'weeks'
+        | 'months'
+        | 'years';
     }
 
     const divisions: Division[] = [

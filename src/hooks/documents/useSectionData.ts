@@ -1,7 +1,15 @@
 // src/hooks/documents/useSectionData.ts
 import { useMemo } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, orderBy, Query, DocumentData, FirestoreError } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  Query,
+  DocumentData,
+  FirestoreError,
+} from 'firebase/firestore';
 import { db } from '@/config/firebase';
 
 export interface UseSectionDataReturn {
@@ -37,9 +45,7 @@ export function useSectionData(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionName, serializedForeignKeys]);
 
-  const [sections, loading, error] = useCollectionData(sectionQuery, {
-    idField: 'id',
-  });
+  const [sections, loading, error] = useCollectionData(sectionQuery);
 
   return { sections: sections || [], loading: loading ?? false, error };
 }

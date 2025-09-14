@@ -1,7 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { render, screen, act, waitFor } from '@/test/utils/testUtils';
-import { DataTable, ActionButton, BulkActionButton, DataTableError } from './DataTable';
+import {
+  DataTable,
+  ActionButton,
+  BulkActionButton,
+  DataTableError,
+} from './DataTable';
 import { ColumnDef } from '@tanstack/react-table';
 
 // Sample test data
@@ -19,7 +24,7 @@ const mockData: MockDataItem[] = [
 ];
 
 // Sample columns configuration
-const mockColumns: ColumnDef<MockDataItem, any>[] = [
+const mockColumns: ColumnDef<MockDataItem, unknown>[] = [
   {
     id: 'select',
     header: ({ table }) => (

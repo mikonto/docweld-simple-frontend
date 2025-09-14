@@ -1,5 +1,10 @@
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { doc, where, QueryConstraint, FirestoreError } from 'firebase/firestore';
+import {
+  doc,
+  where,
+  QueryConstraint,
+  FirestoreError,
+} from 'firebase/firestore';
 
 import { db } from '@/config/firebase';
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
@@ -12,7 +17,10 @@ import { type Status } from '@/constants/firestore';
  */
 interface UseProjectOperationsReturn {
   createProject: (data: ProjectFormData) => Promise<string>;
-  updateProject: (projectId: string, updates: Partial<Project>) => Promise<void>;
+  updateProject: (
+    projectId: string,
+    updates: Partial<Project>
+  ) => Promise<void>;
   deleteProject: (projectId: string) => Promise<boolean>;
   archiveProject: (projectId: string) => Promise<void>;
   restoreProject: (projectId: string) => Promise<void>;
@@ -28,13 +36,15 @@ interface UseProjectOperationsReturn {
  *   - Loading state
  *   - Error if any
  */
-export const useProject = (projectId?: string | null): [Project | null, boolean, FirestoreError | undefined] => {
+export const useProject = (
+  projectId?: string | null
+): [Project | null, boolean, FirestoreError | undefined] => {
   const [snapshot, loading, error] = useDocument(
     projectId ? doc(db, 'projects', projectId) : null
   );
 
   const project = snapshot?.exists()
-    ? { id: snapshot.id, ...snapshot.data() } as Project
+    ? ({ id: snapshot.id, ...snapshot.data() } as Project)
     : null;
 
   return [project, loading, error];
@@ -48,9 +58,13 @@ export const useProject = (projectId?: string | null): [Project | null, boolean,
  *   - Loading state
  *   - Error if any
  */
-export const useProjects = (status?: Status): [Project[], boolean, FirestoreError | undefined] => {
+export const useProjects = (
+  status?: Status
+): [Project[], boolean, FirestoreError | undefined] => {
   // Build constraints based on status filter
-  const constraints: QueryConstraint[] = status ? [where('status', '==', status)] : [];
+  const constraints: QueryConstraint[] = status
+    ? [where('status', '==', status)]
+    : [];
 
   // Use the unified hook to fetch projects
   const { documents, loading, error } = useFirestoreOperations('projects', {

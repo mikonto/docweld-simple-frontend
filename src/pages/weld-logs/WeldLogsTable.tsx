@@ -1,9 +1,14 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash } from 'lucide-react';
-import { createColumns, DataTable, DataTableColumnHeader } from '@/components/data-table';
+import {
+  createColumns,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
 import type { WeldLog } from '@/types/app';
+import type { Column, Row } from '@tanstack/react-table';
 
 // Define prop types for the component
 interface WeldLogsTableProps {
@@ -11,7 +16,11 @@ interface WeldLogsTableProps {
   loading: boolean;
   onEdit: (weldLog: WeldLog) => void;
   onCreateNew: () => void;
-  onConfirmAction: (action: string, data: WeldLog | WeldLog[], isBulk?: boolean) => void;
+  onConfirmAction: (
+    action: string,
+    data: WeldLog | WeldLog[],
+    isBulk?: boolean
+  ) => void;
   onRowClick: (rowData: WeldLog) => void;
 }
 
@@ -20,7 +29,13 @@ interface ActionButton {
   label: string;
   icon: React.ReactNode;
   onClick: () => void;
-  variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  variant:
+    | 'default'
+    | 'destructive'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link';
 }
 
 // Define bulk action button interface
@@ -28,7 +43,13 @@ interface BulkActionButton {
   label: string;
   icon: React.ReactNode;
   onClick: (selectedRows: WeldLog[]) => void;
-  variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  variant:
+    | 'default'
+    | 'destructive'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link';
 }
 
 // Define menu item interface
@@ -48,21 +69,25 @@ export function WeldLogsTable({
   onRowClick,
 }: WeldLogsTableProps) {
   const { t } = useTranslation();
-  
+
   // Define weld log columns
   const weldLogColumns = [
     {
       accessorKey: 'name',
-      header: ({ column }: { column: any }) => (
-        <DataTableColumnHeader column={column} title={t('common.name')} className="" />
+      header: ({ column }: { column: Column<WeldLog, unknown> }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={t('common.name')}
+          className=""
+        />
       ),
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }: { row: Row<WeldLog> }) => (
         <div className="font-medium">{row.getValue('name')}</div>
       ),
     },
     {
       accessorKey: 'description',
-      header: ({ column }: { column: any }) => (
+      header: ({ column }: { column: Column<WeldLog, unknown> }) => (
         <DataTableColumnHeader
           column={column}
           title={t('common.description')}

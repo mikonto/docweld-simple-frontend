@@ -1,5 +1,5 @@
 import React from 'react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createColumns, CreateColumnsOptions } from './ColumnDef';
@@ -17,18 +17,28 @@ interface TestData {
 }
 
 interface ActionsColumnRendererProps {
-  columns: ColumnDef<TestData, any>[];
+  columns: ColumnDef<TestData, unknown>[];
 }
 
 // Mock component that renders the actions column
-const ActionsColumnRenderer: React.FC<ActionsColumnRendererProps> = ({ columns }) => {
+const ActionsColumnRenderer: React.FC<ActionsColumnRendererProps> = ({
+  columns,
+}) => {
   const actionsColumn = columns.find((col) => col.id === 'actions');
   if (!actionsColumn) return null;
 
   // Simulate a row with minimal data
   const row = { original: { id: 1 } } as Row<TestData>;
-  const cellProps = { row } as any;
-  return <>{typeof actionsColumn.cell === 'function' ? actionsColumn.cell(cellProps) : null}</>;
+  const cellProps = { row } as Parameters<
+    Extract<ColumnDef<TestData>['cell'], (props: unknown) => unknown>
+  >[0];
+  return (
+    <>
+      {typeof actionsColumn.cell === 'function'
+        ? actionsColumn.cell(cellProps)
+        : null}
+    </>
+  );
 };
 
 describe('createColumns', () => {

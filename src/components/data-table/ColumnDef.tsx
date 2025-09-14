@@ -2,24 +2,24 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ActionsCell, RowMenuItem } from './ActionsCell';
 
-export interface CreateColumnsOptions<TData = any> {
+export interface CreateColumnsOptions<TData = unknown> {
   enableSelection?: boolean;
   enableRowActions?: boolean;
   rowMenuItems?: RowMenuItem<TData>[];
-  columns?: ColumnDef<TData, any>[];
+  columns?: ColumnDef<TData, unknown>[];
 }
 
 /**
  * Creates a set of column definitions for the data table
  * Following shadcn/ui and TanStack Table v8 conventions
  */
-export function createColumns<TData = any>({
+export function createColumns<TData = unknown>({
   enableSelection = true,
   enableRowActions = true,
   rowMenuItems = [],
   columns = [],
-}: CreateColumnsOptions<TData>): ColumnDef<TData, any>[] {
-  const generatedColumns: ColumnDef<TData, any>[] = [];
+}: CreateColumnsOptions<TData>): ColumnDef<TData, unknown>[] {
+  const generatedColumns: ColumnDef<TData, unknown>[] = [];
 
   // Add selection column with checkboxes
   if (enableSelection) {

@@ -39,15 +39,23 @@ vi.mock('@/hooks/documents', () => ({
 
 // Mock tooltip components - simplified
 vi.mock('@/components/ui/tooltip', () => ({
-  TooltipProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  TooltipTrigger: ({ children, asChild }: { children: React.ReactElement; asChild?: boolean }) => {
-    const Component = asChild ? children.type : 'div';
-    return (
-      <Component {...(asChild ? children.props : {})}>
-        {asChild ? children.props.children : children}
-      </Component>
-    );
+  TooltipTrigger: ({
+    children,
+    asChild,
+  }: {
+    children: React.ReactElement;
+    asChild?: boolean;
+  }) => {
+    if (asChild && React.isValidElement(children)) {
+      const Component = children.type;
+      const props = children.props as Record<string, unknown>;
+      return <Component {...props}>{props.children}</Component>;
+    }
+    return <div>{children}</div>;
   },
   TooltipContent: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="tooltip-content">{children}</div>
@@ -56,19 +64,33 @@ vi.mock('@/components/ui/tooltip', () => ({
 
 // Mock dropdown menu components
 vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children, asChild }: { children: React.ReactElement; asChild?: boolean }) => {
-    const Component = asChild ? children.type : 'button';
-    return (
-      <Component {...(asChild ? children.props : {})}>
-        {asChild ? children.props.children : children}
-      </Component>
-    );
-  },
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <button onClick={onClick}>{children}</button>
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
   ),
+  DropdownMenuTrigger: ({
+    children,
+    asChild,
+  }: {
+    children: React.ReactElement;
+    asChild?: boolean;
+  }) => {
+    if (asChild && React.isValidElement(children)) {
+      const Component = children.type;
+      const props = children.props as Record<string, unknown>;
+      return <Component {...props}>{props.children}</Component>;
+    }
+    return <button>{children}</button>;
+  },
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => <button onClick={onClick}>{children}</button>,
   DropdownMenuSeparator: () => <hr />,
 }));
 

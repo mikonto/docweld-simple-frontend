@@ -1,5 +1,10 @@
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { doc, where, QueryConstraint, FirestoreError } from 'firebase/firestore';
+import {
+  doc,
+  where,
+  QueryConstraint,
+  FirestoreError,
+} from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
@@ -11,8 +16,13 @@ import { type Status } from '@/constants/firestore';
  * Return type for useDocumentCollectionOperations hook
  */
 interface UseDocumentCollectionOperationsReturn {
-  createDocumentCollection: (documentData: DocumentLibraryFormData) => Promise<string>;
-  updateDocumentCollection: (documentId: string, updates: Partial<DocumentLibrary>) => Promise<void>;
+  createDocumentCollection: (
+    documentData: DocumentLibraryFormData
+  ) => Promise<string>;
+  updateDocumentCollection: (
+    documentId: string,
+    updates: Partial<DocumentLibrary>
+  ) => Promise<void>;
   deleteDocumentCollection: (documentId: string) => Promise<boolean>;
 }
 
@@ -37,7 +47,7 @@ export const useDocumentCollection = (
   );
 
   const documentCollection = snapshot?.exists()
-    ? { id: snapshot.id, ...snapshot.data() } as DocumentLibrary
+    ? ({ id: snapshot.id, ...snapshot.data() } as DocumentLibrary)
     : null;
 
   return [documentCollection, loading, error];
@@ -55,7 +65,9 @@ export const useDocumentCollections = (
   status?: Status
 ): [DocumentLibrary[], boolean, FirestoreError | undefined] => {
   // Use useFirestoreOperations with constraints based on status
-  const constraints: QueryConstraint[] = status ? [where('status', '==', status)] : [];
+  const constraints: QueryConstraint[] = status
+    ? [where('status', '==', status)]
+    : [];
 
   const { documents, loading, error } = useFirestoreOperations(
     'document-library',
@@ -71,61 +83,72 @@ export const useDocumentCollections = (
  * Hook to create, update, and delete document collections
  * @returns Object containing document collection operation functions
  */
-export const useDocumentCollectionOperations = (): UseDocumentCollectionOperationsReturn => {
-  const { loggedInUser } = useApp();
+export const useDocumentCollectionOperations =
+  (): UseDocumentCollectionOperationsReturn => {
+    const { loggedInUser } = useApp();
 
-  // Use useFirestoreOperations for CRUD operations
-  const { create, update } = useFirestoreOperations('document-library');
+    // Use useFirestoreOperations for CRUD operations
+    const { create, update } = useFirestoreOperations('document-library');
 
-  // Get cascading delete function
-  const { deleteDocumentLibrary: cascadeDelete } = useCascadingSoftDelete();
+    // Get cascading delete function
+    const { deleteDocumentLibrary: cascadeDelete } = useCascadingSoftDelete();
 
-  /**
-   * Create a new document collection
-   * @param documentData - The document collection data
-   * @returns The ID of the created document collection
-   */
-  const createDocumentCollection = async (documentData: DocumentLibraryFormData): Promise<string> => {
-    if (!loggedInUser)
-      throw new Error('User must be logged in to create document collections');
+    /**
+     * Create a new document collection
+     * @param documentData - The document collection data
+     * @returns The ID of the created document collection
+     */
+    const createDocumentCollection = async (
+      documentData: DocumentLibraryFormData
+    ): Promise<string> => {
+      if (!loggedInUser)
+        throw new Error(
+          'User must be logged in to create document collections'
+        );
 
-    // Don't add documentSections array - it's a deprecated field
-    return await create(documentData);
+      // Don't add documentSections array - it's a deprecated field
+      return await create(documentData);
+    };
+
+    /**
+     * Update an existing document collection
+     * @param documentId - The ID of the document collection to update
+     * @param updates - The fields to update
+     */
+    const updateDocumentCollection = async (
+      documentId: string,
+      updates: Partial<DocumentLibrary>
+    ): Promise<void> => {
+      if (!loggedInUser)
+        throw new Error(
+          'User must be logged in to update document collections'
+        );
+
+      return await update(documentId, updates);
+    };
+
+    /**
+     * Mark a document collection as deleted (soft delete with cascade)
+     * This will also delete all sections and documents within the collection
+     * @param documentId - The ID of the document collection to delete
+     */
+    const deleteDocumentCollection = async (
+      documentId: string
+    ): Promise<boolean> => {
+      if (!loggedInUser)
+        throw new Error(
+          'User must be logged in to delete document collections'
+        );
+
+      // Use unified cascade delete
+      await cascadeDelete(documentId);
+
+      return true;
+    };
+
+    return {
+      createDocumentCollection,
+      updateDocumentCollection,
+      deleteDocumentCollection,
+    };
   };
-
-  /**
-   * Update an existing document collection
-   * @param documentId - The ID of the document collection to update
-   * @param updates - The fields to update
-   */
-  const updateDocumentCollection = async (
-    documentId: string,
-    updates: Partial<DocumentLibrary>
-  ): Promise<void> => {
-    if (!loggedInUser)
-      throw new Error('User must be logged in to update document collections');
-
-    return await update(documentId, updates);
-  };
-
-  /**
-   * Mark a document collection as deleted (soft delete with cascade)
-   * This will also delete all sections and documents within the collection
-   * @param documentId - The ID of the document collection to delete
-   */
-  const deleteDocumentCollection = async (documentId: string): Promise<boolean> => {
-    if (!loggedInUser)
-      throw new Error('User must be logged in to delete document collections');
-
-    // Use unified cascade delete
-    await cascadeDelete(documentId);
-
-    return true;
-  };
-
-  return {
-    createDocumentCollection,
-    updateDocumentCollection,
-    deleteDocumentCollection,
-  };
-};

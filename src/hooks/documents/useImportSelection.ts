@@ -1,13 +1,31 @@
 import { useCallback, Dispatch } from 'react';
-import { ACTIONS, BrowserState, BrowserAction, SelectedItem } from './useImportBrowser';
-// Removed unused imports: DocumentData, SectionData
+import {
+  ACTIONS,
+  BrowserState,
+  BrowserAction,
+  SelectedItem,
+} from './useImportBrowser';
+import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+
+// Type aliases for import selection context
+type DocumentData = FirestoreDocument;
+type SectionData = FirestoreSection;
+
+// Union type for selectable items
+type SelectableItem = DocumentData | SectionData;
 
 /**
  * Return type for useImportSelection hook
  */
 interface UseImportSelectionReturn {
-  handleSelectItem: (item: any, type: 'section' | 'document') => void;
-  isItemSelected: (item: any, type: 'section' | 'document') => boolean;
+  handleSelectItem: (
+    item: SelectableItem,
+    type: 'section' | 'document'
+  ) => void;
+  isItemSelected: (
+    item: SelectableItem,
+    type: 'section' | 'document'
+  ) => boolean;
   areAllItemsSelected: (type: 'section' | 'document') => boolean;
   toggleAllItems: (type: 'section' | 'document') => void;
   clearSelection: () => void;
@@ -40,7 +58,7 @@ export default function useImportSelection(
 
   // Handle selection with useCallback to prevent re-renders
   const handleSelectItem = useCallback(
-    (item: any, type: 'section' | 'document') => {
+    (item: SelectableItem, type: 'section' | 'document') => {
       dispatch({
         type: ACTIONS.TOGGLE_ITEM_SELECTION,
         payload: {
@@ -65,7 +83,7 @@ export default function useImportSelection(
   );
 
   const isItemSelected = useCallback(
-    (item: any, type: 'section' | 'document'): boolean => {
+    (item: SelectableItem, type: 'section' | 'document'): boolean => {
       return selectedItems.some(
         (selected) => selected.id === item.id && selected.type === type
       );
@@ -104,7 +122,10 @@ export default function useImportSelection(
             ...section,
             type: 'section',
             collectionId: selectedCollection?.id || null,
-            projectId: sourceType === 'projectLibrary' ? projectId || undefined : undefined,
+            projectId:
+              sourceType === 'projectLibrary'
+                ? projectId || undefined
+                : undefined,
           }));
 
           // Remove existing sections and add all
@@ -130,7 +151,10 @@ export default function useImportSelection(
             type: 'document',
             collectionId: selectedCollection?.id || null,
             sectionId: selectedSection?.id || null,
-            projectId: sourceType === 'projectLibrary' ? projectId || undefined : undefined,
+            projectId:
+              sourceType === 'projectLibrary'
+                ? projectId || undefined
+                : undefined,
           }));
 
           // Remove existing documents and add all

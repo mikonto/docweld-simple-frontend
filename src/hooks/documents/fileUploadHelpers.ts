@@ -26,7 +26,7 @@ export interface PlannedDocument {
 
 export interface FirestoreConfig {
   collectionName: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface UploadError extends Error {
@@ -47,7 +47,9 @@ export interface UploadResults {
 /**
  * Validates a batch of files for upload
  */
-export function validateUploadBatch(files: FileList | File[]): ValidationResult {
+export function validateUploadBatch(
+  files: FileList | File[]
+): ValidationResult {
   const filesToUpload = Array.from(files);
 
   // Check max files limit
@@ -225,7 +227,7 @@ export function getStorageErrorMessage(err: UploadError): string {
  * Process upload results and prepare response
  */
 export function processUploadResults(
-  uploadResults: PromiseSettledResult<any>[],
+  uploadResults: PromiseSettledResult<unknown>[],
   heicFileCount: number,
   totalFiles: number
 ): UploadResults {

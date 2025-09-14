@@ -1,5 +1,5 @@
 // src/hooks/documents/useDragAndDrop.ts
-import { useState, useRef, useCallback, DragEvent } from "react";
+import { useState, useRef, useCallback, DragEvent } from 'react';
 
 interface DragProps {
   onDragEnter: (e: DragEvent<HTMLElement>) => void;
@@ -45,23 +45,26 @@ export function useDragAndDrop(
     e.stopPropagation();
   }, []);
 
-  const handleDrop = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    dragCounter.current = 0;
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onDrop(e.dataTransfer.files);
-    }
-  }, [onDrop]);
+  const handleDrop = useCallback(
+    (e: DragEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      dragCounter.current = 0;
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        onDrop(e.dataTransfer.files);
+      }
+    },
+    [onDrop]
+  );
 
   // Bundle all handlers together for easier use
   const dragProps: DragProps = {
     onDragEnter: handleDragEnter,
     onDragLeave: handleDragLeave,
     onDragOver: handleDragOver,
-    onDrop: handleDrop
+    onDrop: handleDrop,
   };
 
   return { isDragging, dragProps };

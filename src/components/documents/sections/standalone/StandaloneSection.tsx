@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import {
   SECTION_SIZE_CONFIG,
 } from '@/components/documents/constants';
 import type { Document } from '@/types/database';
-import type { DragEndEvent } from '@dnd-kit/sortable';
+import type { DragEndEvent } from '@dnd-kit/core';
 import type { LucideIcon } from 'lucide-react';
 
 export interface DropdownAction {
@@ -30,7 +30,7 @@ export interface StandaloneSectionProps {
   documents?: Document[];
   documentsLoading?: boolean;
   documentsError?: Error | null;
-  uploadingFiles?: Record<string, any>;
+  uploadingFiles?: Record<string, { uploadStatus?: string }>;
   onDragEnd: (event: DragEndEvent) => void;
   onUpload: (files: File[]) => void;
   onRenameDocument: (id: string, title: string) => void;

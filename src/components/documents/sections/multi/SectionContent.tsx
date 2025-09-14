@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   DndContext,
   closestCenter,
@@ -14,6 +13,7 @@ import {
   SECTION_SIZE_CONFIG,
 } from '@/components/documents/constants';
 import type { Document } from '@/types/database';
+import type { ProcessingState } from '@/components/documents/constants';
 
 interface UploadingFile {
   uploadStatus?: string;
@@ -81,7 +81,9 @@ export function SectionContent({
                   title={doc.title}
                   storageRef={doc.storageRef}
                   thumbStorageRef={doc.thumbStorageRef}
-                  processingState={doc.processingState}
+                  processingState={
+                    doc.processingState as ProcessingState | null | undefined
+                  }
                   fileType={doc.fileType}
                   fileSize={doc.fileSize}
                   createdAt={doc.createdAt}

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, MockedFunction } from 'vitest';
 import { act } from '@testing-library/react';
-import { renderHook } from '@/test/utils/testUtils';
+import { renderHook } from '@testing-library/react';
 import { useFileUpload } from './useFileUpload';
 import { uploadBytesResumable } from 'firebase/storage';
 import { doc } from 'firebase/firestore';
@@ -44,22 +44,35 @@ vi.mock('./fileUploadHelpers', () => ({
     filesToUpload: Array.from(files),
     heicFileCount: 0,
   })),
-  prepareUploadPlan: vi.fn((files: File[], _config: any) =>
+  prepareUploadPlan: vi.fn((files: File[], _config: unknown) =>
     Array.from(files).map((file, index) => ({
       file,
       docId: `test-doc-${index}`,
       sanitizedFileName: file.name,
     }))
   ),
-  createDocumentsWithRollback: vi.fn(async (planned: any[]) => planned),
-  getStorageErrorMessage: vi.fn((err: any) => err.message || 'Upload failed'),
-  processUploadResults: vi.fn((results: any[], heicCount: number, total: number) => ({
-    heicFileCount: heicCount,
-    totalFiles: total,
-    errors: results.filter((r) => r.status === 'rejected'),
-    successCount: results.filter((r) => r.status === 'fulfilled').length,
-    failedCount: results.filter((r) => r.status === 'rejected').length,
-  })),
+  createDocumentsWithRollback: vi.fn(async (planned: unknown[]) => planned),
+  getStorageErrorMessage: vi.fn((err: unknown) => {
+    if (err && typeof err === 'object' && 'message' in err) {
+      return (err as { message: string }).message;
+    }
+    return 'Upload failed';
+  }),
+  processUploadResults: vi.fn(
+    (results: unknown[], heicCount: number, total: number) => ({
+      heicFileCount: heicCount,
+      totalFiles: total,
+      errors: results.filter(
+        (r) => (r as { status: string }).status === 'rejected'
+      ),
+      successCount: results.filter(
+        (r) => (r as { status: string }).status === 'fulfilled'
+      ).length,
+      failedCount: results.filter(
+        (r) => (r as { status: string }).status === 'rejected'
+      ).length,
+    })
+  ),
 }));
 
 vi.mock('sonner', () => ({
@@ -70,24 +83,41 @@ vi.mock('sonner', () => ({
   },
 }));
 
-const mockDoc = doc as MockedFunction<typeof doc>;
-const mockUploadBytesResumable = uploadBytesResumable as MockedFunction<typeof uploadBytesResumable>;
-const mockValidateUploadBatch = validateUploadBatch as MockedFunction<typeof validateUploadBatch>;
-const mockCreateDocumentsWithRollback = createDocumentsWithRollback as MockedFunction<typeof createDocumentsWithRollback>;
-const mockProcessUploadResults = processUploadResults as MockedFunction<typeof processUploadResults>;
+const mockDoc = doc as unknown as MockedFunction<typeof doc>;
+const mockUploadBytesResumable = uploadBytesResumable as MockedFunction<
+  typeof uploadBytesResumable
+>;
+const mockValidateUploadBatch = validateUploadBatch as MockedFunction<
+  typeof validateUploadBatch
+>;
+const mockCreateDocumentsWithRollback =
+  createDocumentsWithRollback as MockedFunction<
+    typeof createDocumentsWithRollback
+  >;
+const mockProcessUploadResults = processUploadResults as MockedFunction<
+  typeof processUploadResults
+>;
+
+interface MockUploadTask {
+  on: ReturnType<typeof vi.fn>;
+  snapshot: {
+    bytesTransferred: number;
+    totalBytes: number;
+  };
+}
 
 describe('useFileUpload', () => {
   const mockAddDocument = vi.fn();
   const mockUpdateProcessingState = vi.fn();
-  let mockUploadTask: any;
+  let mockUploadTask: MockUploadTask;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     // Setup default mocks
-    mockDoc.mockReturnValue({ id: 'test-doc-id' } as any);
-    mockAddDocument.mockResolvedValue({} as any);
-    mockUpdateProcessingState.mockResolvedValue();
+    mockDoc.mockReturnValue({ id: 'test-doc-id' } as ReturnType<typeof doc>);
+    mockAddDocument.mockResolvedValue({});
+    mockUpdateProcessingState.mockResolvedValue(undefined);
 
     // Reset helper mocks to default behavior
     mockValidateUploadBatch.mockImplementation((files: FileList | File[]) => ({
@@ -99,20 +129,38 @@ describe('useFileUpload', () => {
       notAllowedFiles: [],
     }));
 
-    mockCreateDocumentsWithRollback.mockImplementation(async (planned: any[]) => planned);
+    mockCreateDocumentsWithRollback.mockImplementation(
+      async (planned: unknown[]) =>
+        planned.map((p) => ({
+          file: (p as { file: File }).file || new File([], ''),
+          docId: (p as { docId: string }).docId || 'test-doc',
+          sanitizedFileName:
+            (p as { sanitizedFileName: string }).sanitizedFileName ||
+            'test.txt',
+        }))
+    );
 
     // Setup upload task mock
     mockUploadTask = {
-      on: vi.fn((event: string, progress: any, error: any, complete: any) => {
-        if (event === 'state_changed') {
-          // Simulate immediate completion
-          setTimeout(() => complete(), 0);
+      on: vi.fn(
+        (
+          event: string,
+          _progress: () => void,
+          _error: (err: Error) => void,
+          complete: () => void
+        ) => {
+          if (event === 'state_changed') {
+            // Simulate immediate completion
+            setTimeout(() => complete(), 0);
+          }
+          return () => {}; // unsubscribe function
         }
-        return () => {}; // unsubscribe function
-      }),
+      ),
       snapshot: { bytesTransferred: 100, totalBytes: 100 },
     };
-    mockUploadBytesResumable.mockReturnValue(mockUploadTask);
+    mockUploadBytesResumable.mockReturnValue(
+      mockUploadTask as unknown as ReturnType<typeof uploadBytesResumable>
+    );
   });
 
   describe('File Validation', () => {
@@ -336,7 +384,7 @@ describe('useFileUpload', () => {
       mockProcessUploadResults.mockReturnValueOnce({
         heicFileCount: 0,
         totalFiles: 1,
-        errors: [{ message: 'Upload failed' }],
+        errors: [{ name: 'Error', message: 'Upload failed' }],
         successCount: 0,
         failedCount: 1,
       });
@@ -350,19 +398,21 @@ describe('useFileUpload', () => {
       );
 
       // Simulate upload error
-      mockUploadTask.on.mockImplementation((event: string, progress: any, error: any) => {
-        if (event === 'state_changed') {
-          setTimeout(
-            () =>
-              error({
-                message: 'Upload failed',
-                enhancedMessage: 'Upload failed',
-              }),
-            0
-          );
+      mockUploadTask.on.mockImplementation(
+        (event: string, _progress: () => void, error: (err: Error) => void) => {
+          if (event === 'state_changed') {
+            setTimeout(
+              () =>
+                error({
+                  name: 'StorageError',
+                  message: 'Upload failed',
+                } as Error),
+              0
+            );
+          }
+          return () => {};
         }
-        return () => {};
-      });
+      );
 
       const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
 
@@ -426,7 +476,9 @@ describe('useFileUpload', () => {
         )
       );
 
-      const permissionError: any = new Error('Missing permissions');
+      const permissionError = new Error('Missing permissions') as Error & {
+        code: string;
+      };
       permissionError.code = 'permission-denied';
 
       // Mock createDocumentsWithRollback to throw permission error

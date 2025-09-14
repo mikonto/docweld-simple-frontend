@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -34,7 +33,7 @@ export function AppSidebar() {
 
   // Get navigation items for the current project
   // AppSidebar only renders when inside a project (see AppLayout.tsx)
-  const navigation = getNavigation(loggedInUser?.role, projectId, t);
+  const navigation = getNavigation(loggedInUser?.role, projectId || null, t);
 
   return (
     <Sidebar

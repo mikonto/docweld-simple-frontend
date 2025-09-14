@@ -42,8 +42,15 @@ export interface UseFirestoreOperationsReturn {
   documents: DocumentData[];
   loading: boolean;
   error: FirestoreError | undefined;
-  create: (data: DocumentData, options?: FirestoreOperationOptions) => Promise<string>;
-  update: (documentId: string, updates: DocumentData, options?: FirestoreOperationOptions) => Promise<void>;
+  create: (
+    data: DocumentData,
+    options?: FirestoreOperationOptions
+  ) => Promise<string>;
+  update: (
+    documentId: string,
+    updates: DocumentData,
+    options?: FirestoreOperationOptions
+  ) => Promise<void>;
   remove: (documentId: string, hardDelete?: boolean) => Promise<void>;
   archive: (documentId: string) => Promise<void>;
   restore: (documentId: string) => Promise<void>;
@@ -61,7 +68,9 @@ export const useFirestoreOperations = (
   const { t } = useTranslation();
 
   // Build query with constraints
-  const collectionQuery: CollectionReference<DocumentData> | Query<DocumentData> =
+  const collectionQuery:
+    | CollectionReference<DocumentData>
+    | Query<DocumentData> =
     constraints.length > 0
       ? query(collection(db, collectionName), ...constraints)
       : collection(db, collectionName);
@@ -75,7 +84,10 @@ export const useFirestoreOperations = (
 
   // Create a new document
   const create = useCallback(
-    async (data: DocumentData, options: FirestoreOperationOptions = {}): Promise<string> => {
+    async (
+      data: DocumentData,
+      options: FirestoreOperationOptions = {}
+    ): Promise<string> => {
       try {
         // ALWAYS check auth for security - no exceptions
         if (!loggedInUser) {
@@ -120,7 +132,8 @@ export const useFirestoreOperations = (
         }
         return docId;
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('crud.createError');
+        const message =
+          error instanceof Error ? error.message : t('crud.createError');
         toast.error(message);
         throw error;
       }
@@ -130,7 +143,11 @@ export const useFirestoreOperations = (
 
   // Update an existing document
   const update = useCallback(
-    async (documentId: string, updates: DocumentData, options: FirestoreOperationOptions = {}): Promise<void> => {
+    async (
+      documentId: string,
+      updates: DocumentData,
+      options: FirestoreOperationOptions = {}
+    ): Promise<void> => {
       try {
         // ALWAYS check auth for security - no exceptions
         if (!loggedInUser) {
@@ -157,7 +174,8 @@ export const useFirestoreOperations = (
           toast.success(t('crud.updateSuccess'));
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('crud.updateError');
+        const message =
+          error instanceof Error ? error.message : t('crud.updateError');
         toast.error(message);
         throw error;
       }
@@ -191,7 +209,8 @@ export const useFirestoreOperations = (
 
         toast.success(t('crud.deleteSuccess'));
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('crud.deleteError');
+        const message =
+          error instanceof Error ? error.message : t('crud.deleteError');
         toast.error(message);
         throw error;
       }
@@ -218,7 +237,8 @@ export const useFirestoreOperations = (
         });
         toast.success(t('crud.archiveSuccess'));
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('crud.archiveError');
+        const message =
+          error instanceof Error ? error.message : t('crud.archiveError');
         toast.error(message);
         throw error;
       }
@@ -245,7 +265,8 @@ export const useFirestoreOperations = (
         });
         toast.success(t('crud.restoreSuccess'));
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('crud.restoreError');
+        const message =
+          error instanceof Error ? error.message : t('crud.restoreError');
         toast.error(message);
         throw error;
       }

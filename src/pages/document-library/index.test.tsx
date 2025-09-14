@@ -1,16 +1,24 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach, type MockedFunction } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type MockedFunction,
+} from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
-import DocumentLibrary from './index';
-import type { DocumentLibraryCollection } from '@/types/database';
+import DocumentLibraryPage from './index';
+import type { DocumentLibrary } from '@/types/database';
+import type { FirestoreError } from 'firebase/firestore';
+import type { IdentifiableEntity } from '@/hooks/useConfirmationDialog';
 
 // Mock the hooks
 vi.mock('@/hooks/useDocumentLibrary', () => ({
   useDocumentCollections: vi.fn(),
   useDocumentCollectionOperations: vi.fn(),
-  useDocumentCollection: vi.fn(() => [null, false, null]), // For breadcrumbs
+  useDocumentCollection: vi.fn(() => [null, false, undefined]), // For breadcrumbs
 }));
 
 vi.mock('@/hooks/useFormDialog', () => ({
@@ -32,12 +40,12 @@ vi.mock('react-router-dom', async () => ({
   useNavigate: () => mockNavigate,
 }));
 
-describe('DocumentLibrary', () => {
+describe('DocumentLibraryPage', () => {
   const mockCreateDocumentCollection = vi.fn();
   const mockUpdateDocumentCollection = vi.fn();
   const mockDeleteDocumentCollection = vi.fn();
 
-  const mockDocuments: Partial<DocumentLibraryCollection>[] = [
+  const mockDocuments = [
     {
       id: '1',
       name: 'Test Collection 1',
@@ -64,13 +72,15 @@ describe('DocumentLibrary', () => {
       await import('@/utils/confirmationContent')
     );
 
-    (useDocumentCollections as MockedFunction<typeof useDocumentCollections>).mockReturnValue([
-      mockDocuments as DocumentLibraryCollection[], 
-      false, 
-      null
-    ]);
+    (
+      useDocumentCollections as MockedFunction<typeof useDocumentCollections>
+    ).mockReturnValue([mockDocuments as DocumentLibrary[], false, undefined]);
 
-    (useDocumentCollectionOperations as MockedFunction<typeof useDocumentCollectionOperations>).mockReturnValue({
+    (
+      useDocumentCollectionOperations as MockedFunction<
+        typeof useDocumentCollectionOperations
+      >
+    ).mockReturnValue({
       createDocumentCollection: mockCreateDocumentCollection,
       updateDocumentCollection: mockUpdateDocumentCollection,
       deleteDocumentCollection: mockDeleteDocumentCollection,
@@ -83,14 +93,18 @@ describe('DocumentLibrary', () => {
       close: vi.fn(),
     });
 
-    (useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>).mockReturnValue({
+    (
+      useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>
+    ).mockReturnValue({
       dialog: { isOpen: false, type: null, isBulk: false, data: null },
       open: vi.fn(),
       close: vi.fn(),
       handleConfirm: vi.fn(),
-    } as any);
+    });
 
-    (getConfirmationContent as MockedFunction<typeof getConfirmationContent>).mockReturnValue({
+    (
+      getConfirmationContent as MockedFunction<typeof getConfirmationContent>
+    ).mockReturnValue({
       title: 'Delete Collection',
       description: 'Are you sure?',
       actionLabel: 'Delete',
@@ -102,7 +116,7 @@ describe('DocumentLibrary', () => {
   const dataStateTestCases = [
     {
       name: 'loaded state with page title',
-      mockReturn: [mockDocuments, false, null] as const,
+      mockReturn: [mockDocuments as DocumentLibrary[], false, undefined],
       expectation: () => {
         expect(
           screen.getByRole('heading', { name: 'Document Library' })
@@ -111,7 +125,7 @@ describe('DocumentLibrary', () => {
     },
     {
       name: 'loading state',
-      mockReturn: [[], true, null] as const,
+      mockReturn: [[], true, undefined],
       expectation: () => {
         const spinner = document.querySelector('.animate-spin');
         expect(spinner).toBeInTheDocument();
@@ -119,7 +133,7 @@ describe('DocumentLibrary', () => {
     },
     {
       name: 'error state',
-      mockReturn: [[], false, new Error('Failed to load')] as const,
+      mockReturn: [[], false, new Error('Failed to load')],
       expectation: () => {
         expect(
           screen.getByText(/error loading document library/i)
@@ -133,11 +147,13 @@ describe('DocumentLibrary', () => {
       const { useDocumentCollections } = vi.mocked(
         await import('@/hooks/useDocumentLibrary')
       );
-      (useDocumentCollections as MockedFunction<typeof useDocumentCollections>).mockReturnValue(
-        mockReturn as any
+      (
+        useDocumentCollections as MockedFunction<typeof useDocumentCollections>
+      ).mockReturnValue(
+        mockReturn as [DocumentLibrary[], boolean, FirestoreError | undefined]
       );
 
-      renderWithProviders(<DocumentLibrary />);
+      renderWithProviders(<DocumentLibraryPage />);
 
       await waitFor(expectation);
     });
@@ -155,7 +171,7 @@ describe('DocumentLibrary', () => {
       close: vi.fn(),
     });
 
-    renderWithProviders(<DocumentLibrary />);
+    renderWithProviders(<DocumentLibraryPage />);
 
     // Test create action
     const addButton = await screen.findByRole('button', {
@@ -172,7 +188,9 @@ describe('DocumentLibrary', () => {
     const row = screen.getByText('Test Collection 1').closest('tr');
     if (row) {
       await user.click(row);
-      expect(mockNavigate).toHaveBeenCalledWith('/document-library/collection/1');
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/document-library/collection/1'
+      );
     }
   });
 
@@ -183,7 +201,7 @@ describe('DocumentLibrary', () => {
       dialogState: {
         isOpen: true,
         type: 'delete',
-        data: mockDocuments,
+        data: mockDocuments as unknown as IdentifiableEntity[],
         isBulk: true,
       },
       formDialogState: {
@@ -197,7 +215,7 @@ describe('DocumentLibrary', () => {
       dialogState: {
         isOpen: true,
         type: 'delete',
-        data: mockDocuments[0],
+        data: mockDocuments[0] as unknown as IdentifiableEntity,
         isBulk: false,
       },
       formDialogState: {
@@ -230,7 +248,7 @@ describe('DocumentLibrary', () => {
       },
       formDialogState: {
         isOpen: true,
-        entity: mockDocuments[0] as DocumentLibraryCollection,
+        entity: mockDocuments[0] as DocumentLibrary,
       },
       expectedTexts: [],
     },
@@ -246,21 +264,25 @@ describe('DocumentLibrary', () => {
           await import('@/hooks/useConfirmationDialog')
         );
 
-        (useFormDialog as MockedFunction<typeof useFormDialog>).mockReturnValue({
-          isOpen: formDialogState.isOpen,
-          entity: formDialogState.entity,
-          open: vi.fn(),
-          close: vi.fn(),
-        } as any);
+        (useFormDialog as MockedFunction<typeof useFormDialog>).mockReturnValue(
+          {
+            isOpen: formDialogState.isOpen,
+            entity: formDialogState.entity,
+            open: vi.fn(),
+            close: vi.fn(),
+          }
+        );
 
-        (useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>).mockReturnValue({
+        (
+          useConfirmationDialog as MockedFunction<typeof useConfirmationDialog>
+        ).mockReturnValue({
           dialog: dialogState,
           open: vi.fn(),
           close: vi.fn(),
           handleConfirm: vi.fn(),
-        } as any);
+        });
 
-        renderWithProviders(<DocumentLibrary />);
+        renderWithProviders(<DocumentLibraryPage />);
 
         await waitFor(() => {
           if (expectedTexts.length > 0) {

@@ -6,7 +6,7 @@ import { ProjectsTable } from './ProjectsTable';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import type { ProjectsTableProps } from './ProjectsTable';
-import type { Project } from '@/types/database';
+import type { Project } from '@/types';
 import type { Timestamp } from 'firebase/firestore';
 
 describe('ProjectsTable', () => {
@@ -18,13 +18,11 @@ describe('ProjectsTable', () => {
       customer: 'Customer A',
       description: 'Test description 1',
       location: '',
-      startDate: '',
-      endDate: '',
+      startDate: undefined,
+      endDate: undefined,
       status: 'active',
       createdAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
       updatedAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
-      createdBy: 'user1',
-      updatedBy: 'user1',
     },
     {
       id: '2',
@@ -33,13 +31,11 @@ describe('ProjectsTable', () => {
       customer: 'Customer B',
       description: 'Test description 2',
       location: '',
-      startDate: '',
-      endDate: '',
+      startDate: undefined,
+      endDate: undefined,
       status: 'active',
       createdAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
       updatedAt: { seconds: 1640000000, nanoseconds: 0 } as Timestamp,
-      createdBy: 'user1',
-      updatedBy: 'user1',
     },
   ];
 

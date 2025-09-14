@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { SectionDialog } from './SectionDialog';
@@ -52,7 +51,9 @@ describe('SectionDialog', () => {
     );
 
     expect(screen.getByText('Edit Section')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Save Changes' })
+    ).toBeInTheDocument();
   });
 
   it('should populate form with section name when editing', () => {

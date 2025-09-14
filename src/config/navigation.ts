@@ -11,6 +11,7 @@ import {
   Building2,
   LucideIcon,
 } from 'lucide-react';
+import type { UserRole } from '@/types/app';
 
 /**
  * Complete navigation configuration for DocWeld
@@ -18,9 +19,6 @@ import {
  * This file defines ALL navigation items for the application.
  * All routes, icons, and role-based access are managed here.
  */
-
-// Type definitions
-type UserRole = 'admin' | 'user' | 'viewer';
 
 interface NavigationItem {
   name: string;
@@ -38,7 +36,10 @@ interface Navigation {
 type TFunction = (key: string) => string;
 
 // System-wide navigation items (main sections of the app)
-export const getSystemNavigation = (t: TFunction | null, userRole: UserRole = 'user'): NavigationItem[] => {
+export const getSystemNavigation = (
+  t: TFunction | null,
+  userRole: UserRole = 'user'
+): NavigationItem[] => {
   const allItems: NavigationItem[] = [
     {
       name: t ? t('navigation.projects') : 'Projects',
@@ -77,7 +78,10 @@ export const getSystemNavigation = (t: TFunction | null, userRole: UserRole = 'u
 };
 
 // Project-specific navigation items (when inside a project)
-export const getProjectNavigation = (projectId: string | null, t: TFunction | null): NavigationItem[] => {
+export const getProjectNavigation = (
+  projectId: string | null,
+  t: TFunction | null
+): NavigationItem[] => {
   if (!projectId) return [];
 
   return [

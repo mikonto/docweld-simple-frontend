@@ -21,7 +21,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useDocumentDisplay } from '@/hooks/documents';
-import { PROCESSING_STATES, UPLOAD_STATES } from '../constants';
+import {
+  PROCESSING_STATES,
+  UPLOAD_STATES,
+  type ProcessingState,
+} from '../constants';
 import { getDisplayName } from '../utils/fileUtils';
 import { formatDate } from '@/utils/dateFormatting';
 import { formatFileSize } from '@/utils/formatFileSize';
@@ -37,7 +41,7 @@ interface CardProps {
   fileType?: string;
   createdAt?: Timestamp | null;
   fileSize?: number;
-  processingState?: string | null;
+  processingState?: ProcessingState | null;
   uploadStatus?: string | null;
   onRename: (id: string, title: string) => void;
   onDelete: (id: string, title: string) => void;
@@ -73,7 +77,11 @@ export const Card = React.memo(function Card({
     useDocumentDisplay(storageRef, thumbStorageRef, false, processingState);
 
   // Get display name (handles HEIC to JPG conversion)
-  const displayName = getDisplayName(title, storageRef, processingState);
+  const displayName = getDisplayName(
+    title,
+    storageRef,
+    processingState ?? undefined
+  );
 
   // Drag animation styles
   const style = {

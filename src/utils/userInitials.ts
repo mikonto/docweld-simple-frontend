@@ -4,7 +4,7 @@
 interface UserWithName {
   firstName?: string | null;
   lastName?: string | null;
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Allow additional properties
 }
 
 /**

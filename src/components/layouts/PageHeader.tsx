@@ -20,7 +20,11 @@ interface PageHeaderProps {
 /**
  * PageHeader component displays page title with optional breadcrumbs and subtitle
  */
-const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbData }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  subtitle,
+  breadcrumbData,
+}) => {
   return (
     <div className="mb-6 flex flex-col gap-2">
       {/* Title and breadcrumbs together */}

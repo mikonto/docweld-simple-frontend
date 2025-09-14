@@ -25,7 +25,7 @@ import {
 
 interface SectionOperationResult {
   success: boolean;
-  error?: any;
+  error?: unknown;
   deletedCount?: number;
   errorType?: string;
   id?: string;
@@ -43,12 +43,21 @@ interface SectionData extends DocumentData {
 export interface UseSectionOperationsReturn {
   sections: DocumentData[];
   loading: boolean;
-  error: any;
+  error: Error | null;
   addSection: (name: string, description?: string) => Promise<SectionData>;
-  renameSection: (sectionId: string, newName: string) => Promise<SectionOperationResult>;
+  renameSection: (
+    sectionId: string,
+    newName: string
+  ) => Promise<SectionOperationResult>;
   deleteSection: (sectionId: string) => Promise<SectionOperationResult>;
-  updateSectionOrder: (orderedSectionIds: string[]) => Promise<SectionOperationResult>;
-  moveSection: (sectionId: string, direction: 'up' | 'down', currentOrder: DocumentData[]) => Promise<void>;
+  updateSectionOrder: (
+    orderedSectionIds: string[]
+  ) => Promise<SectionOperationResult>;
+  moveSection: (
+    sectionId: string,
+    direction: 'up' | 'down',
+    currentOrder: DocumentData[]
+  ) => Promise<void>;
 }
 
 /**
@@ -141,7 +150,10 @@ export function useSectionOperations(
    * Rename a section
    */
   const renameSection = useCallback(
-    async (sectionId: string, newName: string): Promise<SectionOperationResult> => {
+    async (
+      sectionId: string,
+      newName: string
+    ): Promise<SectionOperationResult> => {
       try {
         // Use the update method from useFirestoreOperations
         // It will handle timestamps and user tracking automatically
@@ -188,18 +200,16 @@ export function useSectionOperations(
           // Return success result
           return { success: true };
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Return error result with specific error type
         let errorType = 'general';
-        if (err.message && err.message.includes('requires an index')) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        if (errorMessage.includes('requires an index')) {
           errorType = 'indexError';
-        } else if (
-          err.message &&
-          err.message.includes('Batch operation limit exceeded')
-        ) {
+        } else if (errorMessage.includes('Batch operation limit exceeded')) {
           errorType = 'batchLimitError';
         }
-        return { success: false, error: err, errorType };
+        return { success: false, error: err as Error, errorType };
       }
     },
     [
@@ -267,7 +277,7 @@ export function useSectionOperations(
     // Expose the underlying Firestore operations data
     sections: firebaseOps.documents,
     loading: firebaseOps.loading,
-    error: firebaseOps.error,
+    error: firebaseOps.error || null,
 
     // Section-specific operations
     addSection,

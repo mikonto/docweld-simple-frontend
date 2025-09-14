@@ -1,6 +1,13 @@
 // src/hooks/documents/useDocumentData.ts
 import { useMemo } from 'react';
-import { collection, query, where, orderBy, Query, DocumentData } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  Query,
+  DocumentData,
+} from 'firebase/firestore';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { db } from '@/config/firebase';
 import { FirestoreError } from 'firebase/firestore';
@@ -54,9 +61,7 @@ export function useDocumentData(
   }, [collectionName, foreignKeys]);
 
   // Use react-firebase-hooks for real-time data
-  const [documents = [], loading, error] = useCollectionData(documentQuery, {
-    idField: 'id', // Add id field to match Firestore document ID convention
-  });
+  const [documents = [], loading, error] = useCollectionData(documentQuery);
 
   // Add warning if any documents are missing id field
   if (documents && documents.length > 0) {
