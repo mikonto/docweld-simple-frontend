@@ -1,23 +1,11 @@
 /**
  * Firestore field value constants
  * These constants ensure consistency across the application
- * and help prevent typos in status values and other enums
+ *
+ * Note: Status and UserRole types have been moved to:
+ * - Status: @/types/common/status
+ * - UserRole: @/types/models/user
  */
-
-// Common status values used across all collections
-export const STATUS = {
-  ACTIVE: 'active',
-  DELETED: 'deleted',
-  ARCHIVED: 'archived',
-  INACTIVE: 'inactive', // Only for users
-} as const;
-
-// User roles
-export const USER_ROLE = {
-  ADMIN: 'admin',
-  USER: 'user',
-  VIEWER: 'viewer',
-} as const;
 
 // Collection names (kebab-case)
 export const COLLECTIONS = {
@@ -40,9 +28,3 @@ export const COLLECTIONS = {
   FILLER_MATERIALS: 'filler-materials',
   ALLOY_MATERIALS: 'alloy-materials',
 } as const;
-
-// Type exports for use in other files
-export type Status = (typeof STATUS)[keyof typeof STATUS];
-export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
-// @unused - type for collection names
-// type CollectionName = typeof COLLECTIONS[keyof typeof COLLECTIONS];

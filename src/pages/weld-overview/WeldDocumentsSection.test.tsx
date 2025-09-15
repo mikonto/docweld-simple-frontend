@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { WeldDocumentsSection } from './WeldDocumentsSection';
-import type { Document, UploadingFile } from '@/types/database';
+import type { Document, UploadingFile } from '@/types/api/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 import type { Timestamp } from 'firebase/firestore';
 

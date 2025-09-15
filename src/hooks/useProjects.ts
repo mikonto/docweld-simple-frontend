@@ -10,7 +10,7 @@ import { db } from '@/config/firebase';
 import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
 import { useCascadingSoftDelete } from '@/hooks/firebase/useCascadingSoftDelete';
 import { type Project, type ProjectFormData } from '@/types';
-import { type Status } from '@/constants/firestore';
+import type { Status } from '@/types/common/status';
 
 /**
  * Return type for useProjectOperations hook

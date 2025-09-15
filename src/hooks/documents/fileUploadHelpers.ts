@@ -5,7 +5,7 @@
 
 import { doc, collection, deleteDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import { UPLOAD_CONFIG } from '@/components/documents/constants';
+import { UPLOAD_CONFIG } from '@/types/documents';
 import { isAllowedFile } from '@/components/documents/utils/fileUtils';
 import { sanitizeFileName } from '@/utils/sanitizeFileName';
 

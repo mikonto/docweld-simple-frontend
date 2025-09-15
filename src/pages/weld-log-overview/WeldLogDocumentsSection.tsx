@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StandaloneSection } from '@/components/documents/sections';
-import type { Document, UploadingFile } from '@/types/database';
+import type { Document, UploadingFile } from '@/types/api/firestore';
 import type { DragEndEvent } from '@dnd-kit/core';
 
 interface DropdownAction {

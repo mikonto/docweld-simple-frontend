@@ -15,13 +15,13 @@ import { SectionContent } from './SectionContent';
 import {
   UPLOAD_CONFIG,
   SECTION_SIZE_CONFIG,
-} from '@/components/documents/constants';
+} from '@/types/documents';
 import * as operations from './sectionOperations';
 import type {
   Section as SectionType,
   Document,
   UploadingFile,
-} from '@/types/database';
+} from '@/types/api/firestore';
 
 interface SectionProps {
   sectionData: SectionType;

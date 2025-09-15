@@ -9,8 +9,9 @@ import {
 } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/config/firebase';
-import { ACTIONS, BrowserState, BrowserAction } from './useImportBrowser';
-import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+import { ACTIONS } from './useImportBrowser';
+import type { BrowserState, BrowserAction } from '@/types/documents';
+import type { FirestoreSection, FirestoreDocument } from '@/types/api/firestore';
 
 // Type aliases for import browser context
 type CollectionData = { id: string; name: string; [key: string]: unknown };

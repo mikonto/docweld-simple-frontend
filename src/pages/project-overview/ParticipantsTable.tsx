@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Edit, UserMinus } from 'lucide-react';
 import {
   createColumns,
   DataTable,
@@ -110,12 +110,14 @@ export function ParticipantsTable({
     return [
       {
         label: t('common.edit'),
+        icon: <Edit className="mr-2 h-4 w-4" />,
         action: (rowData: ProjectParticipant) => {
           onEdit(rowData);
         },
       },
       {
         label: t('projects.removeFromProject'),
+        icon: <UserMinus className="mr-2 h-4 w-4" />,
         separator: true,
         action: (rowData: ProjectParticipant) => {
           onConfirmAction('remove', rowData);

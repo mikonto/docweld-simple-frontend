@@ -1,4 +1,4 @@
-import { Plus, Trash, Archive, RotateCcw } from 'lucide-react';
+import { Plus, Trash, Archive, RotateCcw, Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -85,6 +85,7 @@ export function ProjectsTable({
   const getActionMenuItems = () => {
     const editItem = {
       label: t('common.edit'),
+      icon: <Edit className="mr-2 h-4 w-4" />,
       action: (rowData: Project) => {
         onEdit(rowData);
       },
@@ -93,6 +94,7 @@ export function ProjectsTable({
     const activeTabItems = [
       {
         label: t('projects.archive'),
+        icon: <Archive className="mr-2 h-4 w-4" />,
         action: (rowData: Project) => {
           onConfirmAction('archive', rowData);
         },
@@ -102,6 +104,7 @@ export function ProjectsTable({
     const archivedTabItems = [
       {
         label: t('projects.restoreToActive'),
+        icon: <RotateCcw className="mr-2 h-4 w-4" />,
         action: (rowData: Project) => {
           onConfirmAction('restore', rowData);
         },
@@ -110,6 +113,7 @@ export function ProjectsTable({
 
     const deleteItem = {
       label: t('common.delete'),
+      icon: <Trash className="mr-2 h-4 w-4" />,
       separator: true,
       action: (rowData: Project) => {
         onConfirmAction('delete', rowData);

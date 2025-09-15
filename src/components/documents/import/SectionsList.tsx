@@ -2,7 +2,7 @@ import { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FolderIcon, ChevronRight } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Section } from '@/types/database';
+import { Section } from '@/types/api/firestore';
 
 interface SectionsListProps {
   sections: Section[];

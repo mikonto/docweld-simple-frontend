@@ -1,4 +1,4 @@
-import { Plus, UserCog, UserMinus, UserCheck } from 'lucide-react';
+import { Plus, UserCog, UserMinus, UserCheck, Edit, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   createColumns,
@@ -87,10 +87,12 @@ export function UsersTable({
   const getActionMenuItems = () => [
     {
       label: t('common.edit'),
+      icon: <Edit className="mr-2 h-4 w-4" />,
       action: (rowData: User) => onEdit(rowData),
     },
     {
       label: t('users.promoteOrDemote'),
+      icon: <Shield className="mr-2 h-4 w-4" />,
       action: (rowData: User) => {
         onConfirmAction(
           rowData.role === 'admin' ? 'demote' : 'promote',
@@ -105,6 +107,7 @@ export function UsersTable({
         activeTab === 'active'
           ? t('users.deactivateUser')
           : t('users.activateUser'),
+      icon: activeTab === 'active' ? <UserMinus className="mr-2 h-4 w-4" /> : <UserCheck className="mr-2 h-4 w-4" />,
       action: (rowData: User) => {
         onConfirmAction(
           activeTab === 'active' ? 'deactivate' : 'activate',

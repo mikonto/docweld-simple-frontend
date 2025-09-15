@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { SectionDialog } from './SectionDialog';
 import { renderWithProviders } from '@/test/utils/testUtils';
-import type { Section } from '@/types/database';
+import type { Section } from '@/types/api/firestore';
 import type { Timestamp } from 'firebase/firestore';
 
 describe('SectionDialog', () => {

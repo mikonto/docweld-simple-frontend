@@ -5,11 +5,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ImportBrowser from './ImportBrowser';
-import type { SelectedItem } from '@/hooks/documents/useImportBrowser';
+import type { SelectedItem } from '@/types/documents';
 
 interface ImportDialogProps {
   open: boolean;
@@ -77,6 +78,9 @@ export default function ImportDialog({
               ? t('documents.importDocuments')
               : t('documents.importSections')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Dialog for importing documents or sections from various sources
+          </DialogDescription>
         </DialogHeader>
 
         {/* Source selection tabs - only show when projectId exists and hideProjectDocuments is false */}

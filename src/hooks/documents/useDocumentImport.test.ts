@@ -196,7 +196,7 @@ describe('useDocumentImport', () => {
 
   describe('Library Documents Import', () => {
     it('should import a document to the library', async () => {
-      const { result } = renderHook(() => useDocumentImport('library', null));
+      const { result } = renderHook(() => useDocumentImport('library', 'collection-123'));
 
       const sourceDoc = {
         id: 'source-doc-id',
@@ -206,7 +206,7 @@ describe('useDocumentImport', () => {
       };
 
       await act(async () => {
-        await result.current.importDocument(sourceDoc);
+        await result.current.importDocument(sourceDoc, 'collection-123');
       });
 
       expect(mockSetDoc).toHaveBeenCalledWith(

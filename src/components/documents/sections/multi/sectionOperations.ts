@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import type { DragEndEvent } from '@dnd-kit/core';
-import type { Document } from '@/types/database';
+import type { Document } from '@/types/api/firestore';
 
 /**
  * Document Section Operations

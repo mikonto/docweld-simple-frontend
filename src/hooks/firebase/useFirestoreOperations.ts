@@ -19,7 +19,7 @@ import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { STATUS } from '@/constants/firestore';
+import { STATUS } from '@/types/common/status';
 
 /**
  * Options for Firestore operations

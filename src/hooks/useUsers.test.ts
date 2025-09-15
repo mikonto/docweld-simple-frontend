@@ -4,7 +4,7 @@ import { useUsers, useUser, useUserOperations } from './useUsers';
 import { mockSetDoc, resetFirebaseMocks } from '@/test/mocks/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import type { UserFormData } from '@/types';
+import type { UserFormData } from '@/types/forms';
 import type { FirestoreError } from 'firebase/firestore';
 
 // Mock the AppContext
@@ -247,7 +247,7 @@ describe('useUsers Hook', () => {
           lastName: 'Doe',
           displayName: 'John Doe',
           email: 'john@example.com',
-          password: 'securePassword123',
+          password: 'testPassword123',
           role: 'user',
         };
 
@@ -292,8 +292,7 @@ describe('useUsers Hook', () => {
               lastName: 'Doe',
               displayName: 'John Doe',
               email: 'john@example.com',
-              password: 'securePassword123',
-              role: 'user',
+                  role: 'user',
             } as UserFormData)
           ).rejects.toThrow('Must be logged in to create users');
         });

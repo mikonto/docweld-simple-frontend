@@ -6,7 +6,7 @@ import type {
   StandaloneSectionProps,
   DropdownAction,
 } from './StandaloneSection';
-import type { Document } from '@/types/database';
+import type { Document } from '@/types/api/firestore';
 import type { Timestamp } from 'firebase/firestore';
 import type { LucideIcon } from 'lucide-react';
 

@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/utils/testUtils';
 import userEvent from '@testing-library/user-event';
 import { WeldLogFormDialog } from './WeldLogFormDialog';
-import type { WeldLog, WeldLogFormData } from '@/types/app';
+import type { WeldLog } from '@/types/models/welding';
+import type { WeldLogFormData } from '@/types/forms';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 import type { Timestamp } from 'firebase/firestore';
 

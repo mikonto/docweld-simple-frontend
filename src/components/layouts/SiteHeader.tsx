@@ -9,6 +9,14 @@ import { auth } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
+import {
+  Monitor,
+  Sun,
+  Moon,
+  LogOut,
+  Check,
+} from 'lucide-react';
+
 import { getSystemNavigation } from '@/config/navigation';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -68,17 +76,29 @@ export function SiteHeader() {
     i18n.changeLanguage(language);
   };
 
+  const getUserInitials = (): string => {
+    if (!loggedInUser) return '?';
+
+    // Use firstName and lastName to generate initials
+    const firstName = loggedInUser.firstName || '';
+    const lastName = loggedInUser.lastName || '';
+
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    } else if (firstName) {
+      return firstName.slice(0, 2).toUpperCase();
+    } else if (loggedInUser.email) {
+      // Fallback to email if no name is available
+      return loggedInUser.email.slice(0, 2).toUpperCase();
+    }
+
+    return '?';
+  };
+
   const userAvatar = (
     <Avatar className="h-8 w-8">
       <AvatarFallback className="text-xs">
-        {loggedInUser?.displayName
-          ? loggedInUser.displayName
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
-          : '?'}
+        {getUserInitials()}
       </AvatarFallback>
     </Avatar>
   );
@@ -125,9 +145,8 @@ export function SiteHeader() {
                 <DropdownMenuItem
                   key={item.path}
                   onClick={() => handleNavItemClick(item.path)}
-                  className="gap-2"
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="mr-2 h-4 w-4" />
                   {item.name}
                 </DropdownMenuItem>
               ))}
@@ -171,16 +190,19 @@ export function SiteHeader() {
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuItem onClick={() => handleThemeChange('system')}>
+                    <Monitor className="mr-2 h-4 w-4" />
                     {t('theme.system')}
-                    {theme === 'system' && <span className="ml-auto">✓</span>}
+                    {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange('light')}>
+                    <Sun className="mr-2 h-4 w-4" />
                     {t('theme.light')}
-                    {theme === 'light' && <span className="ml-auto">✓</span>}
+                    {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange('dark')}>
+                    <Moon className="mr-2 h-4 w-4" />
                     {t('theme.dark')}
-                    {theme === 'dark' && <span className="ml-auto">✓</span>}
+                    {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
@@ -192,15 +214,17 @@ export function SiteHeader() {
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
+                    <span className="mr-2 h-4 w-4 flex items-center justify-center">🇬🇧</span>
                     {t('language.english')}
                     {i18n.language === 'en' && (
-                      <span className="ml-auto">✓</span>
+                      <Check className="ml-auto h-4 w-4" />
                     )}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleLanguageChange('da')}>
+                    <span className="mr-2 h-4 w-4 flex items-center justify-center">🇩🇰</span>
                     {t('language.danish')}
                     {i18n.language === 'da' && (
-                      <span className="ml-auto">✓</span>
+                      <Check className="ml-auto h-4 w-4" />
                     )}
                   </DropdownMenuItem>
                 </DropdownMenuSubContent>
@@ -214,6 +238,7 @@ export function SiteHeader() {
                 disabled={isLoggingOut}
                 className="text-destructive"
               >
+                <LogOut className="mr-2 h-4 w-4" />
                 {isLoggingOut ? t('auth.loggingOut') : t('auth.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>

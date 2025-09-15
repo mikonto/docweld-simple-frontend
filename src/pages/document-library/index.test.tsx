@@ -10,7 +10,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import DocumentLibraryPage from './index';
-import type { DocumentLibrary } from '@/types/database';
+import type { DocumentLibrary } from '@/types/api/firestore';
 import type { FirestoreError } from 'firebase/firestore';
 import type { IdentifiableEntity } from '@/hooks/useConfirmationDialog';
 
@@ -175,7 +175,7 @@ describe('DocumentLibraryPage', () => {
 
     // Test create action
     const addButton = await screen.findByRole('button', {
-      name: 'Add Document Collection',
+      name: 'Add Collection',
     });
     await user.click(addButton);
     expect(mockOpenFormDialog).toHaveBeenCalledWith();

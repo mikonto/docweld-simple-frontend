@@ -12,7 +12,8 @@ import { WeldLogFormDialog } from './WeldLogFormDialog';
 import { WeldLogsTable } from './WeldLogsTable';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { Card, CardContent } from '@/components/ui/card';
-import type { WeldLog, WeldLogFormData } from '@/types/app';
+import type { WeldLog } from '@/types/models/welding';
+import type { WeldLogFormData } from '@/types/forms';
 
 export default function WeldLogs() {
   const { t } = useTranslation();
@@ -48,13 +49,9 @@ export default function WeldLogs() {
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
   const count = isBulk && Array.isArray(data) ? data.length : 1;
-  const confirmContent = getConfirmationContent(
-    type || '',
-    isBulk,
-    count,
-    t,
-    'weldLogs'
-  );
+  const confirmContent = type
+    ? getConfirmationContent(type, isBulk, count, t, 'weldLogs')
+    : { title: '', description: '', actionLabel: '', actionVariant: 'default' as const };
 
   // Handler for weld log form submission
   const handleWeldLogSubmit = async (data: WeldLogFormData) => {

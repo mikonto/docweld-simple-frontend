@@ -1,12 +1,13 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
-import {
-  WeldFormDialog,
-  type SingleWeldFormData,
-  type MultipleWeldsFormData,
-} from './WeldFormDialog';
-import type { Weld, Material } from '@/types/app';
+import { WeldFormDialog } from './WeldFormDialog';
+import type {
+  SingleWeldFormData,
+  MultipleWeldsFormData,
+} from '@/types/forms/weld-forms';
+import type { Weld } from '@/types/models/welding';
+import type { Material } from '@/types/models/company';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock external dependencies

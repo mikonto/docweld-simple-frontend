@@ -62,7 +62,8 @@
     "tryAgain": "Prøv igen",
     "reloadPage": "Genindlæs siden",
     "createdBy": "Oprettet af",
-    "createdAt": "Oprettet"
+    "createdAt": "Oprettet",
+    "descriptionPlaceholder": "Indtast beskrivelse"
   },
   "auth": {
     "login": "Log ind",
@@ -152,6 +153,9 @@
     "restoreToActive": "Gendan til aktiv",
     "archive": "Arkiver",
     "restore": "Gendan",
+    "archiveItem": "Arkiver projekt",
+    "deleteItem": "Slet projekt",
+    "restoreItem": "Gendan projekt",
     "searchProjects": "Søg projekter...",
     "createProject": "Opret projekt",
     "updateProject": "Opdater projekt",
@@ -206,6 +210,7 @@
     "addMaterial": "Tilføj materiale",
     "editMaterial": "Rediger materiale",
     "deleteMaterial": "Slet materiale",
+    "material": "Materiale",
     "materialType": "Materialetype",
     "parentMaterial": "Grundmateriale",
     "fillerMaterial": "Tilsatsmateriale",
@@ -259,7 +264,8 @@
     "confirmDeleteMultiple": "Er du sikker på, at du vil slette disse materialer?",
     "confirmDeleteMultipleDescription": "Disse materialer kan være refereret i svejselogger. Sletning vil fjerne disse referencer.",
     "addParentMaterialForWeldDescription": "Dette materiale vil blive gemt i materialebiblioteket og tilføjet til din svejsning",
-    "addFillerMaterialForWeldDescription": "Dette materiale vil blive gemt i materialebiblioteket og tilføjet til din svejsning"
+    "addFillerMaterialForWeldDescription": "Dette materiale vil blive gemt i materialebiblioteket og tilføjet til din svejsning",
+    "deleteItem": "Slet materiale"
   },
   "weldLogs": {
     "title": "Svejselogger",
@@ -320,6 +326,12 @@
     "enterEndNumber": "Indtast slutnummer",
     "parentMaterials": "Grundmaterialer",
     "fillerMaterials": "Tilsatsmaterialer",
+    "deleteItem": "Slet svejselog",
+    "weldNumberPlaceholder": "Indtast svejsenummer",
+    "positionPlaceholder": "Indtast position",
+    "startNumberPlaceholder": "Indtast startnummer",
+    "endNumberPlaceholder": "Indtast slutnummer",
+    "heatTreatmentDescription": "Varmebehandlingsbeskrivelse",
     "heatTreatment": "Varmebehandling",
     "requiresHeatTreatment": "Kræver varmebehandling",
     "addNewParentMaterial": "Tilføj nyt grundmateriale",
@@ -478,7 +490,7 @@
     "documentCollections": "Dokumentsamlinger",
     "collectionName": "Samlingsnavn",
     "addCollection": "Tilføj Samling",
-    "addDocumentCollection": "Tilføj Dokumentsamling",
+    "addDocumentCollection": "Tilføj samling",
     "editCollection": "Rediger Samling",
     "rename": "Omdøb",
     "deleteCollection": "Slet Samling",
@@ -494,7 +506,10 @@
     "collectionCreatedSuccess": "Samling oprettet med succes",
     "collectionUpdatedSuccess": "Samling opdateret med succes",
     "createCollectionError": "Kunne ikke oprette samling",
-    "updateCollectionError": "Kunne ikke opdatere samling"
+    "updateCollectionError": "Kunne ikke opdatere samling",
+    "deleteItem": "Slet samling",
+    "confirmDelete": "Er du sikker på, at du vil slette denne samling?",
+    "confirmDeleteDescription": "Dette vil også slette alle sektioner og dokumenter i denne samling."
   },
   "users": {
     "title": "Brugere",
@@ -553,6 +568,7 @@
     "demoteSelectedToUser": "Degrader Valgte til Bruger",
     "deactivateSelected": "Deaktiver Valgte",
     "activateSelected": "Aktiver Valgte",
+    "deactivateItem": "Deaktiver bruger",
     "promoteUser": "Forfrem Bruger til Admin",
     "promoteSelectedUsers": "Forfrem Valgte Brugere til Admin",
     "promoteDescription_one": "Er du sikker på, at du vil forfremme {{count}} bruger til admin? Dette vil give dem fulde administratorrettigheder.",
@@ -678,12 +694,14 @@
     "goToLastPage": "Gå til sidste side"
   },
   "theme": {
+    "theme": "Tema",
     "label": "Tema",
     "system": "System",
     "light": "Lys",
     "dark": "Mørk"
   },
   "language": {
+    "language": "Sprog",
     "label": "Sprog",
     "english": "English",
     "danish": "Dansk"
@@ -693,7 +711,17 @@
     "bulkOperationSuccess": "{{operation}} gennemført for {{count}} element(er)",
     "operationSuccess": "{{operation}} gennemført",
     "operationFailedWithMessage": "Kunne ikke {{operation}}: {{message}}",
-    "unknownError": "Ukendt fejl opstod"
+    "unknownError": "Ukendt fejl opstod",
+    "createSuccess": "Oprettet succesfuldt",
+    "createError": "Kunne ikke oprette",
+    "updateSuccess": "Opdateret succesfuldt",
+    "updateError": "Kunne ikke opdatere",
+    "deleteSuccess": "Slettet succesfuldt",
+    "deleteError": "Kunne ikke slette",
+    "archiveSuccess": "Arkiveret succesfuldt",
+    "archiveError": "Kunne ikke arkivere",
+    "restoreSuccess": "Gendannet succesfuldt",
+    "restoreError": "Kunne ikke gendanne"
   },
   "sections": {
     "createSuccess": "Sektion tilføjet succesfuldt",
@@ -706,7 +734,9 @@
     "deleteError": "Kunne ikke slette sektion",
     "deleteWithDocumentsSuccess": "Sektion og {{count}} dokument(er) slettet succesfuldt",
     "deleteIndexError": "Sektion sletning midlertidigt utilgængelig. Indeks bygges, prøv igen om et par minutter.",
-    "deleteBatchLimitError": "Sektionen har for mange dokumenter til at slette på én gang. Slet nogle dokumenter først."
+    "deleteBatchLimitError": "Sektionen har for mange dokumenter til at slette på én gang. Slet nogle dokumenter først.",
+    "orderUpdateSuccess": "Sektionsrækkefølge opdateret succesfuldt",
+    "orderUpdateError": "Kunne ikke opdatere sektionsrækkefølge"
   },
   "participants": {
     "createSuccess": "Deltager tilføjet succesfuldt",
@@ -788,6 +818,14 @@
     "editWeld": "Rediger svejsning",
     "position": "Position",
     "heatTreatment": "Varmebehandling",
+    "status": "Status",
+    "type": "Type",
+    "process": "Proces",
+    "welder": "Svejser",
+    "inspector": "Inspektør",
+    "completedAt": "Færdiggjort den",
+    "inspectedAt": "Inspiceret den",
+    "notes": "Noter",
     "createSuccess": "Svejsning tilføjet succesfuldt",
     "createError": "Kunne ikke oprette svejsning",
     "updateSuccess": "Svejsning opdateret succesfuldt",

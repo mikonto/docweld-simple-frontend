@@ -12,9 +12,9 @@ import { Card, UploadCard } from '@/components/documents/cards';
 import {
   DND_ACTIVATION_CONSTRAINT,
   SECTION_SIZE_CONFIG,
-} from '@/components/documents/constants';
-import type { Document } from '@/types/database';
-import type { ProcessingState } from '@/components/documents/constants';
+} from '@/types/documents';
+import type { Document } from '@/types/api/firestore';
+import type { ProcessingState } from '@/types/documents';
 
 export interface StandaloneSectionContentProps {
   documents: Document[];

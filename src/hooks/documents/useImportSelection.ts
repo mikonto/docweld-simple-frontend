@@ -1,18 +1,33 @@
 import { useCallback, Dispatch } from 'react';
-import {
-  ACTIONS,
+import { ACTIONS } from './useImportBrowser';
+import type {
   BrowserState,
   BrowserAction,
   SelectedItem,
-} from './useImportBrowser';
-import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+  BrowserSection,
+  BrowserDocument,
+} from '@/types/documents';
+import type { FirestoreSection, FirestoreDocument } from '@/types/api/firestore';
 
 // Type aliases for import selection context
 type DocumentData = FirestoreDocument;
 type SectionData = FirestoreSection;
 
-// Union type for selectable items
-type SelectableItem = DocumentData | SectionData;
+// Union type for selectable items - now includes browser types
+type SelectableItem = DocumentData | SectionData | BrowserSection | BrowserDocument;
+
+// Helper function to get display title from section or document
+function getDisplayTitle(item: BrowserSection | BrowserDocument): string {
+  // Type guard for checking if item has title property
+  if ('title' in item && typeof item.title === 'string') {
+    return item.title;
+  }
+  // Type guard for checking if item has name property
+  if ('name' in item && typeof item.name === 'string') {
+    return item.name;
+  }
+  return 'Untitled';
+}
 
 /**
  * Return type for useImportSelection hook
@@ -62,13 +77,13 @@ export default function useImportSelection(
       dispatch({
         type: ACTIONS.TOGGLE_ITEM_SELECTION,
         payload: {
-          item,
+          item: item as BrowserDocument | BrowserSection,
           type,
           allowMultiple,
           sourceType,
           projectId,
-          selectedCollection,
-          selectedSection,
+          selectedCollection: selectedCollection!,
+          selectedSection: selectedSection!,
         },
       });
     },
@@ -119,9 +134,11 @@ export default function useImportSelection(
         } else {
           // Select all sections
           const allSections: SelectedItem[] = sections.map((section) => ({
-            ...section,
+            id: section.id,
+            title: getDisplayTitle(section),
             type: 'section',
             collectionId: selectedCollection?.id || null,
+            sectionId: null,
             projectId:
               sourceType === 'projectLibrary'
                 ? projectId || undefined
@@ -147,7 +164,8 @@ export default function useImportSelection(
         } else {
           // Select all documents
           const allDocuments: SelectedItem[] = documents.map((doc) => ({
-            ...doc,
+            id: doc.id,
+            title: getDisplayTitle(doc),
             type: 'document',
             collectionId: selectedCollection?.id || null,
             sectionId: selectedSection?.id || null,

@@ -11,6 +11,13 @@ vi.mock('lucide-react', () => ({
       ›
     </div>
   ),
+  ArrowUp: () => <div data-testid="arrow-up">↑</div>,
+  ArrowDown: () => <div data-testid="arrow-down">↓</div>,
+  Edit: () => <div data-testid="edit">✏</div>,
+  Trash: () => <div data-testid="trash">🗑</div>,
+  Trash2: () => <div data-testid="trash2">🗑</div>,
+  Upload: () => <div data-testid="upload">⬆</div>,
+  Import: () => <div data-testid="import">📥</div>,
 }));
 
 // Mock dropdown menu components

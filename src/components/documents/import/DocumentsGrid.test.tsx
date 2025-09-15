@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import DocumentsGrid from './DocumentsGrid';
-import { Document } from '@/types/database';
+import { Document } from '@/types/api/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 import type { Timestamp } from 'firebase/firestore';
 

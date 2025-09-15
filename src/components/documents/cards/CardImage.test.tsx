@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CardImage } from './CardImage';
-import { PROCESSING_STATES } from '../constants';
+import { PROCESSING_STATES } from '@/types/documents';
 
 describe('CardImage', () => {
   const defaultProps = {

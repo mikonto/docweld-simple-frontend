@@ -2,10 +2,9 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Section, Document } from '@/types/database';
-import useImportBrowser, {
-  SelectedItem,
-} from '@/hooks/documents/useImportBrowser';
+import { Section, Document } from '@/types/api/firestore';
+import useImportBrowser from '@/hooks/documents/useImportBrowser';
+import type { SelectedItem } from '@/types/documents';
 import useImportDataFetching from '@/hooks/documents/useImportDataFetching';
 import useImportSelection from '@/hooks/documents/useImportSelection';
 import CollectionsList from './CollectionsList';

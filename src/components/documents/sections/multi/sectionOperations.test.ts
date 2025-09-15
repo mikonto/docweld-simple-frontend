@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'sonner';
 import * as operations from './sectionOperations';
-import type { Document } from '@/types/database';
+import type { Document } from '@/types/api/firestore';
 import type { Timestamp } from 'firebase/firestore';
 
 // Mock sonner toast

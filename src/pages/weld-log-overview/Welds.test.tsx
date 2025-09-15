@@ -2,7 +2,8 @@ import { render, screen, waitFor, act } from '@/test/utils/testUtils';
 import userEvent from '@testing-library/user-event';
 import { Welds } from './Welds';
 import { vi } from 'vitest';
-import type { Weld, Material } from '@/types/app';
+import type { Weld } from '@/types/models/welding';
+import type { Material } from '@/types/models/company';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock react-i18next because the welds.* translation keys are missing from the translation files
@@ -79,12 +80,7 @@ vi.mock('@/hooks/useMaterials', () => ({
 }));
 
 describe('Welds', () => {
-  const mockWelds: (Weld & {
-    parentMaterials: string[];
-    fillerMaterials: string[];
-    heatTreatment: boolean;
-    position: string;
-  })[] = [
+  const mockWelds: Weld[] = [
     {
       id: '1',
       number: 'W001',

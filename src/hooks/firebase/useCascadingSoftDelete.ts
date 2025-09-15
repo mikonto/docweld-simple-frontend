@@ -16,7 +16,8 @@ import {
 
 import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
-import { STATUS, COLLECTIONS } from '@/constants/firestore';
+import { COLLECTIONS } from '@/constants/firestore';
+import { STATUS } from '@/types/common/status';
 
 // Firestore technical limits
 const FIRESTORE_IN_QUERY_LIMIT = 30; // Max items for 'in' operator

@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -99,6 +100,9 @@ export function CardDialog({
           <DialogTitle>
             {dialogTitle || t('documents.editDocument')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form for editing document card information and properties
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

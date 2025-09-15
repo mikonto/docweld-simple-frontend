@@ -63,7 +63,8 @@
     "tryAgain": "Try Again",
     "reloadPage": "Reload Page",
     "createdBy": "Created By",
-    "createdAt": "Created At"
+    "createdAt": "Created At",
+    "descriptionPlaceholder": "Enter description"
   },
   "auth": {
     "login": "Login",
@@ -154,6 +155,9 @@
     "restoreToActive": "Restore to active",
     "archive": "Archive",
     "restore": "Restore",
+    "archiveItem": "Archive Project",
+    "deleteItem": "Delete Project",
+    "restoreItem": "Restore Project",
     "searchProjects": "Search projects...",
     "createProject": "Create Project",
     "updateProject": "Update Project",
@@ -208,6 +212,7 @@
     "addMaterial": "Add Material",
     "editMaterial": "Edit Material",
     "deleteMaterial": "Delete Material",
+    "material": "Material",
     "materialType": "Material Type",
     "parentMaterial": "Parent Material",
     "fillerMaterial": "Filler Material",
@@ -261,7 +266,8 @@
     "confirmDeleteMultiple": "Are you sure you want to delete these materials?",
     "confirmDeleteMultipleDescription": "These materials may be referenced in weld logs. Deleting them will remove those references.",
     "addParentMaterialForWeldDescription": "This material will be saved to the material library and added to your weld",
-    "addFillerMaterialForWeldDescription": "This material will be saved to the material library and added to your weld"
+    "addFillerMaterialForWeldDescription": "This material will be saved to the material library and added to your weld",
+    "deleteItem": "Delete Material"
   },
   "weldLogs": {
     "title": "Weld Logs",
@@ -322,6 +328,12 @@
     "enterEndNumber": "Enter end number",
     "parentMaterials": "Parent Materials",
     "fillerMaterials": "Filler Materials",
+    "deleteItem": "Delete Weld Log",
+    "weldNumberPlaceholder": "Enter weld number",
+    "positionPlaceholder": "Enter position",
+    "startNumberPlaceholder": "Enter start number",
+    "endNumberPlaceholder": "Enter end number",
+    "heatTreatmentDescription": "Heat treatment description",
     "heatTreatment": "Heat Treatment",
     "requiresHeatTreatment": "Requires heat treatment",
     "positionMode": "Position",
@@ -497,7 +509,7 @@
     "documentCollections": "Document Collections",
     "collectionName": "Collection Name",
     "addCollection": "Add Collection",
-    "addDocumentCollection": "Add Document Collection",
+    "addDocumentCollection": "Add Collection",
     "editCollection": "Edit Collection",
     "rename": "Rename",
     "deleteCollection": "Delete Collection",
@@ -513,7 +525,10 @@
     "collectionCreatedSuccess": "Collection created successfully",
     "collectionUpdatedSuccess": "Collection updated successfully",
     "createCollectionError": "Failed to create collection",
-    "updateCollectionError": "Failed to update collection"
+    "updateCollectionError": "Failed to update collection",
+    "deleteItem": "Delete Collection",
+    "confirmDelete": "Are you sure you want to delete this collection?",
+    "confirmDeleteDescription": "This will also delete all sections and documents within this collection."
   },
   "users": {
     "title": "Users",
@@ -572,6 +587,7 @@
     "demoteSelectedToUser": "Demote Selected to User",
     "deactivateSelected": "Deactivate Selected",
     "activateSelected": "Activate Selected",
+    "deactivateItem": "Deactivate User",
     "promoteUser": "Promote User to Admin",
     "promoteSelectedUsers": "Promote Selected Users to Admin",
     "promoteDescription_one": "Are you sure you want to promote {{count}} user to admin? This will give them full administrative privileges.",
@@ -697,12 +713,14 @@
     "goToLastPage": "Go to last page"
   },
   "theme": {
+    "theme": "Theme",
     "label": "Theme",
     "system": "System",
     "light": "Light",
     "dark": "Dark"
   },
   "language": {
+    "language": "Language",
     "label": "Language",
     "english": "English",
     "danish": "Dansk"
@@ -712,7 +730,17 @@
     "bulkOperationSuccess": "Successfully completed {{operation}} for {{count}} item(s)",
     "operationSuccess": "Successfully completed {{operation}}",
     "operationFailedWithMessage": "Failed to {{operation}}: {{message}}",
-    "unknownError": "Unknown error occurred"
+    "unknownError": "Unknown error occurred",
+    "createSuccess": "Created successfully",
+    "createError": "Failed to create",
+    "updateSuccess": "Updated successfully",
+    "updateError": "Failed to update",
+    "deleteSuccess": "Deleted successfully",
+    "deleteError": "Failed to delete",
+    "archiveSuccess": "Archived successfully",
+    "archiveError": "Failed to archive",
+    "restoreSuccess": "Restored successfully",
+    "restoreError": "Failed to restore"
   },
   "sections": {
     "createSuccess": "Section added successfully",
@@ -725,7 +753,9 @@
     "deleteError": "Failed to delete section",
     "deleteWithDocumentsSuccess": "Section and {{count}} document(s) deleted successfully",
     "deleteIndexError": "Section deletion temporarily unavailable. Index is building, please try again in a few minutes.",
-    "deleteBatchLimitError": "Section has too many documents to delete at once. Please delete some documents first."
+    "deleteBatchLimitError": "Section has too many documents to delete at once. Please delete some documents first.",
+    "orderUpdateSuccess": "Section order updated successfully",
+    "orderUpdateError": "Failed to update section order"
   },
   "participants": {
     "createSuccess": "Participant added successfully",
@@ -807,6 +837,14 @@
     "editWeld": "Edit Weld",
     "position": "Position",
     "heatTreatment": "Heat Treatment",
+    "status": "Status",
+    "type": "Type",
+    "process": "Process",
+    "welder": "Welder",
+    "inspector": "Inspector",
+    "completedAt": "Completed At",
+    "inspectedAt": "Inspected At",
+    "notes": "Notes",
     "createSuccess": "Weld added successfully",
     "createError": "Failed to create weld",
     "updateSuccess": "Weld updated successfully",

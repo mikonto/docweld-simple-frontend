@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { WeldLogsTable } from './WeldLogsTable';
-import type { WeldLog } from '@/types/app';
+import type { WeldLog } from '@/types/models/welding';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 import type { Timestamp } from 'firebase/firestore';
 

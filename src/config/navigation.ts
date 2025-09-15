@@ -11,7 +11,7 @@ import {
   Building2,
   LucideIcon,
 } from 'lucide-react';
-import type { UserRole } from '@/types/app';
+import type { UserRole } from '@/types/models/user';
 
 /**
  * Complete navigation configuration for DocWeld

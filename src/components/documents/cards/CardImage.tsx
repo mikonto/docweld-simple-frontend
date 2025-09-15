@@ -1,4 +1,4 @@
-import { PROCESSING_STATES } from '../constants';
+import { PROCESSING_STATES } from '@/types/documents';
 
 interface CardImageProps {
   imageToShow?: string | null;

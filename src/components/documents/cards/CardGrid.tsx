@@ -1,4 +1,4 @@
-import { SECTION_SIZE_CONFIG } from '../constants';
+import { SECTION_SIZE_CONFIG } from '@/types/documents';
 import { ReactNode } from 'react';
 
 interface CardGridProps {

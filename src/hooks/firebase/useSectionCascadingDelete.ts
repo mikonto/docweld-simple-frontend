@@ -9,7 +9,8 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
-import { STATUS, COLLECTIONS } from '@/constants/firestore';
+import { COLLECTIONS } from '@/constants/firestore';
+import { STATUS } from '@/types/common/status';
 
 /**
  * Result from a section delete operation

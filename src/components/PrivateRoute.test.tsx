@@ -182,7 +182,7 @@ describe('PrivateRoute', () => {
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
-        isActive: true,
+        status: 'active',
         createdAt: { seconds: 0, nanoseconds: 0 } as unknown as Timestamp,
         updatedAt: { seconds: 0, nanoseconds: 0 } as unknown as Timestamp,
       } as User,

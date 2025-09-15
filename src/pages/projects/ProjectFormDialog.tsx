@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -110,6 +111,9 @@ export function ProjectFormDialog({
           <DialogTitle>
             {project ? t('projects.editProject') : t('projects.addProject')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form for creating or editing projects with basic information and settings
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">

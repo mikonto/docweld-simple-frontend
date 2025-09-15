@@ -25,7 +25,7 @@ import {
   PROCESSING_STATES,
   UPLOAD_STATES,
   type ProcessingState,
-} from '../constants';
+} from '@/types/documents';
 import { getDisplayName } from '../utils/fileUtils';
 import { formatDate } from '@/utils/dateFormatting';
 import { formatFileSize } from '@/utils/formatFileSize';

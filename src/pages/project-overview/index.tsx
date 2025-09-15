@@ -65,13 +65,9 @@ export default function ProjectOverview() {
   // Get confirmation content for the dialog
   const { type, isBulk, data } = participantConfirmDialog.dialog;
   const count = isBulk ? (data as unknown as ProjectParticipant[])?.length : 1;
-  const confirmContent = getConfirmationContent(
-    type || '',
-    isBulk,
-    count,
-    t,
-    'projects'
-  );
+  const confirmContent = type
+    ? getConfirmationContent(type, isBulk, count, t, 'projects')
+    : { title: '', description: '', actionLabel: '', actionVariant: 'default' as const };
 
   // Handler for participant form submission
   const handleParticipantSubmit = async (data: Partial<ProjectParticipant>) => {

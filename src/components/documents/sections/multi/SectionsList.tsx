@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PlusIcon, MoreHorizontal, AlertCircle } from 'lucide-react';
+import { PlusIcon, MoreHorizontal, AlertCircle, Import } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { Section } from './Section';
-import type { Section as SectionType, Document } from '@/types/database';
+import type { Section as SectionType, Document } from '@/types/api/firestore';
 
 interface SectionsListProps {
   sections?: SectionType[];
@@ -83,6 +83,7 @@ export function SectionsList({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={onImportSections}>
+                  <Import className="mr-2 h-4 w-4" />
                   {t('documents.importSections')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -115,6 +116,7 @@ export function SectionsList({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={onImportSections}>
+                <Import className="mr-2 h-4 w-4" />
                 {t('documents.importSections')}
               </DropdownMenuItem>
             </DropdownMenuContent>

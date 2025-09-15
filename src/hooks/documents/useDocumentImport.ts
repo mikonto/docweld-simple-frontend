@@ -5,7 +5,7 @@ import {
   importSingleDocument,
   importCompleteSection,
 } from './documentImportHelpers';
-import type { FirestoreDocument, FirestoreSection } from '@/types/database';
+import type { FirestoreDocument, FirestoreSection } from '@/types/api/firestore';
 import type { DestinationType, AdditionalContext } from './utils';
 
 // Type alias for source types (only project or library can be sources)

@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SectionContent } from './SectionContent';
-import type { Document } from '@/types/database';
+import type { Document } from '@/types/api/firestore';
 import type { Timestamp } from 'firebase/firestore';
 
 // Extend window interface for test

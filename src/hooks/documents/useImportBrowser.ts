@@ -1,10 +1,18 @@
 import { useReducer, Dispatch } from 'react';
-import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+import type { BrowserState, BrowserAction, SelectedItem, BrowserSection, BrowserDocument } from '@/types/documents';
 
-// Type aliases for import browser context
-type CollectionData = { id: string; name: string; [key: string]: unknown };
-type SectionData = FirestoreSection;
-type DocumentData = FirestoreDocument;
+// Helper function to get display title from section or document
+function getDisplayTitle(item: BrowserSection | BrowserDocument): string {
+  // Type guard for checking if item has title property
+  if ('title' in item && typeof item.title === 'string') {
+    return item.title;
+  }
+  // Type guard for checking if item has name property
+  if ('name' in item && typeof item.name === 'string') {
+    return item.name;
+  }
+  return 'Untitled';
+}
 
 // Action types
 export const ACTIONS = {
@@ -22,75 +30,8 @@ export const ACTIONS = {
   CLEAR_SELECTION: 'CLEAR_SELECTION',
   RESET_FOR_SOURCE_CHANGE: 'RESET_FOR_SOURCE_CHANGE',
   RESET_SECTIONS_AND_DOCUMENTS: 'RESET_SECTIONS_AND_DOCUMENTS',
+  SET_IMPORT_SOURCE: 'SET_IMPORT_SOURCE',
 } as const;
-
-// View types
-type ViewType = 'collections' | 'sections' | 'documents';
-
-// Selected item type
-export interface SelectedItem {
-  id: string;
-  type: 'section' | 'document';
-  collectionId?: string | null;
-  sectionId?: string | null;
-  projectId?: string;
-  [key: string]: unknown; // Allow additional properties from the original item
-}
-
-// Browser state
-export interface BrowserState {
-  // Data
-  collections: CollectionData[];
-  sections: SectionData[];
-  documents: DocumentData[];
-  thumbnails: Record<string, string>;
-
-  // Selection
-  selectedCollection: CollectionData | null;
-  selectedSection: SectionData | null;
-  selectedItems: SelectedItem[];
-
-  // UI State
-  currentView: ViewType;
-  isLoading: boolean;
-}
-
-// Action types
-export type BrowserAction =
-  | { type: typeof ACTIONS.SET_LOADING; payload: boolean }
-  | { type: typeof ACTIONS.SET_VIEW; payload: ViewType }
-  | { type: typeof ACTIONS.SET_COLLECTIONS; payload: CollectionData[] }
-  | {
-      type: typeof ACTIONS.SET_SELECTED_COLLECTION;
-      payload: CollectionData | null;
-    }
-  | { type: typeof ACTIONS.SET_SECTIONS; payload: SectionData[] }
-  | { type: typeof ACTIONS.SET_SELECTED_SECTION; payload: SectionData | null }
-  | { type: typeof ACTIONS.SET_DOCUMENTS; payload: DocumentData[] }
-  | { type: typeof ACTIONS.SET_THUMBNAILS; payload: Record<string, string> }
-  | { type: typeof ACTIONS.ADD_THUMBNAIL; payload: { id: string; url: string } }
-  | {
-      type: typeof ACTIONS.TOGGLE_ITEM_SELECTION;
-      payload: {
-        item: SectionData | DocumentData;
-        type: 'section' | 'document';
-        allowMultiple: boolean;
-        sourceType: string;
-        projectId?: string | null;
-        selectedCollection: CollectionData | null;
-        selectedSection: SectionData | null;
-      };
-    }
-  | { type: typeof ACTIONS.SET_SELECTED_ITEMS; payload: SelectedItem[] }
-  | { type: typeof ACTIONS.CLEAR_SELECTION }
-  | {
-      type: typeof ACTIONS.RESET_FOR_SOURCE_CHANGE;
-      payload: {
-        view: ViewType;
-        collection?: CollectionData | null;
-      };
-    }
-  | { type: typeof ACTIONS.RESET_SECTIONS_AND_DOCUMENTS };
 
 // Initial state
 const initialState: BrowserState = {
@@ -108,6 +49,9 @@ const initialState: BrowserState = {
   // UI State
   currentView: 'collections',
   isLoading: true, // Start with loading true to prevent flash of "no data" message
+
+  // Import source
+  importSource: 'documentLibrary',
 };
 
 // Reducer function
@@ -177,9 +121,11 @@ function browserReducer(
         let newItem: SelectedItem;
         if (type === 'section') {
           newItem = {
-            ...item,
+            id: item.id,
+            title: getDisplayTitle(item),
             type: 'section',
             collectionId: selectedCollection?.id || null,
+            sectionId: null,
             projectId:
               sourceType === 'projectLibrary'
                 ? projectId || undefined
@@ -187,7 +133,8 @@ function browserReducer(
           };
         } else {
           newItem = {
-            ...item,
+            id: item.id,
+            title: getDisplayTitle(item),
             type: 'document',
             collectionId: selectedCollection?.id || null,
             sectionId: selectedSection?.id || null,
@@ -232,6 +179,21 @@ function browserReducer(
         sections: [],
         documents: [],
         selectedItems: [],
+      };
+
+    case ACTIONS.SET_IMPORT_SOURCE:
+      return {
+        ...state,
+        importSource: action.payload.source,
+        // Reset view state when source changes
+        currentView: 'collections',
+        selectedCollection: null,
+        selectedSection: null,
+        selectedItems: [],
+        collections: [],
+        sections: [],
+        documents: [],
+        thumbnails: {},
       };
 
     default:

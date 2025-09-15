@@ -65,6 +65,8 @@ describe('SiteHeader', () => {
     uid: 'user123',
     email: 'test@example.com',
     displayName: 'Test User',
+    firstName: 'Test',
+    lastName: 'User',
     role: 'admin',
   };
 

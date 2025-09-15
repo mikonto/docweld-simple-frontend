@@ -1,4 +1,4 @@
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   createColumns,
@@ -59,10 +59,12 @@ export function DocumentLibraryTable({
   const getActionMenuItems = () => [
     {
       label: t('common.edit'),
+      icon: <Edit className="mr-2 h-4 w-4" />,
       action: (rowData: DocumentLibrary) => onEdit(rowData),
     },
     {
       label: t('common.delete'),
+      icon: <Trash className="mr-2 h-4 w-4" />,
       separator: true,
       action: (rowData: DocumentLibrary) => onConfirmAction('delete', rowData),
     },

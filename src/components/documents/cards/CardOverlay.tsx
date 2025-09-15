@@ -1,4 +1,4 @@
-import { UPLOAD_STATES, PROCESSING_STATES } from '../constants';
+import { UPLOAD_STATES, PROCESSING_STATES } from '@/types/documents';
 
 interface CardOverlayProps {
   uploadStatus?: string | null;

@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StandaloneSectionContent } from './StandaloneSectionContent';
 import type { StandaloneSectionContentProps } from './StandaloneSectionContent';
-import type { Document } from '@/types/database';
+import type { Document } from '@/types/api/firestore';
 import type { Timestamp } from 'firebase/firestore';
 
 // Mock the card components

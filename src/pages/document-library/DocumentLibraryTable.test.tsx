@@ -216,13 +216,13 @@ describe('DocumentLibraryTable', () => {
   it('should render action button with translation', () => {
     renderWithI18n(<DocumentLibraryTable {...defaultProps} />);
 
-    expect(screen.getByText('Add Document Collection')).toBeInTheDocument();
+    expect(screen.getByText('Add Collection')).toBeInTheDocument();
   });
 
-  it('should call onCreateNew when Add Document Collection is clicked', () => {
+  it('should call onCreateNew when Add Collection is clicked', () => {
     renderWithI18n(<DocumentLibraryTable {...defaultProps} />);
 
-    const addButton = screen.getByText('Add Document Collection');
+    const addButton = screen.getByText('Add Collection');
     fireEvent.click(addButton);
 
     expect(defaultProps.onCreateNew).toHaveBeenCalledTimes(1);

@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WeldLogDocumentsSection } from './WeldLogDocumentsSection';
-import type { Document, UploadingFile } from '@/types/database';
+import type { Document, UploadingFile } from '@/types/api/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock dependencies

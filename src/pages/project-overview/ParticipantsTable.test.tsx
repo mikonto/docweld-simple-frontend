@@ -33,10 +33,10 @@ describe('ParticipantsTable', () => {
       displayName: 'John Doe',
       firstName: 'John',
       lastName: 'Doe',
-      role: 'welder',
+      role: 'user',
       createdAt: { seconds: 1234567890, nanoseconds: 0 } as Timestamp,
       updatedAt: { seconds: 1234567890, nanoseconds: 0 } as Timestamp,
-      isActive: true,
+      status: 'active',
     },
     {
       id: 'user-2',
@@ -44,10 +44,10 @@ describe('ParticipantsTable', () => {
       displayName: 'Jane Smith',
       firstName: 'Jane',
       lastName: 'Smith',
-      role: 'manager',
+      role: 'admin',
       createdAt: { seconds: 1234567890, nanoseconds: 0 } as Timestamp,
       updatedAt: { seconds: 1234567890, nanoseconds: 0 } as Timestamp,
-      isActive: true,
+      status: 'active',
     },
   ];
 

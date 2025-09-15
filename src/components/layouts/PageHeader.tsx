@@ -1,12 +1,6 @@
 import React from 'react';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-
-interface BreadcrumbData {
-  projectName?: string;
-  collectionName?: string;
-  weldLogName?: string;
-  weldNumber?: string;
-}
+import type { BreadcrumbData } from '@/types/ui/props';
 
 interface PageHeaderProps {
   /** Page title */

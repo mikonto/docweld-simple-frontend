@@ -1,4 +1,12 @@
-import { MoreHorizontal, ChevronRight } from 'lucide-react';
+import {
+  MoreHorizontal,
+  ChevronRight,
+  ArrowUp,
+  ArrowDown,
+  Edit,
+  Import,
+  Trash2
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
@@ -71,6 +79,7 @@ export function SectionHeader({
             <DropdownMenuItem
               onClick={() => onMoveSection(sectionData.id, 'up')}
             >
+              <ArrowUp className="mr-2 h-4 w-4" />
               {t('common.moveUp')}
             </DropdownMenuItem>
           )}
@@ -78,10 +87,12 @@ export function SectionHeader({
             <DropdownMenuItem
               onClick={() => onMoveSection(sectionData.id, 'down')}
             >
+              <ArrowDown className="mr-2 h-4 w-4" />
               {t('common.moveDown')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={onRenameSection}>
+            <Edit className="mr-2 h-4 w-4" />
             {t('common.edit')}
           </DropdownMenuItem>
 
@@ -92,12 +103,14 @@ export function SectionHeader({
                 onImportDocuments(sectionData.id, sectionData.name)
               }
             >
+              <Import className="mr-2 h-4 w-4" />
               {t('documents.importDocuments')}
             </DropdownMenuItem>
           )}
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onDeleteSection}>
+            <Trash2 className="mr-2 h-4 w-4" />
             {t('common.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>

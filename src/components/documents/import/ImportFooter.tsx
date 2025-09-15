@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { SelectedItem } from '@/hooks/documents/useImportBrowser';
+import type { SelectedItem } from '@/types/documents';
 
 interface ImportFooterProps {
   selectedItems: SelectedItem[];

@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import type { Section } from '@/types/database';
+import type { Section } from '@/types/api/firestore';
 
 interface SectionDialogProps {
   mode?: 'add' | 'edit';
@@ -94,6 +95,9 @@ export function SectionDialog({
               ? t('documents.addSection')
               : t('documents.editSection')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form for adding or editing document sections with title and content
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

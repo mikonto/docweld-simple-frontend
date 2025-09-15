@@ -1,13 +1,11 @@
 /**
- * Database Types - Firestore Data Models
- *
- * These types represent the actual data structure stored in Firestore.
- * They serve as the source of truth for all database operations.
+ * Firestore-specific types
+ * Data structures for Firestore database operations
  */
 
 import type { Timestamp, FieldValue } from 'firebase/firestore';
 
-// ============== Document Types ==============
+// ============== Document Management Types ==============
 
 /**
  * Firestore document data structure
@@ -53,8 +51,6 @@ export interface Document
   updatedAt: Timestamp;
 }
 
-// ============== Section Types ==============
-
 /**
  * Firestore section data structure
  * Note: Firestore uses 'name' and 'description' fields
@@ -88,43 +84,6 @@ export interface Section
   documentCount?: number; // Number of documents in this section
 }
 
-// ============== Upload Types ==============
-
-export interface UploadingFile {
-  id: string;
-  file: File;
-  progress: number;
-  status: 'uploading' | 'success' | 'error';
-  error?: Error;
-  documentId?: string;
-}
-
-// @unused - Upload results handled inline
-// interface UploadResult {
-//   success: boolean;
-//   documentId?: string;
-//   error?: Error;
-// }
-
-// ============== Company Types ==============
-
-/**
- * Company information data structure
- * Represents company profile information
- */
-export interface CompanyInformation {
-  id?: string;
-  companyName: string;
-  address: string;
-  contactPerson: string;
-  contactEmail: string;
-  contactPhone: string;
-  website?: string;
-  logoUrl?: string;
-  createdAt?: Timestamp | FieldValue;
-  updatedAt?: Timestamp | FieldValue;
-}
-
 // ============== Document Library Types ==============
 
 /**
@@ -152,7 +111,26 @@ export interface DocumentLibraryFormData {
   description?: string;
 }
 
-// ============== Import Types ==============
+// ============== Company Information ==============
+
+/**
+ * Company information data structure
+ * Represents company profile information
+ */
+export interface CompanyInformation {
+  id?: string;
+  companyName: string;
+  address: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  website?: string;
+  logoUrl?: string;
+  createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
+}
+
+// ============== Import/Export Types ==============
 
 export interface ImportedDocumentData extends FirestoreDocument {
   importedFrom?: string;
@@ -164,34 +142,29 @@ export interface ImportedSectionData extends FirestoreSection {
   importedAt?: FieldValue;
 }
 
+// ============== Upload Types ==============
+
+export interface UploadingFile {
+  id: string;
+  file: File;
+  progress: number;
+  status: 'uploading' | 'success' | 'error';
+  error?: Error;
+  documentId?: string;
+}
+
 // ============== Query Types ==============
 
-// @unused - Queries built inline
-// interface DocumentQuery {
-//   projectId?: string;
-//   libraryId?: string;
-//   weldLogId?: string;
-//   weldId?: string;
-//   sectionId?: string | null;
-//   status?: 'active' | 'deleted';
-// }
-
-// interface SectionQuery {
-//   projectId?: string;
-//   libraryId?: string;
-//   status?: 'active' | 'deleted';
-// }
-
-// ============== Operation Results ==============
-
-// @unused - operation result interface
-// interface OperationResult {
-//   success: boolean;
-//   error?: Error;
-//   data?: any;
-// }
-
-// @unused - Delete results handled inline
-// interface DeleteResult extends OperationResult {
-//   deletedCount?: number;
-// }
+/**
+ * Firebase query structure
+ */
+export interface FirebaseQuery {
+  collection: string;
+  where?: Array<{
+    field: string;
+    operator: '==' | '!=' | '<' | '>' | '<=' | '>=';
+    value: unknown;
+  }>;
+  orderBy?: string;
+  limit?: number;
+}

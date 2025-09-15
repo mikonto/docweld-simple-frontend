@@ -45,13 +45,9 @@ export default function UserManagement() {
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
   const count = isBulk && Array.isArray(data) ? data.length : 1;
-  const confirmContent = getConfirmationContent(
-    type || '',
-    isBulk,
-    count,
-    t,
-    'users'
-  );
+  const confirmContent = type
+    ? getConfirmationContent(type, isBulk, count, t, 'users')
+    : { title: '', description: '', actionLabel: '', actionVariant: 'default' as const };
 
   // Handler for user form submission
   const handleUserSubmit = async (data: UserFormData) => {

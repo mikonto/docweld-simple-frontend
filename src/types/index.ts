@@ -1,85 +1,48 @@
 /**
  * Central Type Exports
  *
- * This file re-exports all types for convenient importing.
- * Import types from here rather than individual files.
+ * All types are now organized into categorized folders.
+ * Import types from the specific folders for better clarity.
  *
  * @example
- * import { User, Document, Section } from '@/types';
+ * import { User } from '@/types/models/user';
+ * import { UserFormData } from '@/types/forms';
+ * import { ApiResponse } from '@/types/api';
  */
 
-// Database types (Firestore data models)
-export type {
-  // Documents
-  FirestoreDocument,
+// ============== Organized Exports ==============
 
-  // Document Library
-  DocumentLibrary,
-  DocumentLibraryFormData,
+// Re-export from organized folders
+export * from './models';
+export * from './forms';
+export * from './api';
+export * from './ui';
+export * from './utils';
+export * from './documents';
 
-  // Company
-  CompanyInformation,
+// Test utilities remain in their own file
+export * from './test-utils';
 
-  // Sections
-  FirestoreSection,
+// ============== Utility Type Aliases ==============
 
-  // Upload
-  UploadingFile,
+/**
+ * Make properties optional
+ */
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-  // Import
-  ImportedDocumentData,
-  ImportedSectionData,
+/**
+ * Extract values from an object type
+ */
+export type ValueOf<T> = T[keyof T];
 
-  // Queries
+/**
+ * Make properties required
+ */
+export type RequiredFields<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
-  // Results
-} from './database';
-
-// Application types (Business logic)
-export type {
-  // User
-  User,
-
-  // Project
-  Project,
-  ProjectParticipant,
-  ProjectRole,
-  ProjectPermission,
-
-  // Weld
-  WeldLog,
-  Weld,
-
-  // Material
-  Material,
-
-  // Company
-  Company,
-
-  // Forms
-  ProjectFormData,
-  MaterialFormData,
-  UserFormData,
-  WeldLogFormData,
-  WeldFormData,
-  CompanyFormData,
-  ProjectParticipantFormData,
-
-  // Context
-  LoggedInUser,
-} from './app';
-
-// Test utility types
-export type {} from // Render
-
-// Mocks
-
-// Props
-
-// Events
-
-// Factory
-
-'./test-utils';
-
-// Re-export utility functions
+/**
+ * Deep partial type
+ */
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};

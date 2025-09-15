@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import useImportDataFetching from './useImportDataFetching';
-import type { BrowserState } from './useImportBrowser';
-import type { FirestoreSection } from '@/types/database';
+import type { BrowserState } from '@/types/documents';
+import type { FirestoreSection } from '@/types/api/firestore';
 
 // Type aliases for compatibility
 type CollectionData = { id: string; name: string; [key: string]: unknown };
@@ -53,14 +53,15 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     const { result } = renderHook(() =>
       useImportDataFetching(state, mockDispatch, 'documentLibrary', null)
     );
 
-    // Hook should initialize without errors
-    expect(result.current).toBeDefined();
+    // Hook should initialize without errors (hook returns void)
+    expect(result.current).toBeUndefined();
   });
 
   it('does not crash when initialized with project library source', () => {
@@ -77,14 +78,15 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     const { result } = renderHook(() =>
       useImportDataFetching(state, mockDispatch, 'projectLibrary', 'proj-123')
     );
 
-    // Hook should initialize without errors
-    expect(result.current).toBeDefined();
+    // Hook should initialize without errors (hook returns void)
+    expect(result.current).toBeUndefined();
   });
 
   it('does not crash when view changes', () => {
@@ -98,6 +100,7 @@ describe('useImportDataFetching', () => {
       selectedItems: [],
       isLoading: false,
       currentView: 'sections',
+      importSource: 'documentLibrary',
     };
 
     const { rerender, result } = renderHook<
@@ -119,8 +122,8 @@ describe('useImportDataFetching', () => {
     // Change view
     rerender({ view: 'documents' });
 
-    // Hook should handle view change without errors
-    expect(result.current).toBeDefined();
+    // Hook should handle view change without errors (hook returns void)
+    expect(result.current).toBeUndefined();
   });
 
   it('does not crash when section is selected', () => {
@@ -134,14 +137,15 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     const { result } = renderHook(() =>
       useImportDataFetching(state, mockDispatch, 'documentLibrary', null)
     );
 
-    // Hook should handle section selection without errors
-    expect(result.current).toBeDefined();
+    // Hook should handle section selection without errors (hook returns void)
+    expect(result.current).toBeUndefined();
   });
 
   it('handles missing projectId gracefully for project library', () => {
@@ -158,14 +162,15 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     const { result } = renderHook(() =>
       useImportDataFetching(state, mockDispatch, 'projectLibrary', null)
     );
 
-    // Hook should handle missing projectId without errors
-    expect(result.current).toBeDefined();
+    // Hook should handle missing projectId without errors (hook returns void)
+    expect(result.current).toBeUndefined();
   });
 
   it('dispatches loading state for document library collections', () => {
@@ -179,6 +184,7 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     renderHook(() =>
@@ -203,6 +209,7 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     renderHook(() =>
@@ -233,6 +240,7 @@ describe('useImportDataFetching', () => {
       thumbnails: {},
       selectedItems: [],
       isLoading: false,
+      importSource: 'documentLibrary',
     };
 
     renderHook(() =>

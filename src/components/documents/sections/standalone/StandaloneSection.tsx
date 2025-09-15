@@ -12,8 +12,8 @@ import { StandaloneSectionContent } from './StandaloneSectionContent';
 import {
   UPLOAD_CONFIG,
   SECTION_SIZE_CONFIG,
-} from '@/components/documents/constants';
-import type { Document } from '@/types/database';
+} from '@/types/documents';
+import type { Document } from '@/types/api/firestore';
 import type { DragEndEvent } from '@dnd-kit/core';
 import type { LucideIcon } from 'lucide-react';
 

@@ -11,8 +11,10 @@ import { useDocuments } from '@/hooks/documents/useDocuments';
 import { useUser } from '@/hooks/useUsers';
 import { useFormDialog } from '@/hooks/useFormDialog';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
-import type { Project, WeldLog, Weld, User } from '@/types/app';
-import type { Document } from '@/types/database';
+import type { Project } from '@/types/models/project';
+import type { WeldLog, Weld } from '@/types/models/welding';
+import type { User } from '@/types/models/user';
+import type { Document } from '@/types/api/firestore';
 import type { Timestamp, FirestoreError } from 'firebase/firestore';
 
 // Mock dependencies
@@ -182,8 +184,8 @@ const mockUser: User = {
   displayName: 'John Doe',
   firstName: 'John',
   lastName: 'Doe',
-  role: 'welder',
-  isActive: true,
+  role: 'user',
+  status: 'active',
   createdAt: mockTimestamp,
   updatedAt: mockTimestamp,
 };

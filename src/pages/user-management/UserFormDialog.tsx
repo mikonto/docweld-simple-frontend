@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -136,6 +137,9 @@ export function UserFormDialog({
           <DialogTitle>
             {user ? t('users.editUser') : t('users.addUser')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {user ? 'Edit user account details' : 'Create a new user account'}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">

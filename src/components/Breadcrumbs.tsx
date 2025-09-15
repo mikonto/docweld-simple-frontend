@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { BreadcrumbData } from '@/types/ui/props';
 
 // Route-to-translation-key mapping
 const routeTranslationKeys: Record<string, string> = {
@@ -18,12 +19,6 @@ const routeTranslationKeys: Record<string, string> = {
   collection: 'documentLibrary.collection',
 };
 
-export interface BreadcrumbData {
-  projectName?: string;
-  collectionName?: string;
-  weldLogName?: string;
-  weldNumber?: string;
-}
 
 interface BreadcrumbsProps {
   className?: string;

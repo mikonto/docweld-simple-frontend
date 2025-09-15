@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import type { WeldLog, WeldLogFormData } from '@/types/app';
+import type { WeldLog } from '@/types/models/welding';
+import type { WeldLogFormData } from '@/types/forms';
 
 // Default values for a new weld log
 const defaultValues: WeldLogFormData = {
@@ -91,6 +93,9 @@ export function WeldLogFormDialog({
           <DialogTitle>
             {weldLog ? t('weldLogs.editWeldLog') : t('weldLogs.addWeldLog')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form for creating or editing weld log entries with basic information
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">

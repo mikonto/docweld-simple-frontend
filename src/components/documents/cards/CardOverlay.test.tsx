@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CardOverlay } from './CardOverlay';
-import { UPLOAD_STATES, PROCESSING_STATES } from '../constants';
+import { UPLOAD_STATES, PROCESSING_STATES } from '@/types/documents';
 
 describe('CardOverlay', () => {
   describe('Visibility', () => {

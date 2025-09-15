@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Document, Section } from '@/types/database';
+import { Document, Section } from '@/types/api/firestore';
 
 interface SelectionToolbarProps {
   mode: 'section' | 'document' | 'both';

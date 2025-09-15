@@ -32,7 +32,7 @@ describe('UserFormDialog', () => {
     role: 'user',
     createdAt: { seconds: 1234567890, nanoseconds: 0 } as Timestamp,
     updatedAt: { seconds: 1234567890, nanoseconds: 0 } as Timestamp,
-    isActive: true,
+    status: 'active',
   };
 
   beforeEach(() => {

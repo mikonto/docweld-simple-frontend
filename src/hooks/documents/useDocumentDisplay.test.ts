@@ -101,7 +101,7 @@ describe('useDocumentDisplay', () => {
       );
 
       expect(result.current.isLoading).toBe(true);
-      expect(result.current.imageToShow).toBe(null);
+      expect(result.current.imageToShow).toBe(undefined);
     });
   });
 
@@ -158,7 +158,7 @@ describe('useDocumentDisplay', () => {
       // Error is handled silently now - no console.error
       // Hook should still return valid state despite error
       expect(result.current.showFullImage).toBe(false);
-      expect(result.current.imageToShow).toBe(null); // imageToShow is null when both urls are null
+      expect(result.current.imageToShow).toBe(undefined); // imageToShow is null when both urls are null
     });
   });
 
@@ -176,7 +176,7 @@ describe('useDocumentDisplay', () => {
       // Should not create storage refs when processing
       expect(storageRefFunc).not.toHaveBeenCalled();
       expect(result.current.isLoading).toBe(true);
-      expect(result.current.imageToShow).toBe(null);
+      expect(result.current.imageToShow).toBe(undefined);
     });
 
     it('should fetch URLs when processing is completed', () => {

@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useImportBrowser from './useImportBrowser';
-import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+import type { FirestoreSection, FirestoreDocument } from '@/types/api/firestore';
 
 // Type aliases for compatibility
 type CollectionData = { id: string; name: string; [key: string]: unknown };
 type SectionData = FirestoreSection;
 type DocumentData = FirestoreDocument;
-import type { SelectedItem } from './useImportBrowser';
+import type { SelectedItem } from '@/types/documents';
 
 describe('useImportBrowser', () => {
   it('initializes with correct default state', () => {
@@ -23,6 +23,7 @@ describe('useImportBrowser', () => {
       selectedItems: [],
       currentView: 'collections',
       isLoading: true,
+      importSource: 'documentLibrary', // Default source
     });
   });
 
@@ -174,6 +175,11 @@ describe('useImportBrowser', () => {
 
   it('handles TOGGLE_ITEM_SELECTION action to track user selections', () => {
     const { result } = renderHook(() => useImportBrowser());
+
+    // Create mock collection and section for the test
+    const mockCollection = { id: 'coll-1', name: 'Collection 1' };
+    const mockSection = { id: 'sec-1', name: 'Section 1' };
+
     const item1: DocumentData = {
       id: 'doc-1',
       title: 'Document 1',
@@ -223,17 +229,18 @@ describe('useImportBrowser', () => {
           allowMultiple: true,
           sourceType: 'documentLibrary',
           projectId: null,
-          selectedCollection: null,
-          selectedSection: null,
+          selectedCollection: mockCollection,
+          selectedSection: mockSection,
         },
       });
     });
 
     expect(result.current.state.selectedItems).toContainEqual({
-      ...item1,
+      id: item1.id,
+      title: item1.title,
       type: 'document',
-      collectionId: null,
-      sectionId: null,
+      collectionId: mockCollection.id,
+      sectionId: mockSection.id,
       projectId: undefined,
     });
 
@@ -247,8 +254,8 @@ describe('useImportBrowser', () => {
           allowMultiple: true,
           sourceType: 'documentLibrary',
           projectId: null,
-          selectedCollection: null,
-          selectedSection: null,
+          selectedCollection: mockCollection,
+          selectedSection: mockSection,
         },
       });
     });
@@ -258,6 +265,11 @@ describe('useImportBrowser', () => {
 
   it('handles TOGGLE_ITEM_SELECTION to unselect items', () => {
     const { result } = renderHook(() => useImportBrowser());
+
+    // Create mock collection and section for the test
+    const mockCollection = { id: 'coll-1', name: 'Collection 1' };
+    const mockSection = { id: 'sec-1', name: 'Section 1' };
+
     const item1: DocumentData = {
       id: 'doc-1',
       title: 'Document 1',
@@ -290,8 +302,8 @@ describe('useImportBrowser', () => {
           allowMultiple: true,
           sourceType: 'documentLibrary',
           projectId: null,
-          selectedCollection: null,
-          selectedSection: null,
+          selectedCollection: mockCollection,
+          selectedSection: mockSection,
         },
       });
     });
@@ -308,8 +320,8 @@ describe('useImportBrowser', () => {
           allowMultiple: true,
           sourceType: 'documentLibrary',
           projectId: null,
-          selectedCollection: null,
-          selectedSection: null,
+          selectedCollection: mockCollection,
+          selectedSection: mockSection,
         },
       });
     });

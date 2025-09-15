@@ -1,5 +1,5 @@
-import { UPLOAD_CONFIG } from '../constants';
-import type { ProcessingState } from '../constants';
+import { UPLOAD_CONFIG } from '@/types/documents';
+import type { ProcessingState } from '@/types/documents';
 
 export function getFileExtension(filename: string): string {
   const parts = filename.split('.');

@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { UPLOAD_CONFIG } from '@/components/documents/constants';
+import { UPLOAD_CONFIG } from '@/types/documents';
 import { useDragAndDrop } from '@/hooks/documents';
 
 interface UploadCardProps {

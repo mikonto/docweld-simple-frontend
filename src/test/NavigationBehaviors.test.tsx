@@ -83,7 +83,7 @@ const createMockUser = (
     role,
     createdAt: mockTimestamp,
     updatedAt: mockTimestamp,
-    isActive: true,
+    status: 'active',
   },
   userAuth: null,
   userDb: null,

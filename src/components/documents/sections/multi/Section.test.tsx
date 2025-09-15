@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Section } from './Section';
 import { renderWithProviders } from '@/test/utils/testUtils';
-import type { Section as SectionType, Document } from '@/types/database';
+import type { Section as SectionType, Document } from '@/types/api/firestore';
 import type { Timestamp } from 'firebase/firestore';
 
 // Mock child components to isolate testing
@@ -63,7 +63,7 @@ vi.mock('@/hooks/documents/useSections', () => ({
 
 vi.mock('@/hooks/documents/useDocuments', () => ({
   useDocuments: vi.fn(() => ({
-    uploadingFiles: {},
+    uploadingFiles: [], // Should be an array
     renameDocument: vi.fn(),
     deleteDocument: vi.fn(),
     handleUpload: vi.fn(),

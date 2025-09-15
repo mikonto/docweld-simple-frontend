@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -143,6 +144,9 @@ export function ParticipantFormDialog({
               ? t('projects.editParticipant')
               : t('projects.addParticipant')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form for adding or editing project participants with their details and qualifications
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">

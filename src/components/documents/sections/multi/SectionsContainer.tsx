@@ -7,7 +7,7 @@ import { useFormDialog } from '@/hooks/useFormDialog';
 import { SectionDialog } from './SectionDialog';
 import { ImportDialog } from '@/components/documents/import';
 import { SectionsList } from './SectionsList';
-import type { Section, Document } from '@/types/database';
+import type { Section, Document } from '@/types/api/firestore';
 
 interface ImportSource {
   collectionType: 'project' | 'library';

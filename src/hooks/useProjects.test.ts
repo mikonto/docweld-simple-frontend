@@ -3,7 +3,8 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { useProjects, useProject, useProjectOperations } from './useProjects';
 import { resetFirebaseMocks } from '@/test/mocks/firebase';
 import { useApp } from '@/contexts/AppContext';
-import { STATUS, type Status } from '@/constants/firestore';
+import { STATUS } from '@/types/common/status';
+import type { Status } from '@/types/common/status';
 
 // Mock the AppContext
 vi.mock('@/contexts/AppContext', () => ({

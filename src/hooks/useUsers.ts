@@ -13,12 +13,10 @@ import { db, functions } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import {
-  STATUS,
-  USER_ROLE,
-  COLLECTIONS,
-  type Status,
-} from '@/constants/firestore';
+import { COLLECTIONS } from '@/constants/firestore';
+import { STATUS } from '@/types/common/status';
+import { USER_ROLE } from '@/types/models/user';
+import type { Status } from '@/types/common/status';
 import { type User, type UserFormData } from '@/types';
 
 /**

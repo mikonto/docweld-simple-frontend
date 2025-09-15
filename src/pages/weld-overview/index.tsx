@@ -18,13 +18,13 @@ import { useDocuments, useDocumentImport } from '@/hooks/documents';
 import { ImportDialog } from '@/components/documents/import';
 import { CardDialog } from '@/components/documents/cards';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
-import type { Weld } from '@/types';
-import type { Document } from '@/types/database';
-import type { SelectedItem } from '@/hooks/documents/useImportBrowser';
+import type { Weld } from '@/types/models/welding';
+import type { Document } from '@/types/api/firestore';
+import type { SelectedItem } from '@/types/documents';
 import type {
   SingleWeldFormData,
   MultipleWeldsFormData,
-} from '../weld-log-overview/WeldFormDialog';
+} from '@/types/forms/weld-forms';
 
 interface WeldFormDialogState {
   isOpen: boolean;

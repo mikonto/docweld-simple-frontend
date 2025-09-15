@@ -50,13 +50,9 @@ export default function Projects() {
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
   const count = isBulk && Array.isArray(data) ? data.length : 1;
-  const confirmContent = getConfirmationContent(
-    type || '',
-    isBulk,
-    count,
-    t,
-    'projects'
-  );
+  const confirmContent = type
+    ? getConfirmationContent(type, isBulk, count, t, 'projects')
+    : { title: '', description: '', actionLabel: '', actionVariant: 'default' as const };
 
   // Handler for project form submission
   const handleProjectSubmit = async (data: Partial<Project>) => {

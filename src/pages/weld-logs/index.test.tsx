@@ -10,7 +10,9 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import WeldLogs from './index';
-import type { Project, WeldLog, WeldLogFormData } from '@/types/app';
+import type { Project } from '@/types/models/project';
+import type { WeldLog } from '@/types/models/welding';
+import type { WeldLogFormData } from '@/types/forms';
 import type { FirestoreError, Timestamp } from 'firebase/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 

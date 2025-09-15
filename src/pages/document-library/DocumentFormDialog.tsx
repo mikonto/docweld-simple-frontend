@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,11 @@ export function DocumentFormDialog({
               ? t('documentLibrary.editCollection')
               : t('documentLibrary.addDocumentCollection')}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {document
+              ? 'Edit the document collection details'
+              : 'Create a new document collection'}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">

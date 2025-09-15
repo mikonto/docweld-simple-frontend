@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Section } from '@/types/database';
+import { Section } from '@/types/api/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 import type { Timestamp } from 'firebase/firestore';
 import SectionsList from './SectionsList';

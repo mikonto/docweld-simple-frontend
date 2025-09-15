@@ -4,8 +4,10 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Mock } from 'vitest';
 import WeldOverview from './index';
-import type { Project, Weld, WeldLog, User } from '@/types';
-import type { Document } from '@/types/database';
+import type { Project } from '@/types/models/project';
+import type { Weld, WeldLog } from '@/types/models/welding';
+import type { User } from '@/types/models/user';
+import type { Document } from '@/types/api/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock the hooks
@@ -147,7 +149,7 @@ describe('WeldOverview', () => {
     displayName: 'Test User',
     email: 'test@example.com',
     role: 'user',
-    isActive: true,
+    status: 'active',
     createdAt: mockTimestamp,
     updatedAt: mockTimestamp,
   };

@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Edit } from 'lucide-react';
 import {
   createColumns,
   DataTable,
   DataTableColumnHeader,
 } from '@/components/data-table';
 import { Card, CardContent } from '@/components/ui/card';
-import type { WeldLog } from '@/types/app';
+import type { WeldLog } from '@/types/models/welding';
 import type { Column, Row } from '@tanstack/react-table';
 
 // Define prop types for the component
@@ -55,6 +55,7 @@ interface BulkActionButton {
 // Define menu item interface
 interface MenuItemAction {
   label: string;
+  icon?: React.ReactNode;
   separator?: boolean;
   action: (rowData: WeldLog) => void;
 }
@@ -102,12 +103,14 @@ export function WeldLogsTable({
     return [
       {
         label: t('common.edit'),
+        icon: <Edit className="mr-2 h-4 w-4" />,
         action: (rowData: WeldLog) => {
           onEdit(rowData);
         },
       },
       {
         label: t('common.delete'),
+        icon: <Trash className="mr-2 h-4 w-4" />,
         separator: true,
         action: (rowData: WeldLog) => {
           onConfirmAction('delete', rowData);

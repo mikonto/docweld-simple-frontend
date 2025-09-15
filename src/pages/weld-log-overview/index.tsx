@@ -7,11 +7,11 @@ import { useWeldLog, useWeldLogOperations } from '@/hooks/useWeldLogs';
 import { useWelds, useWeldOperations } from '@/hooks/useWelds';
 import PageHeader from '@/components/layouts/PageHeader';
 import { WeldLogFormDialog } from '../weld-logs/WeldLogFormDialog';
-import {
-  WeldFormDialog,
-  type SingleWeldFormData,
-  type MultipleWeldsFormData,
-} from './WeldFormDialog';
+import { WeldFormDialog } from './WeldFormDialog';
+import type {
+  SingleWeldFormData,
+  MultipleWeldsFormData,
+} from '@/types/forms/weld-forms';
 import { WeldLogDetailsCard } from './WeldLogDetailsCard';
 import { WeldLogDocumentsSection } from './WeldLogDocumentsSection';
 import { Welds } from './Welds';
@@ -26,11 +26,12 @@ import { getConfirmationContent } from '@/utils/confirmationContent';
 import { useDocuments, useDocumentImport } from '@/hooks/documents';
 import { toast } from 'sonner';
 import type { DragEndEvent } from '@dnd-kit/core';
-import type { SelectedItem } from '@/hooks/documents';
+import type { SelectedItem } from '@/types/documents';
 import { ImportDialog } from '@/components/documents/import';
 import { CardDialog } from '@/components/documents/cards';
-import type { WeldLog, Weld, WeldLogFormData, WeldFormData } from '@/types/app';
-import type { Document } from '@/types/database';
+import type { WeldLog, Weld } from '@/types/models/welding';
+import type { WeldLogFormData, WeldFormData } from '@/types/forms';
+import type { Document } from '@/types/api/firestore';
 
 interface WeldLogFormDialogState {
   isOpen: boolean;
@@ -271,13 +272,9 @@ export default function WeldLogOverview(): React.ReactElement {
   // Get confirmation content for the dialog
   const { type, isBulk, data } = weldConfirmDialog.dialog;
   const count = isBulk && Array.isArray(data) ? data.length : 1;
-  const confirmContent = getConfirmationContent(
-    type || 'delete', // Provide default value if type is null
-    isBulk,
-    count,
-    t,
-    'weldLogs'
-  );
+  const confirmContent = type
+    ? getConfirmationContent(type, isBulk, count, t, 'weldLogs')
+    : { title: '', description: '', actionLabel: '', actionVariant: 'default' as const };
 
   // Handler for weld log form submission
   const handleWeldLogSubmit = async (data: WeldLogFormData): Promise<void> => {

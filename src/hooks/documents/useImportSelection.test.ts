@@ -5,8 +5,8 @@ import type {
   BrowserState,
   BrowserAction,
   SelectedItem,
-} from './useImportBrowser';
-import type { FirestoreSection, FirestoreDocument } from '@/types/database';
+} from '@/types/documents';
+import type { FirestoreSection, FirestoreDocument } from '@/types/api/firestore';
 import { Dispatch } from 'react';
 
 // Type aliases for compatibility
@@ -514,16 +514,18 @@ describe('useImportSelection', () => {
         payload: [
           {
             id: 'sec-1',
-            name: 'Section 1',
+            title: 'Section 1',
             type: 'section',
             collectionId: null,
+            sectionId: null,
             projectId: undefined,
           },
           {
             id: 'sec-2',
-            name: 'Section 2',
+            title: 'Section 2',
             type: 'section',
             collectionId: null,
+            sectionId: null,
             projectId: undefined,
           },
         ],

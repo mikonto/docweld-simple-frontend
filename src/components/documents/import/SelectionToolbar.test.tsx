@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import SelectionToolbar from './SelectionToolbar';
-import type { Document, Section } from '@/types/database';
+import type { Document, Section } from '@/types/api/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 
 // Mock Checkbox component

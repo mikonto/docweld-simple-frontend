@@ -64,7 +64,7 @@ export { useDragAndDrop } from './useDragAndDrop';
  * useImportBrowser - Main state management for import browser
  */
 export { default as useImportBrowser } from './useImportBrowser';
-export type { SelectedItem } from './useImportBrowser';
+export type { SelectedItem } from '@/types/documents';
 
 /**
  * useImportDataFetching - Handles data fetching for import browser

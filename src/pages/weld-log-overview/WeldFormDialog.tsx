@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -35,27 +36,13 @@ import { useMaterials, useMaterialOperations } from '@/hooks/useMaterials';
 import { MaterialFormDialog } from '@/pages/material-management/MaterialFormDialog';
 import { MultiCombobox } from '@/components/ui/custom/multi-combobox';
 import { useWeldOperations } from '@/hooks/useWelds';
-import type { Weld, Material, MaterialFormData } from '@/types/app';
-
-export interface SingleWeldFormData {
-  number: string;
-  position: string;
-  parentMaterials: string[];
-  fillerMaterials: string[];
-  description?: string;
-  heatTreatment: boolean;
-}
-
-export interface MultipleWeldsFormData {
-  startNumber: string;
-  endNumber: string;
-  position?: string;
-  positionMode: '' | 'same-as-number' | 'manual' | 'add-later';
-  parentMaterials: string[];
-  fillerMaterials: string[];
-  description?: string;
-  heatTreatment: boolean;
-}
+import type { Weld } from '@/types/models/welding';
+import type { Material } from '@/types/models/company';
+import type { MaterialFormData } from '@/types/forms';
+import type {
+  SingleWeldFormData,
+  MultipleWeldsFormData,
+} from '@/types/forms/weld-forms';
 
 interface MaterialDialogState {
   isOpen: boolean;
@@ -884,6 +871,9 @@ export function WeldFormDialog({
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Form for creating or editing weld entries with material information and weld parameters
+            </DialogDescription>
           </DialogHeader>
 
           {mode === 'single'

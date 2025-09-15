@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import js from '@eslint/js';
 import globals from 'globals';
 import react from 'eslint-plugin-react';
@@ -22,10 +21,10 @@ const config = [
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint as any,
-      react: react as any,
-      'react-hooks': reactHooks as any,
-      'react-refresh': reactRefresh as any,
+      '@typescript-eslint': tseslint,
+      'react': react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
     },
     settings: {
       react: {
@@ -85,6 +84,6 @@ const config = [
       },
     },
   },
-];
+];;
 
 export default config;

@@ -36,13 +36,9 @@ export default function MaterialManagement() {
   // Get confirmation content for the dialog
   const { type, isBulk, data } = confirmDialog.dialog;
   const count = isBulk && Array.isArray(data) ? data.length : 1;
-  const confirmContent = getConfirmationContent(
-    type || 'delete',
-    isBulk,
-    count,
-    t,
-    'materials'
-  );
+  const confirmContent = type
+    ? getConfirmationContent(type, isBulk, count, t, 'materials')
+    : { title: '', description: '', actionLabel: '', actionVariant: 'default' as const };
 
   // Handler for material form submission
   const handleMaterialSubmit = async (data: Partial<Material>) => {

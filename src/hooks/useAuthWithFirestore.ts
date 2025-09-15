@@ -5,7 +5,7 @@ import { doc, FirestoreError } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { User as FirestoreUser } from '@/types';
-import type { Status } from '@/constants/firestore';
+import type { Status } from '@/types/common/status';
 
 /**
  * Combined user type with both Auth and Firestore data
@@ -30,7 +30,7 @@ interface LoggedInUser {
   createdAt: FirestoreUser['createdAt'];
   updatedAt: FirestoreUser['updatedAt'];
   lastLogin?: FirestoreUser['lastLogin'];
-  isActive: boolean;
+  status: FirestoreUser['status'];
 
   // Additional Firebase Auth methods/properties can be added as needed
 }
@@ -93,7 +93,7 @@ export function useAuthWithFirestore(): UseAuthWithFirestoreReturn {
   const userDb = userDoc?.exists() ? (userDoc.data() as FirestoreUser) : null;
 
   // Determine if user is authorized (authenticated + active in Firestore)
-  const isAuthorized = !!(userAuth && userDb && userDb.isActive);
+  const isAuthorized = !!(userAuth && userDb && userDb.status === 'active');
 
   // Combine Firebase Auth and Firestore user data for convenience
   // Manually construct to ensure proper type alignment
@@ -118,7 +118,7 @@ export function useAuthWithFirestore(): UseAuthWithFirestoreReturn {
           createdAt: userDb.createdAt,
           updatedAt: userDb.updatedAt,
           lastLogin: userDb.lastLogin,
-          isActive: userDb.isActive,
+          status: userDb.status,
         }
       : null;
 
@@ -129,12 +129,8 @@ export function useAuthWithFirestore(): UseAuthWithFirestoreReturn {
     userAuth: userAuth ?? null,
     // Raw Firestore user document data
     userDb,
-    // User status from Firestore (derived from isActive)
-    userStatus: userDb
-      ? userDb.isActive
-        ? ('active' as Status)
-        : ('inactive' as Status)
-      : null,
+    // User status from Firestore
+    userStatus: userDb ? userDb.status : null,
     // Whether user is fully authorized to access the app
     isAuthorized,
     // Whether any loading is happening (default to false if undefined)

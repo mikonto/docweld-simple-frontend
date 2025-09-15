@@ -12,15 +12,9 @@ import {
 } from '@/components/ui/tooltip';
 import { useMaterials } from '@/hooks/useMaterials';
 import { useTranslation } from 'react-i18next';
-import type { Weld, Material } from '@/types/app';
+import type { Weld } from '@/types/models/welding';
+import type { Material } from '@/types/models/company';
 import type { ColumnDef } from '@tanstack/react-table';
-
-// Extended Weld type with additional Firestore fields
-interface ExtendedWeld extends Weld {
-  parentMaterials?: string[];
-  fillerMaterials?: string[];
-  heatTreatment?: boolean;
-}
 
 interface WeldsProps {
   welds: Weld[];
@@ -107,7 +101,7 @@ export function Welds({
   const [fillerMaterials, fillerLoading] = useMaterials('filler');
 
   // Define weld columns
-  const weldColumns: ColumnDef<ExtendedWeld>[] = [
+  const weldColumns: ColumnDef<Weld>[] = [
     {
       accessorKey: 'number',
       header: ({ column }) => (

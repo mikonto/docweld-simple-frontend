@@ -10,7 +10,8 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/utils/dateFormatting';
-import type { WeldLog, User } from '@/types/app';
+import type { WeldLog } from '@/types/models/welding';
+import type { User } from '@/types/models/user';
 import type { Timestamp } from 'firebase/firestore';
 
 interface WeldLogDetailsCardProps {

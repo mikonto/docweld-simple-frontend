@@ -10,8 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Document } from '@/types/database';
-import { IMPORT_BROWSER_ASPECT_RATIO } from '../constants';
+import { Document } from '@/types/api/firestore';
+import { IMPORT_BROWSER_ASPECT_RATIO } from '@/types/documents';
 
 interface DocumentsGridProps {
   documents: Document[];

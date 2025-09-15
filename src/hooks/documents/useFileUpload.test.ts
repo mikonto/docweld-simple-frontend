@@ -279,15 +279,15 @@ describe('useFileUpload', () => {
 
       // Check that createDocumentsWithRollback was called with the correct params
       expect(createDocumentsWithRollback).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
+        [
+          {
             file: expect.any(File),
-            docId: expect.any(String),
-            sanitizedFileName: expect.any(String),
-          }),
-        ]),
-        mockAddDocument,
-        expect.objectContaining({ collectionName: 'test-collection' })
+            docId: 'test-doc-0',
+            sanitizedFileName: 'test.jpg',
+          },
+        ],
+        expect.any(Function), // addDocumentWrapper
+        { collectionName: 'test-collection' }
       );
 
       expect(uploadBytesResumable).toHaveBeenCalled();
@@ -462,8 +462,8 @@ describe('useFileUpload', () => {
       // The rollback happens inside createDocumentsWithRollback helper
       expect(createDocumentsWithRollback).toHaveBeenCalledWith(
         expect.any(Array),
-        mockAddDocument,
-        expect.objectContaining({ collectionName: 'test-collection' })
+        expect.any(Function), // addDocumentWrapper
+        { collectionName: 'test-collection' }
       );
     });
 

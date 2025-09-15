@@ -9,7 +9,7 @@ import {
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SectionsContainer } from './SectionsContainer';
 import { toast } from 'sonner';
-import type { Section, Document } from '@/types/database';
+import type { Section, Document } from '@/types/api/firestore';
 import type { DocumentData, FirestoreError } from 'firebase/firestore';
 import { mockTimestamp } from '@/test/utils/mockTimestamp';
 

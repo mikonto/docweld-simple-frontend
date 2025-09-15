@@ -61,7 +61,7 @@ describe('documentImportHelpers', () => {
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
-        isActive: true,
+        status: 'active',
         createdAt: mockTimestamp as Timestamp,
         updatedAt: mockTimestamp as Timestamp,
       };
@@ -139,7 +139,7 @@ describe('documentImportHelpers', () => {
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
-        isActive: true,
+        status: 'active',
         createdAt: mockTimestamp as Timestamp,
         updatedAt: mockTimestamp as Timestamp,
       };
