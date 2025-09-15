@@ -34,16 +34,16 @@ npm run test:coverage # Run tests with coverage
 ```
 src/
 ├── test/
-│   ├── setup.js              # Global test setup
+│   ├── setup.ts              # Global test setup
 │   ├── mocks/                # Mock implementations
-│   │   ├── firebase.js       # Firebase service mocks
-│   │   └── firebaseConfig.js # Firebase config mocks
+│   │   ├── firebase.ts       # Firebase service mocks
+│   │   └── firebaseConfig.ts # Firebase config mocks
 │   └── utils/
-│       └── testUtils.jsx    # Custom render function
+│       └── testUtils.tsx    # Custom render function
 ├── hooks/
-│   └── *.test.js            # Hook tests
+│   └── *.test.ts            # Hook tests
 └── components/
-    └── **/*.test.jsx        # Component tests
+    └── **/*.test.tsx        # Component tests
 ```
 
 ## Testing Patterns
@@ -265,7 +265,7 @@ mockServerTimestamp.mockReturnValue(new Date('2024-01-01'));
 
 ## Writing Your First Test
 
-1. Create a test file next to your component/hook with `.test.js` or `.test.jsx` extension
+1. Create a test file next to your component/hook with `.test.ts` or `.test.tsx` extension
 2. Import necessary utilities
 3. Write your test following the patterns above
 4. Run `npm test` to see it in action

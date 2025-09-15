@@ -3,7 +3,7 @@
 ## Critical Context
 
 **Project**: DocWeld - A welding management platform  
-**Developer Level**: JavaScript intermediate, TypeScript beginner  
+**Developer Level**: TypeScript-focused development  
 **Goal**: Build a commercial MVP that is production-ready  
 **Priority**: Dead simple implementation that is still professional and robust  
 **Anti-goal**: Over-engineering or complex patterns that add confusion
@@ -18,7 +18,7 @@
 2. **Type Safety at Boundaries** - Focus typing efforts on API calls and user inputs
 3. **Progressive Enhancement** - Start with basic types, refine later
 4. **No Premature Abstraction** - Don't create generic types until you need them 3+ times
-5. **Learn by Doing** - Add types to existing JavaScript rather than rewriting everything
+5. **Maintain Type Discipline** - Keep types accurate and up-to-date as code evolves
 
 ### MUST Avoid
 
@@ -617,7 +617,7 @@ Add these scripts for TypeScript management:
 - Don't use `any` when you're unsure (use `unknown`)
 - Don't create types for types sake
 - Don't spend more than 5 minutes on any single type error
-- Don't refactor working JavaScript just to add types
+- Don't sacrifice type safety for convenience
 - Don't use advanced TypeScript features (conditional types, mapped types, etc.)
 
 ---

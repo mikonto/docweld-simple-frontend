@@ -10,7 +10,7 @@ This directory contains all document-related components for the DocWeld applicat
   /sections         # Feature: Document sections management
   /import           # Feature: Import functionality
   /utils            # Shared: Utility functions
-  constants.js      # Shared: Constants and configuration
+  constants.ts      # Shared: Constants and configuration
 ```
 
 ## 🧩 Component Organization
@@ -19,12 +19,12 @@ This directory contains all document-related components for the DocWeld applicat
 
 **Purpose:** Reusable card components used throughout the application
 
-- **Card.jsx** - Document card with thumbnail, title, and actions
-- **UploadCard.jsx** - Card for uploading new documents
-- **CardGrid.jsx** - Responsive grid layout for cards
-- **CardDialog.jsx** - Dialog for card operations (rename, etc.)
-- **CardImage.jsx** - Image display logic for cards
-- **CardOverlay.jsx** - Overlay UI for card interactions
+- **Card.tsx** - Document card with thumbnail, title, and actions
+- **UploadCard.tsx** - Card for uploading new documents
+- **CardGrid.tsx** - Responsive grid layout for cards
+- **CardDialog.tsx** - Dialog for card operations (rename, etc.)
+- **CardImage.tsx** - Image display logic for cards
+- **CardOverlay.tsx** - Overlay UI for card interactions
 
 **Used by:**
 
@@ -36,12 +36,12 @@ This directory contains all document-related components for the DocWeld applicat
 
 **Purpose:** Complete feature for organizing documents into collapsible sections
 
-- **SectionsContainer.jsx** - Main container with business logic
-- **Section.jsx** - Individual section component
-- **SectionsList.jsx** - List of all sections
-- **SectionHeader.jsx** - Section header with controls
-- **SectionContent.jsx** - Section content area (uses cards)
-- **SectionDialog.jsx** - Dialog for section operations
+- **SectionsContainer.tsx** - Main container with business logic
+- **Section.tsx** - Individual section component
+- **SectionsList.tsx** - List of all sections
+- **SectionHeader.tsx** - Section header with controls
+- **SectionContent.tsx** - Section content area (uses cards)
+- **SectionDialog.tsx** - Dialog for section operations
 
 **Used in:**
 
@@ -52,8 +52,8 @@ This directory contains all document-related components for the DocWeld applicat
 
 **Purpose:** Import documents and sections from other projects or libraries
 
-- **ImportDialog.jsx** - Main import dialog (only exported component)
-- **ImportBrowser.jsx** - Internal browser for selecting items
+- **ImportDialog.tsx** - Main import dialog (only exported component)
+- **ImportBrowser.tsx** - Internal browser for selecting items
 - **Other components** - Internal implementation details
 
 **Used by:**
@@ -65,7 +65,7 @@ This directory contains all document-related components for the DocWeld applicat
 
 **Purpose:** Helper functions used across document components
 
-- **fileUtils.js** - File handling and validation utilities
+- **fileUtils.ts** - File handling and validation utilities
 
 ## 🔄 Data Flow
 
@@ -102,7 +102,7 @@ CardGrid + Card components (shared UI)
 
 ### Using Sections (with cards)
 
-```jsx
+```tsx
 import { SectionsContainer } from '@/components/documents/sections';
 
 <SectionsContainer collectionType="project" entityId="project-123" />;
@@ -110,7 +110,7 @@ import { SectionsContainer } from '@/components/documents/sections';
 
 ### Using Cards Standalone
 
-```jsx
+```tsx
 import { Card, CardGrid, UploadCard } from '@/components/documents/cards';
 
 <CardGrid>
@@ -122,7 +122,7 @@ import { Card, CardGrid, UploadCard } from '@/components/documents/cards';
 
 ### Using Import Dialog
 
-```jsx
+```tsx
 import { ImportDialog } from '@/components/documents/import';
 
 <ImportDialog

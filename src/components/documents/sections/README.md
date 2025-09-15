@@ -9,18 +9,18 @@ This directory contains components for the Document Sections feature of the DocW
 ```
 sections/
 ├── multi/                  # Multi-section components
-│   ├── Section.jsx         # Individual section component
-│   ├── SectionContent.jsx  # Grid layout content
-│   ├── SectionsContainer.jsx # Main container
-│   ├── SectionsList.jsx    # List of sections
-│   ├── SectionDialog.jsx   # Add/edit section dialog
-│   └── sectionOperations.js # Section operations
+│   ├── Section.tsx         # Individual section component
+│   ├── SectionContent.tsx  # Grid layout content
+│   ├── SectionsContainer.tsx # Main container
+│   ├── SectionsList.tsx    # List of sections
+│   ├── SectionDialog.tsx   # Add/edit section dialog
+│   └── sectionOperations.ts # Section operations
 ├── standalone/             # Standalone section components
-│   ├── StandaloneSection.jsx # Main standalone component
-│   └── StandaloneSectionContent.jsx # Horizontal scroll content
+│   ├── StandaloneSection.tsx # Main standalone component
+│   └── StandaloneSectionContent.tsx # Horizontal scroll content
 ├── shared/                 # Shared components
-│   └── SectionHeader.jsx  # Collapsible header
-└── index.js               # Public exports
+│   └── SectionHeader.tsx  # Collapsible header
+└── index.ts               # Public exports
 ```
 
 ### Main Components
@@ -55,9 +55,9 @@ sections/
 
 ### Utilities and Constants
 
-- **constants.js**: Shared constants for the module
-- **fileUtils.js**: File handling utilities
-- **storageUtils.js**: Firebase Storage interaction utilities
+- **constants.ts**: Shared constants for the module
+- **fileUtils.ts**: File handling utilities
+- **storageUtils.ts**: Firebase Storage interaction utilities
 
 ## Hooks
 
