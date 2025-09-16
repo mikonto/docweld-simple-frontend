@@ -1,8 +1,23 @@
-# Weld Events Implementation Plan
+# Weld Events Implementation Plan (v2 - Corrected)
 
 ## Overview
 
 Add event logging capability to track actions performed on individual welds (welding, heat treatment, visual inspection, comments). This forms an audit trail displayed on the Weld Overview page.
+
+## Critical Fixes from v1
+
+### ✅ Fixed Issues:
+
+1. **Firestore Constraints**: Now using actual `QueryConstraint` objects (`where()`, `orderBy()`, `limit()`) instead of arrays
+2. **useApp() API**: Correctly using `loggedInUser` instead of non-existent `user` property
+3. **System Fields**: No longer manually setting `createdAt`, `createdBy`, etc. - letting `useFirestoreOperations` handle them
+4. **No isEditable Storage**: Removed flawed `isEditable` database field - will calculate on read if needed later
+5. **Batch Typing**: Fixed type signatures to not require fields that are set internally
+
+### 🎯 Simplifications:
+
+- **No Edit Functionality**: Removed for v1 to reduce complexity
+- **Focus on Core Features**: Just create and display events initially
 
 ## Progress Tracking
 
@@ -10,8 +25,7 @@ Add event logging capability to track actions performed on individual welds (wel
 - [ ] Phase 2: Basic Hooks Implementation
 - [ ] Phase 3: UI Components
 - [ ] Phase 4: Batch Operations
-- [ ] Phase 5: Edit Functionality
-- [ ] Phase 6: NDT Integration Prep
+- [ ] Phase 5: NDT Integration Prep
 
 ---
 
@@ -24,7 +38,15 @@ Add event logging capability to track actions performed on individual welds (wel
 ```typescript
 // Add to existing file
 export interface WeldEvent {
+  // System fields (managed by useFirestoreOperations)
   id: string;
+  status: Status;
+  createdAt: Timestamp;
+  createdBy: string; // userId from auth
+  updatedAt: Timestamp;
+  updatedBy: string;
+
+  // Event-specific fields
   weldId: string;
   weldLogId: string;
   projectId: string;
@@ -32,30 +54,26 @@ export interface WeldEvent {
   // Event details
   eventType: 'weld' | 'heat-treatment' | 'visual-inspection' | 'comment';
   description: string;
-  performedAt: Timestamp;
-  performedBy: string; // name or userId
-
-  // Metadata
-  createdAt: Timestamp;
-  createdBy: string; // userId from auth
-  updatedAt?: Timestamp;
-  updatedBy?: string;
+  performedAt: Timestamp; // When the actual work was done
+  performedBy: string; // Name of person who performed the work
 
   // Optional fields
   attachmentIds?: string[];
   metadata?: Record<string, any>; // for future NDT integration
-
-  // Edit control
-  isEditable: boolean; // false after 24h or if verified
 }
 
-export type CreateWeldEventInput = Omit<
-  WeldEvent,
-  'id' | 'createdAt' | 'createdBy' | 'isEditable'
->;
-export type UpdateWeldEventInput = Partial<
-  Pick<WeldEvent, 'description' | 'performedAt' | 'performedBy'>
->;
+// Only include fields we actually set - system fields are handled by the hook
+export type CreateWeldEventInput = {
+  weldId: string;
+  weldLogId: string;
+  projectId: string;
+  eventType: WeldEvent['eventType'];
+  description: string;
+  performedAt: Timestamp;
+  performedBy: string;
+  attachmentIds?: string[];
+  metadata?: Record<string, any>;
+};
 ```
 
 ### 1.2 Firestore Collection Setup
@@ -75,11 +93,21 @@ export type UpdateWeldEventInput = Partial<
 **File:** `src/hooks/useWeldEvents.ts`
 
 ```typescript
+import { where, orderBy, limit } from 'firebase/firestore';
+import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
+import type { WeldEvent } from '@/types/models/welding';
+
 export const useWeldEvents = (weldId: string | null) => {
+  const constraints = weldId
+    ? [
+        where('weldId', '==', weldId),
+        orderBy('performedAt', 'desc'),
+        limit(100),
+      ]
+    : [];
+
   const { documents, loading, error } = useFirestoreOperations('weld-events', {
-    constraints: weldId ? [['weldId', '==', weldId]] : [],
-    orderBy: [['performedAt', 'desc']],
-    limit: 100, // Prevent edge cases
+    constraints,
   });
 
   return {
@@ -95,38 +123,32 @@ export const useWeldEvents = (weldId: string | null) => {
 **File:** `src/hooks/useWeldEvents.ts`
 
 ```typescript
+import { useApp } from '@/contexts/AppContext';
+import type { CreateWeldEventInput } from '@/types/models/welding';
+
 export const useWeldEventOperations = () => {
-  const { user } = useApp();
-  const { create, update, remove } = useFirestoreOperations('weld-events');
+  const { loggedInUser } = useApp();
+  const { create } = useFirestoreOperations('weld-events');
 
   const createEvent = async (input: CreateWeldEventInput) => {
-    const now = Timestamp.now();
-    return create({
-      ...input,
-      createdAt: now,
-      createdBy: user?.uid || 'unknown',
-      isEditable: true,
-    });
-  };
-
-  const updateEvent = async (id: string, updates: UpdateWeldEventInput) => {
-    // Check if still editable (within 24h)
-    const event = await getDoc(doc(db, 'weld-events', id));
-    const hoursSinceCreation =
-      (Date.now() - event.data().createdAt.toMillis()) / (1000 * 60 * 60);
-
-    if (hoursSinceCreation > 24) {
-      throw new Error('Event cannot be edited after 24 hours');
+    if (!loggedInUser) {
+      throw new Error('User must be logged in to create events');
     }
 
-    return update(id, {
-      ...updates,
-      updatedAt: Timestamp.now(),
-      updatedBy: user?.uid,
-    });
+    // useFirestoreOperations.create automatically adds:
+    // - id, status, createdAt, createdBy, updatedAt, updatedBy
+    // We only need to pass our domain-specific fields
+    return create(input);
   };
 
-  return { createEvent, updateEvent };
+  // Helper to check if event can be edited (for future use)
+  const canEditEvent = (event: WeldEvent): boolean => {
+    const hoursSinceCreation =
+      (Date.now() - event.createdAt.toMillis()) / (1000 * 60 * 60);
+    return hoursSinceCreation <= 24;
+  };
+
+  return { createEvent, canEditEvent };
 };
 ```
 
@@ -137,26 +159,35 @@ export const useWeldEventOperations = () => {
 ```typescript
 describe('useWeldEvents', () => {
   it('should fetch events for a specific weld ordered by performedAt desc', async () => {
-    // Test implementation
+    // Mock firestore constraints properly
+    const mockWhere = vi.fn();
+    const mockOrderBy = vi.fn();
+    const mockLimit = vi.fn();
+
+    // Test that correct constraints are created
   });
 
   it('should handle empty results gracefully', async () => {
-    // Test implementation
+    // Test empty state
+  });
+
+  it('should not apply constraints when weldId is null', async () => {
+    // Test that no constraints are applied for null weldId
   });
 });
 
 describe('useWeldEventOperations', () => {
-  it('should create event with proper metadata', async () => {
-    // Test implementation
+  it('should create event with domain fields only', async () => {
+    // Verify that only our fields are passed to create
+    // System fields should NOT be included
   });
 
-  it('should prevent editing after 24 hours', async () => {
-    // Test implementation
+  it('should throw error when user is not logged in', async () => {
+    // Test auth requirement
   });
 
-  it('should update event with audit fields', async () => {
-    // Test implementation
-  });
+  it('should correctly calculate if event can be edited', async () => {
+    // Test canEditEvent helper function
 });
 ```
 
@@ -173,7 +204,7 @@ Features:
 - Timeline view grouped by day
 - Event cards with icon per type
 - Expand/collapse for details
-- Edit button (if isEditable)
+- Read-only display (no edit in v1)
 - Loading and empty states
 
 ### 3.2 Create WeldEventForm Dialog
@@ -184,9 +215,9 @@ Fields:
 
 - Event type selector
 - Description (textarea)
-- Performed at (date/time picker)
-- Performed by (text input with suggestions)
-- Attachment upload (optional)
+- Performed at (date/time picker - defaults to now)
+- Performed by (text input - defaults to current user name)
+- Attachment upload (optional - future phase)
 
 ### 3.3 Quick Action Buttons
 
@@ -222,26 +253,41 @@ Add section after weld details, before documents:
 Add batch creation support:
 
 ```typescript
-const createBatchEvents = async (
-  weldIds: string[],
-  event: Omit<WeldEvent, 'id' | 'weldId' | 'createdAt' | 'createdBy'>
-) => {
-  const batch = writeBatch(db);
-  const now = Timestamp.now();
+import { writeBatch, doc, collection } from 'firebase/firestore';
+import { db } from '@/config/firebase';
+import { toast } from 'sonner';
 
-  weldIds.forEach((weldId) => {
+const createBatchEvents = async (
+  weldData: Array<{ weldId: string; weldLogId: string; projectId: string }>,
+  eventDetails: Omit<CreateWeldEventInput, 'weldId' | 'weldLogId' | 'projectId'>
+) => {
+  if (!loggedInUser) {
+    throw new Error('User must be logged in to create events');
+  }
+
+  const batch = writeBatch(db);
+  const now = serverTimestamp();
+
+  weldData.forEach(({ weldId, weldLogId, projectId }) => {
     const ref = doc(collection(db, 'weld-events'));
-    batch.set(ref, {
-      ...event,
+    const eventData = {
+      ...eventDetails,
       weldId,
+      weldLogId,
+      projectId,
+      // System fields added automatically
+      id: ref.id,
+      status: STATUS.ACTIVE,
       createdAt: now,
-      createdBy: user?.uid || 'unknown',
-      isEditable: true,
-    });
+      createdBy: loggedInUser.uid,
+      updatedAt: now,
+      updatedBy: loggedInUser.uid,
+    };
+    batch.set(ref, eventData);
   });
 
   await batch.commit();
-  toast.success(`Event logged for ${weldIds.length} welds`);
+  toast.success(`Event logged for ${weldData.length} welds`);
 };
 ```
 
@@ -270,43 +316,9 @@ describe('Batch Event Creation', () => {
 
 ---
 
-## Phase 5: Edit Functionality ✏️
+## Phase 5: NDT Integration Preparation 🔮
 
-### 5.1 Edit Restrictions Logic
-
-- Only allow editing description, performedAt, performedBy
-- Block edits after 24 hours
-- Store original values in metadata for audit
-
-### 5.2 Edit UI
-
-- Inline editing or dialog
-- Show "locked" icon after 24h
-- Confirmation before saving changes
-
-### 5.3 Audit Trail
-
-When edited, add to metadata:
-
-```typescript
-metadata: {
-  ...existing,
-  editHistory: [
-    {
-      editedAt: Timestamp.now(),
-      editedBy: userId,
-      fields: ['description', 'performedBy'],
-      previousValues: { description: oldDesc, performedBy: oldPerson }
-    }
-  ]
-}
-```
-
----
-
-## Phase 6: NDT Integration Preparation 🔮
-
-### 6.1 Metadata Structure for Future NDT
+### 5.1 Metadata Structure for Future NDT
 
 Ensure metadata field can accommodate:
 
@@ -321,7 +333,7 @@ metadata?: {
 }
 ```
 
-### 6.2 Event Type Extensions
+### 5.2 Event Type Extensions
 
 Plan for future event types:
 
@@ -329,7 +341,7 @@ Plan for future event types:
 - `'repair'` - After rejection
 - `'status-change'` - Automatic system events
 
-### 6.3 NDT Assignment Events
+### 5.3 NDT Assignment Events
 
 When NDT Orders are implemented:
 
@@ -351,16 +363,16 @@ metadata: {
 - [ ] Unit tests for hooks (useWeldEvents, useWeldEventOperations)
 - [ ] Component tests for WeldEventsSection
 - [ ] Integration tests for batch operations
-- [ ] Edit restriction logic tests
+- [ ] Firestore constraint generation tests
 - [ ] Firestore security rules tests (when implemented)
 
 ### Critical Test Scenarios
 
-1. Event creation with all required fields
+1. Event creation with domain fields only (no system fields)
 2. Batch creation for multiple welds
-3. 24-hour edit restriction enforcement
+3. Proper Firestore constraint objects (where, orderBy, limit)
 4. Proper ordering by performedAt
-5. Error handling for failed operations
+5. Error handling for unauthenticated users
 6. Loading states during async operations
 
 ---
@@ -412,18 +424,19 @@ match /weld-events/{eventId} {
 ## Implementation Order 📋
 
 1. **Week 1: Foundation**
-   - [ ] Type definitions
-   - [ ] Basic hooks with tests
-   - [ ] Simple event display
+   - [ ] Type definitions with correct system fields
+   - [ ] Basic hooks with proper Firestore constraints
+   - [ ] Tests for hooks with mocked Firestore functions
 
 2. **Week 2: Core Features**
-   - [ ] Event creation form
+   - [ ] Event creation form (no edit in v1)
    - [ ] Quick action buttons
-   - [ ] Integration with Weld Overview
+   - [ ] Integration with Weld Overview page
+   - [ ] Read-only event display
 
-3. **Week 3: Advanced Features**
-   - [ ] Batch operations
-   - [ ] Edit functionality
+3. **Week 3: Batch Operations**
+   - [ ] Batch event creation for multiple welds
+   - [ ] Selection UI in welds table
    - [ ] Polish UI/UX
 
 ---
@@ -431,9 +444,10 @@ match /weld-events/{eventId} {
 ## Success Criteria ✅
 
 - [ ] Users can log events on individual welds
-- [ ] Events display in chronological order
+- [ ] Events display in chronological order (by performedAt)
 - [ ] Batch logging works from weld table
-- [ ] Events are editable within 24 hours
+- [ ] System fields are properly managed by useFirestoreOperations
+- [ ] Firestore constraints are correctly formed
 - [ ] System is prepared for NDT integration
 - [ ] All features have test coverage
 - [ ] Performance is acceptable with 100+ events
@@ -444,9 +458,11 @@ match /weld-events/{eventId} {
 
 1. **No pagination initially** - Most welds have 20-30 events max
 2. **Simple event types for MVP** - Full NDT integration comes later
-3. **24-hour edit window** - Balances flexibility with audit integrity
+3. **No edit functionality in v1** - Simplifies implementation
 4. **Explicit NDT Order removal** - User must consciously remove weld from order
 5. **Test-first development** - Write tests before implementation
+6. **Leverage existing hooks** - Use useFirestoreOperations for all CRUD
+7. **System fields handled automatically** - Don't manually set timestamps/user fields
 
 ---
 
