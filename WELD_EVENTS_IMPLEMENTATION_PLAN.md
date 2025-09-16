@@ -4,7 +4,7 @@
 
 Add event logging capability to track actions performed on individual welds (welding, heat treatment, visual inspection, comments). This forms an audit trail displayed on the Weld Overview page.
 
-## Critical Fixes from v1
+## Critical Fixes from v1/v2
 
 ### ✅ Fixed Issues:
 
@@ -13,6 +13,8 @@ Add event logging capability to track actions performed on individual welds (wel
 3. **System Fields**: No longer manually setting `createdAt`, `createdBy`, etc. - letting `useFirestoreOperations` handle them
 4. **No isEditable Storage**: Removed flawed `isEditable` database field - will calculate on read if needed later
 5. **Batch Typing**: Fixed type signatures to not require fields that are set internally
+6. **Prevent Unwanted Subscriptions**: Added `disabled: true` to operations hook to avoid subscribing to entire collection
+7. **Missing Imports**: Added `serverTimestamp` import for batch operations
 
 ### 🎯 Simplifications:
 
@@ -128,7 +130,11 @@ import type { CreateWeldEventInput } from '@/types/models/welding';
 
 export const useWeldEventOperations = () => {
   const { loggedInUser } = useApp();
-  const { create } = useFirestoreOperations('weld-events');
+  // IMPORTANT: Use disabled: true to prevent subscription to entire collection
+  // We only need the CRUD functions, not the real-time listener
+  const { create } = useFirestoreOperations('weld-events', {
+    disabled: true,
+  });
 
   const createEvent = async (input: CreateWeldEventInput) => {
     if (!loggedInUser) {
@@ -138,17 +144,12 @@ export const useWeldEventOperations = () => {
     // useFirestoreOperations.create automatically adds:
     // - id, status, createdAt, createdBy, updatedAt, updatedBy
     // We only need to pass our domain-specific fields
-    return create(input);
+    return create(input, { suppressToast: false });
   };
 
-  // Helper to check if event can be edited (for future use)
-  const canEditEvent = (event: WeldEvent): boolean => {
-    const hoursSinceCreation =
-      (Date.now() - event.createdAt.toMillis()) / (1000 * 60 * 60);
-    return hoursSinceCreation <= 24;
-  };
+  // Note: Edit functionality removed for v1 - no canEditEvent helper needed
 
-  return { createEvent, canEditEvent };
+  return { createEvent };
 };
 ```
 
@@ -186,8 +187,9 @@ describe('useWeldEventOperations', () => {
     // Test auth requirement
   });
 
-  it('should correctly calculate if event can be edited', async () => {
-    // Test canEditEvent helper function
+  it('should use disabled: true to prevent subscription', async () => {
+    // Verify that useFirestoreOperations is called with disabled: true
+  });
 });
 ```
 
@@ -253,9 +255,15 @@ Add section after weld details, before documents:
 Add batch creation support:
 
 ```typescript
-import { writeBatch, doc, collection } from 'firebase/firestore';
+import {
+  writeBatch,
+  doc,
+  collection,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { toast } from 'sonner';
+import { STATUS } from '@/types/models/base';
 
 const createBatchEvents = async (
   weldData: Array<{ weldId: string; weldLogId: string; projectId: string }>,
