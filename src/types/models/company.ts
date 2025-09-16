@@ -4,6 +4,7 @@
  */
 
 import type { Timestamp } from 'firebase/firestore';
+import { FirestoreBase } from './base';
 
 /**
  * Company information
@@ -25,8 +26,7 @@ export interface Company {
  * Material used in welding
  * Can represent parent material, filler material, or alloy material
  */
-export interface Material {
-  id?: string;
+export interface Material extends FirestoreBase {
   // Common field for filler/alloy materials, or can be used for parent material name
   name?: string;
   // Parent material specific fields

@@ -33,6 +33,7 @@ interface FirestoreOperationOptions {
  */
 interface UseFirestoreOperationsOptions {
   constraints?: QueryConstraint[];
+  disabled?: boolean;
 }
 
 /**
@@ -63,15 +64,17 @@ export const useFirestoreOperations = (
   collectionName: string,
   options: UseFirestoreOperationsOptions = {}
 ): UseFirestoreOperationsReturn => {
-  const { constraints = [] } = options;
+  const { constraints = [], disabled = false } = options;
   const { loggedInUser } = useApp();
   const { t } = useTranslation();
 
   // Build query with constraints
   const collectionQuery:
     | CollectionReference<DocumentData>
-    | Query<DocumentData> =
-    constraints.length > 0
+    | Query<DocumentData>
+    | null = disabled
+    ? null
+    : constraints.length > 0
       ? query(collection(db, collectionName), ...constraints)
       : collection(db, collectionName);
 
@@ -80,7 +83,11 @@ export const useFirestoreOperations = (
 
   // Transform snapshot to documents array
   // Documents should have their own 'id' field matching the document ID
-  const documents = snapshot?.docs?.map((doc) => doc.data()) || [];
+  const documents =
+    snapshot?.docs?.map((docSnapshot) => ({
+      id: docSnapshot.id,
+      ...docSnapshot.data(),
+    })) || [];
 
   // Create a new document
   const create = useCallback(
@@ -274,10 +281,13 @@ export const useFirestoreOperations = (
     [collectionName, loggedInUser, t]
   );
 
+  const normalizedLoading = disabled ? false : loading ?? false;
+  const normalizedError = disabled ? undefined : error;
+
   return {
     documents,
-    loading,
-    error,
+    loading: normalizedLoading,
+    error: normalizedError,
     create,
     update,
     remove,

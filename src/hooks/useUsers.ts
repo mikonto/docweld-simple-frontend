@@ -166,6 +166,7 @@ export const useUserOperations = (): UseUserOperationsReturn => {
 
       // Create the corresponding Firestore document
       const newUser = {
+        id: uid,
         ...firestoreData,
         email,
         status: STATUS.ACTIVE,

@@ -18,6 +18,7 @@ import { useDocuments, useDocumentImport } from '@/hooks/documents';
 import { ImportDialog } from '@/components/documents/import';
 import { CardDialog } from '@/components/documents/cards';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import { Spinner } from '@/components/ui/custom/spinner';
 import type { Weld } from '@/types/models/welding';
 import type { Document } from '@/types/api/firestore';
 import type { SelectedItem } from '@/types/documents';
@@ -37,18 +38,21 @@ interface RenameDialogState {
   title: string;
 }
 
-interface RouteParams {
-  projectId: string;
-  weldLogId: string;
-  weldId: string;
-}
+type RouteParams = Record<'projectId' | 'weldLogId' | 'weldId', string | undefined>;
 
 export default function WeldOverview(): ReactElement {
   const { t } = useTranslation();
 
   // Get the project ID, weld log ID, and weld ID from the URL parameters
-  const { projectId, weldLogId, weldId } =
-    useParams() as unknown as RouteParams;
+  const { projectId, weldLogId, weldId } = useParams<RouteParams>();
+
+  if (!projectId || !weldLogId || !weldId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="large" />
+      </div>
+    );
+  }
 
   // State for managing dialogs
   const [weldFormDialog, setWeldFormDialog] = useState<WeldFormDialogState>({

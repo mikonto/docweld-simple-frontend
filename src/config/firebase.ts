@@ -1,7 +1,11 @@
 // Import the necessary functions from Firebase
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  Firestore,
+  enableIndexedDbPersistence
+} from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getFunctions, Functions } from 'firebase/functions';
 
@@ -36,6 +40,20 @@ const storage: FirebaseStorage = getStorage(app);
 
 // Initialize Firebase Functions
 const functions: Functions = getFunctions(app, 'europe-west1');
+
+// Enable offline persistence for Firestore
+// This allows the app to work offline and sync when connection is restored
+if (typeof window !== 'undefined' && !import.meta.env.TEST) {
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      // Multiple tabs open, persistence can only be enabled in one tab at a time
+      console.warn('Firestore persistence failed: Multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      // The current browser doesn't support persistence
+      console.warn('Firestore persistence not available in this browser');
+    }
+  });
+}
 
 // Export initialized services for use in other parts of the app
 export { auth, db, storage, functions };

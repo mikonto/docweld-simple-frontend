@@ -32,6 +32,7 @@ import { CardDialog } from '@/components/documents/cards';
 import type { WeldLog, Weld } from '@/types/models/welding';
 import type { WeldLogFormData, WeldFormData } from '@/types/forms';
 import type { Document } from '@/types/api/firestore';
+import { Spinner } from '@/components/ui/custom/spinner';
 
 interface WeldLogFormDialogState {
   isOpen: boolean;
@@ -48,12 +49,19 @@ export default function WeldLogOverview(): React.ReactElement {
   const { t } = useTranslation();
 
   // Get the project ID and weld log ID from the URL parameters
-  const { projectId, weldLogId } = useParams<{
-    projectId: string;
-    weldLogId: string;
-  }>();
+  const { projectId, weldLogId } = useParams<
+    Record<'projectId' | 'weldLogId', string | undefined>
+  >();
 
-  // State for managing dialogs - MUST be before any conditional returns
+  if (!projectId || !weldLogId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  // State for managing dialogs
   const [weldLogFormDialog, setWeldLogFormDialog] =
     useState<WeldLogFormDialogState>({
       isOpen: false,
@@ -83,8 +91,8 @@ export default function WeldLogOverview(): React.ReactElement {
   // The hooks will handle invalid IDs gracefully
   const documentsHook = useDocuments({
     entityType: 'weldLog',
-    entityId: weldLogId || '',
-    additionalForeignKeys: { projectId: projectId || '' },
+    entityId: weldLogId,
+    additionalForeignKeys: { projectId },
   });
   const {
     documents,

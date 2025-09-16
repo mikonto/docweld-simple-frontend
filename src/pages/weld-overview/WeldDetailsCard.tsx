@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormatting';
 import { useMaterials } from '@/hooks/useMaterials';
-import type { Weld, User } from '@/types';
+import type { Weld, User, Material } from '@/types';
 import type { Timestamp } from 'firebase/firestore';
 
 interface WeldDetailsCardProps {
@@ -41,12 +41,11 @@ export function WeldDetailsCard({
   };
 
   // Get material names from IDs
-  const getMaterialName = (materialId: string, materials: any[]): string => {
+  const getMaterialName = (materialId: string, materials: Material[]): string => {
     const material = materials?.find((m) => m.id === materialId);
     if (material) {
-      return material.specification
-        ? `${material.name} (${material.specification})`
-        : material.name;
+      const baseName = material.name ?? material.type ?? materialId;
+      return material.specification ? `${baseName} (${material.specification})` : baseName;
     }
     return materialId; // Return ID if material not found
   };

@@ -160,7 +160,7 @@ describe('useWelds Hook', () => {
 
       expect(result.current[0]).toEqual([]);
       expect(result.current[1]).toBe(false);
-      expect(result.current[2]).toBe(null);
+      expect(result.current[2]).toBeUndefined();
     });
   });
 

@@ -114,9 +114,10 @@ export const useWelds = (
 ): [Weld[], boolean, FirestoreError | undefined] => {
   // Build constraints based on weldLogId
   // Default constraints now include ordering by number
-  const constraints: QueryConstraint[] = weldLogId
+  const shouldFetch = Boolean(weldLogId);
+  const constraints: QueryConstraint[] = shouldFetch
     ? [
-        where('weldLogId', '==', weldLogId),
+        where('weldLogId', '==', weldLogId as string),
         where('status', '==', 'active'),
         orderBy('number', 'asc'),
       ]
@@ -124,12 +125,16 @@ export const useWelds = (
 
   // Use the unified hook
   const { documents, loading, error } = useFirestoreOperations('welds', {
-    constraints: weldLogId ? constraints : [], // Only apply constraints if weldLogId is provided
-    // requireAuth defaults to true in useFirestoreOperations
+    constraints,
+    disabled: !shouldFetch,
   });
 
   // Return in the expected format [welds, loading, error]
-  return [weldLogId ? (documents as Weld[]) : [], loading, error];
+  if (!shouldFetch) {
+    return [[], false, undefined];
+  }
+
+  return [documents as Weld[], loading, error];
 };
 
 /**
