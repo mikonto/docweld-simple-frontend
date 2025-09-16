@@ -4,7 +4,7 @@
 
 Add event logging capability to track actions performed on individual welds (welding, heat treatment, visual inspection, comments). This forms an audit trail displayed on the Weld Overview page.
 
-## Critical Fixes from v1/v2
+## Critical Fixes from v1/v2/v3
 
 ### ✅ Fixed Issues:
 
@@ -13,8 +13,9 @@ Add event logging capability to track actions performed on individual welds (wel
 3. **System Fields**: No longer manually setting `createdAt`, `createdBy`, etc. - letting `useFirestoreOperations` handle them
 4. **No isEditable Storage**: Removed flawed `isEditable` database field - will calculate on read if needed later
 5. **Batch Typing**: Fixed type signatures to not require fields that are set internally
-6. **Prevent Unwanted Subscriptions**: Added `disabled: true` to operations hook to avoid subscribing to entire collection
+6. **Prevent Unwanted Subscriptions**: Added `disabled: true` to operations hook AND to query hook when weldId is null
 7. **Missing Imports**: Added `serverTimestamp` import for batch operations
+8. **Correct Import Paths**: Fixed STATUS import from `@/types/common/status` not `@/types/models/base`
 
 ### 🎯 Simplifications:
 
@@ -100,6 +101,7 @@ import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations'
 import type { WeldEvent } from '@/types/models/welding';
 
 export const useWeldEvents = (weldId: string | null) => {
+  // CRITICAL: Disable subscription when no weldId to prevent loading entire collection
   const constraints = weldId
     ? [
         where('weldId', '==', weldId),
@@ -110,12 +112,14 @@ export const useWeldEvents = (weldId: string | null) => {
 
   const { documents, loading, error } = useFirestoreOperations('weld-events', {
     constraints,
+    disabled: !weldId, // Prevent subscription without a weld context
   });
 
+  // Return empty array when no weldId instead of subscribing to all events
   return {
-    events: documents as WeldEvent[],
-    loading,
-    error,
+    events: weldId ? (documents as WeldEvent[]) : [],
+    loading: weldId ? loading : false,
+    error: weldId ? error : undefined,
   };
 };
 ```
@@ -263,7 +267,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { toast } from 'sonner';
-import { STATUS } from '@/types/models/base';
+import { STATUS } from '@/types/common/status';
 
 const createBatchEvents = async (
   weldData: Array<{ weldId: string; weldLogId: string; projectId: string }>,
