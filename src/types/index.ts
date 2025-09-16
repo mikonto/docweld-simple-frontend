@@ -25,24 +25,14 @@ export * from './test-utils';
 
 // ============== Utility Type Aliases ==============
 
-/**
- * Make properties optional
- */
+/*
+// Utility types - preserved for future use
+// Currently not needed in the codebase
+
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-/**
- * Extract values from an object type
- */
 export type ValueOf<T> = T[keyof T];
-
-/**
- * Make properties required
- */
 export type RequiredFields<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
-
-/**
- * Deep partial type
- */
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
+*/

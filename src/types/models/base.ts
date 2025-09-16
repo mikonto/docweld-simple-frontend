@@ -10,25 +10,21 @@ export interface FirestoreBase {
   id: string;
 }
 
-/**
- * Documents owned by a user within a company
- */
+/*
+// Base interfaces - preserved for future use
+// Currently not used but may be needed for document modeling
+
 export interface UserOwned extends FirestoreBase {
   userId: string;
   companyId: string;
 }
 
-/**
- * Documents that can be soft-deleted
- */
 export interface SoftDeletable {
   deletedAt?: string;
   isDeleted: boolean;
 }
 
-/**
- * Combined base for most business documents
- */
 export interface BaseDocument extends FirestoreBase, SoftDeletable {
   companyId: string;
 }
+*/

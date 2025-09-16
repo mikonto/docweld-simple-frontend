@@ -1,11 +1,17 @@
 /**
  * Standard API response wrappers
- * Every API call returns one of these
+ *
+ * NOTE: These interfaces are for future REST API integration.
+ * Currently not in use as the app uses Firestore directly.
+ * Commented out to reduce TypeScript overhead.
  */
 
-/**
- * Single item response
- */
+// Placeholder export to make this a valid module
+export {};
+
+/*
+// Uncomment when implementing REST API integration
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -13,9 +19,6 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-/**
- * List response with pagination
- */
 export interface ListResponse<T> {
   items: T[];
   total: number;
@@ -24,9 +27,6 @@ export interface ListResponse<T> {
   hasMore: boolean;
 }
 
-/**
- * Result from create/update/delete operations
- */
 export interface MutationResult {
   success: boolean;
   id?: string;
@@ -34,18 +34,12 @@ export interface MutationResult {
   error?: string;
 }
 
-/**
- * Error response from API
- */
 export interface ApiError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
 }
 
-/**
- * Pagination parameters for list requests
- */
 export interface PaginationParams {
   page: number;
   limit: number;
@@ -53,9 +47,7 @@ export interface PaginationParams {
   orderDirection?: 'asc' | 'desc';
 }
 
-/**
- * Filter parameters for queries
- */
 export interface FilterParams {
   [field: string]: string | number | boolean | undefined;
 }
+*/

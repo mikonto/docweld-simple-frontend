@@ -3,11 +3,20 @@
  * Shared props for React components
  */
 
+// Only export what's actually used
+export interface BreadcrumbData {
+  projectName?: string;
+  collectionName?: string;
+  weldLogName?: string;
+  weldNumber?: string;
+}
+
+/*
+// Generic UI prop interfaces - preserved for future use
+// Currently components use their own specific prop interfaces
+
 import { ReactNode } from 'react';
 
-/**
- * Dialog/Modal props
- */
 export interface DialogProps {
   open: boolean;
   onClose: () => void;
@@ -16,9 +25,6 @@ export interface DialogProps {
   className?: string;
 }
 
-/**
- * Form props (generic)
- */
 export interface FormProps<T> {
   initialData?: T;
   onSubmit: (data: T) => void | Promise<void>;
@@ -28,9 +34,6 @@ export interface FormProps<T> {
   className?: string;
 }
 
-/**
- * Table props (generic)
- */
 export interface TableProps<T> {
   data: T[];
   columns: TableColumn<T>[];
@@ -40,11 +43,8 @@ export interface TableProps<T> {
   className?: string;
 }
 
-/**
- * Table column definition
- */
 export interface TableColumn<T> {
-  key: keyof T | 'actions'; // Allow 'actions' as special column
+  key: keyof T | 'actions';
   label: string;
   width?: string;
   align?: 'left' | 'center' | 'right';
@@ -52,9 +52,6 @@ export interface TableColumn<T> {
   render?: (item: T) => ReactNode;
 }
 
-/**
- * Card component props
- */
 export interface CardProps {
   title: string;
   subtitle?: string;
@@ -64,18 +61,12 @@ export interface CardProps {
   actions?: ReactNode;
 }
 
-/**
- * Select/Dropdown option
- */
 export interface SelectOption {
   value: string;
   label: string;
   disabled?: boolean;
 }
 
-/**
- * Common props for form fields
- */
 export interface FieldProps {
   label: string;
   error?: string;
@@ -85,27 +76,18 @@ export interface FieldProps {
   className?: string;
 }
 
-/**
- * Loading state component props
- */
 export interface LoadingProps {
   message?: string;
   size?: 'small' | 'medium' | 'large';
   className?: string;
 }
 
-/**
- * Error state component props
- */
 export interface ErrorProps {
   message: string;
   retry?: () => void;
   className?: string;
 }
 
-/**
- * Empty state component props
- */
 export interface EmptyStateProps {
   title: string;
   description?: string;
@@ -117,9 +99,6 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-/**
- * Button props extension
- */
 export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
   size?: 'small' | 'medium' | 'large';
@@ -127,14 +106,4 @@ export interface ButtonProps {
   fullWidth?: boolean;
   className?: string;
 }
-
-/**
- * Breadcrumb navigation data
- * Used to display dynamic breadcrumb content
- */
-export interface BreadcrumbData {
-  projectName?: string;
-  collectionName?: string;
-  weldLogName?: string;
-  weldNumber?: string;
-}
+*/

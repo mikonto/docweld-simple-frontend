@@ -155,9 +155,8 @@ export interface UploadingFile {
 
 // ============== Query Types ==============
 
-/**
- * Firebase query structure
- */
+/*
+// Firebase query interface - not currently used
 export interface FirebaseQuery {
   collection: string;
   where?: Array<{
@@ -168,3 +167,4 @@ export interface FirebaseQuery {
   orderBy?: string;
   limit?: number;
 }
+*/
