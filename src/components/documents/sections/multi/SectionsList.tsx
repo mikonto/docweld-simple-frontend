@@ -3,13 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { PlusIcon, MoreHorizontal, AlertCircle, Import } from 'lucide-react';
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
   DragEndEvent,
+  type DragStartEvent,
+  type CollisionDetection,
+  type CollisionDescriptor,
 } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,8 +27,56 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { Section } from './Section';
+import { SectionHeader } from '../shared/SectionHeader';
 import { DND_ACTIVATION_CONSTRAINT } from '@/types/documents';
 import type { Section as SectionType, Document } from '@/types/api/firestore';
+
+const centerAwareCollisionDetection: CollisionDetection = (args) => {
+  const {
+    collisionRect,
+    droppableContainers,
+    droppableRects,
+  } = args;
+
+  if (!collisionRect) {
+    return [];
+  }
+
+  const centerX = collisionRect.left + collisionRect.width / 2;
+  const centerY = collisionRect.top + collisionRect.height / 2;
+
+  const collisions: CollisionDescriptor[] = [];
+
+  for (const droppable of droppableContainers) {
+    const rect = droppableRects.get(droppable.id) ?? droppable.rect.current;
+
+    if (!rect) {
+      continue;
+    }
+
+    if (
+      centerX >= rect.left &&
+      centerX <= rect.right &&
+      centerY >= rect.top &&
+      centerY <= rect.bottom
+    ) {
+      const droppableCenterX = rect.left + rect.width / 2;
+      const droppableCenterY = rect.top + rect.height / 2;
+
+      collisions.push({
+        id: droppable.id,
+        data: { droppableContainer: droppable },
+        distance: Math.hypot(centerX - droppableCenterX, centerY - droppableCenterY),
+      });
+    }
+  }
+
+  if (collisions.length > 0) {
+    return collisions.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+  }
+
+  return closestCenter(args);
+};
 
 interface SectionsListProps {
   sections?: SectionType[];
@@ -56,6 +111,9 @@ export function SectionsList({
 
   // Local state for immediate UI updates during drag
   const [localSections, setLocalSections] = React.useState(sections);
+  const [activeSectionId, setActiveSectionId] = React.useState<string | null>(
+    null
+  );
 
   // Update local sections when props change
   React.useEffect(() => {
@@ -69,8 +127,21 @@ export function SectionsList({
     })
   );
 
+  const handleDragStart = React.useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+
+      if (typeof active.id === 'string') {
+        setActiveSectionId(active.id);
+      }
+    },
+    []
+  );
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+
+    setActiveSectionId(null);
 
     if (!over || active.id === over.id || !localSections) {
       return;
@@ -99,6 +170,29 @@ export function SectionsList({
       }
     }
   };
+
+  const handleDragCancel = React.useCallback(() => {
+    setActiveSectionId(null);
+  }, []);
+
+  const activeSection = React.useMemo(() => {
+    if (!activeSectionId || !localSections) {
+      return null;
+    }
+
+    return localSections.find((section) => section.id === activeSectionId) || null;
+  }, [activeSectionId, localSections]);
+
+  const getDocumentsCount = React.useCallback(
+    (sectionId: string) => {
+      if (!allDocuments) {
+        return 0;
+      }
+
+      return allDocuments.filter((doc) => doc.sectionId === sectionId).length;
+    },
+    [allDocuments]
+  );
 
   if (isLoading) {
     return (
@@ -191,11 +285,13 @@ export function SectionsList({
       <CardContent className="p-0 pt-0 mt-0">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter}
+          collisionDetection={centerAwareCollisionDetection}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <SortableContext
-            items={localSections.map(s => s.id)}
+            items={localSections.map((s) => s.id)}
             strategy={verticalListSortingStrategy}
           >
             {localSections.map((section, index) => (
@@ -213,6 +309,29 @@ export function SectionsList({
               />
             ))}
           </SortableContext>
+
+          <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+            {activeSection ? (
+              <div className="w-full border-b bg-background">
+                <SectionHeader
+                  sectionData={activeSection}
+                  index={localSections.findIndex(
+                    (section) => section.id === activeSection.id
+                  )}
+                  totalSections={localSections.length}
+                  isExpanded={false}
+                  toggleExpand={() => {}}
+                  onMoveSection={() => {}}
+                  onRenameSection={() => {}}
+                  onDeleteSection={() => {}}
+                  documentsCount={getDocumentsCount(activeSection.id)}
+                  showImportMenu={showImportMenu}
+                  onImportDocuments={onImportDocuments}
+                  isDragging
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       </CardContent>
     </Card>

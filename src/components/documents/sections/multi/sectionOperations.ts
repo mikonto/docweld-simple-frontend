@@ -140,7 +140,7 @@ export const handleDragEnd = async (
       (doc) => doc.id === event.over!.id.toString()
     );
 
-    if (oldIndex !== newIndex) {
+    if (oldIndex >= 0 && newIndex >= 0 && oldIndex !== newIndex) {
       // Create a new array with the updated order
       const newDocuments = Array.from(localDocuments);
       const [movedItem] = newDocuments.splice(oldIndex, 1);

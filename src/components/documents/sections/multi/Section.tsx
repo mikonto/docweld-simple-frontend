@@ -63,7 +63,7 @@ export function Section({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : undefined,
+    opacity: isDragging ? 0 : 1,
   };
 
   // State
@@ -71,6 +71,7 @@ export function Section({
   const [draggedDocuments, setDraggedDocuments] = useState<Document[] | null>(
     null
   );
+  const wasExpandedBeforeDragRef = useRef<boolean | null>(null);
 
   const deleteDocumentDialog = useConfirmationDialog({});
   const deleteSectionDialog = useConfirmationDialog({});
@@ -81,6 +82,21 @@ export function Section({
   const toggleExpand = useCallback(() => {
     setIsExpanded(!isExpanded);
   }, [isExpanded]);
+
+  useEffect(() => {
+    if (isDragging) {
+      if (wasExpandedBeforeDragRef.current === null) {
+        wasExpandedBeforeDragRef.current = isExpanded;
+      }
+
+      if (isExpanded) {
+        setIsExpanded(false);
+      }
+    } else if (wasExpandedBeforeDragRef.current !== null) {
+      setIsExpanded(wasExpandedBeforeDragRef.current);
+      wasExpandedBeforeDragRef.current = null;
+    }
+  }, [isDragging, isExpanded]);
 
   const sectionsHook = useSections({
     entityType: collectionType,
@@ -195,12 +211,16 @@ export function Section({
 
         {/* Section Content with Expand/Collapse Animation */}
         <div
-          className={`overflow-hidden transition-all ease-in-out ${
-            isExpanded ? 'max-h-[5000px]' : 'max-h-0'
-          }`}
-          style={{
-            transitionDuration: `${SECTION_SIZE_CONFIG.MULTI.ANIMATION_DURATION}ms`,
-          }}
+          className={`overflow-hidden ${
+            isDragging ? '' : 'transition-all ease-in-out'
+          } ${isExpanded ? 'max-h-[5000px]' : 'max-h-0'}`}
+          style={
+            isDragging
+              ? undefined
+              : {
+                  transitionDuration: `${SECTION_SIZE_CONFIG.MULTI.ANIMATION_DURATION}ms`,
+                }
+          }
         >
           <SectionContent
             documents={localDocuments}
