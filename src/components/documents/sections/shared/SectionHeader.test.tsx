@@ -11,14 +11,11 @@ vi.mock('lucide-react', () => ({
       ›
     </div>
   ),
-  ArrowUp: () => <div data-testid="arrow-up">↑</div>,
-  ArrowDown: () => <div data-testid="arrow-down">↓</div>,
   Edit: () => <div data-testid="edit">✏</div>,
   Trash: () => <div data-testid="trash">🗑</div>,
   Trash2: () => <div data-testid="trash2">🗑</div>,
   Upload: () => <div data-testid="upload">⬆</div>,
   Import: () => <div data-testid="import">📥</div>,
-  GripVertical: () => <div data-testid="grip-vertical">⋮</div>,
 }));
 
 // Mock dropdown menu components
@@ -123,9 +120,7 @@ describe('SectionHeader', () => {
     it('should call toggleExpand when header is clicked', () => {
       render(<SectionHeader {...mockProps} />);
 
-      const header = screen
-        .getByText('Test Section')
-        .closest('.cursor-pointer');
+      const header = screen.getByText('Test Section').parentElement;
       fireEvent.click(header!);
 
       expect(mockProps.toggleExpand).toHaveBeenCalledTimes(1);
@@ -142,42 +137,6 @@ describe('SectionHeader', () => {
   });
 
   describe('Dropdown Menu Actions', () => {
-    it('should show move up option when not first section', () => {
-      render(<SectionHeader {...mockProps} index={1} />);
-
-      const menuButton = screen.getByRole('button');
-      fireEvent.click(menuButton);
-
-      expect(screen.getByText('common.moveUp')).toBeInTheDocument();
-    });
-
-    it('should not show move up option for first section', () => {
-      render(<SectionHeader {...mockProps} index={0} />);
-
-      const menuButton = screen.getByRole('button');
-      fireEvent.click(menuButton);
-
-      expect(screen.queryByText('common.moveUp')).not.toBeInTheDocument();
-    });
-
-    it('should show move down option when not last section', () => {
-      render(<SectionHeader {...mockProps} index={1} totalSections={3} />);
-
-      const menuButton = screen.getByRole('button');
-      fireEvent.click(menuButton);
-
-      expect(screen.getByText('common.moveDown')).toBeInTheDocument();
-    });
-
-    it('should not show move down option for last section', () => {
-      render(<SectionHeader {...mockProps} index={2} totalSections={3} />);
-
-      const menuButton = screen.getByRole('button');
-      fireEvent.click(menuButton);
-
-      expect(screen.queryByText('common.moveDown')).not.toBeInTheDocument();
-    });
-
     it('should always show edit and delete options', () => {
       render(<SectionHeader {...mockProps} />);
 
@@ -210,26 +169,6 @@ describe('SectionHeader', () => {
   });
 
   describe('Menu Action Handlers', () => {
-    it('should call onMoveSection with up direction', () => {
-      render(<SectionHeader {...mockProps} index={1} />);
-
-      const menuButton = screen.getByRole('button');
-      fireEvent.click(menuButton);
-      fireEvent.click(screen.getByText('common.moveUp'));
-
-      expect(mockProps.onMoveSection).toHaveBeenCalledWith('section-1', 'up');
-    });
-
-    it('should call onMoveSection with down direction', () => {
-      render(<SectionHeader {...mockProps} index={1} />);
-
-      const menuButton = screen.getByRole('button');
-      fireEvent.click(menuButton);
-      fireEvent.click(screen.getByText('common.moveDown'));
-
-      expect(mockProps.onMoveSection).toHaveBeenCalledWith('section-1', 'down');
-    });
-
     it('should call onRenameSection when edit is clicked', () => {
       render(<SectionHeader {...mockProps} />);
 
