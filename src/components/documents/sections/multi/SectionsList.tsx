@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Spinner } from '@/components/ui/custom/spinner';
 import { Section } from './Section';
+import { DND_ACTIVATION_CONSTRAINT } from '@/types/documents';
 import type { Section as SectionType, Document } from '@/types/api/firestore';
 
 interface SectionsListProps {
@@ -64,9 +65,7 @@ export function SectionsList({
   // Configure drag sensors to prevent accidental drags
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3, // Reduced from 8px for more responsive feel
-      },
+      activationConstraint: DND_ACTIVATION_CONSTRAINT,
     })
   );
 

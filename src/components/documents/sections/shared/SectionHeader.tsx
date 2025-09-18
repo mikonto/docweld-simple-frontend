@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   MoreHorizontal,
   ChevronRight,
@@ -55,39 +54,11 @@ export function SectionHeader({
   isDragging = false,
 }: SectionHeaderProps) {
   const { t } = useTranslation();
-  const [isMouseDown, setIsMouseDown] = React.useState(false);
-
-  // Track mousedown/mouseup for immediate cursor feedback
-  const handleMouseDown = React.useCallback(() => {
-    setIsMouseDown(true);
-  }, []);
-
-  const handleMouseUp = React.useCallback(() => {
-    setIsMouseDown(false);
-  }, []);
-
-  React.useEffect(() => {
-    // Clean up on unmount or when dragging ends
-    if (!isDragging) {
-      setIsMouseDown(false);
-    }
-  }, [isDragging]);
-
-  // Add global mouseup listener to handle mouse release outside element
-  React.useEffect(() => {
-    if (isMouseDown) {
-      const handleGlobalMouseUp = () => setIsMouseDown(false);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
-    }
-  }, [isMouseDown]);
-
-  const showGrabbingCursor = isMouseDown || isDragging;
 
   return (
     <div
       className={`flex items-center justify-between p-4 hover:bg-accent/50 cursor-${
-        showGrabbingCursor ? 'grabbing' : 'grab'
+        isDragging ? 'grabbing' : 'grab'
       } relative`}
       {...attributes}
     >
@@ -96,9 +67,7 @@ export function SectionHeader({
         {...listeners}
         className="absolute inset-0 right-12 z-10"
         aria-label="Drag handle"
-        style={{ cursor: showGrabbingCursor ? 'grabbing' : 'pointer' }}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
+        style={{ cursor: isDragging ? 'grabbing' : 'pointer' }}
         onClick={toggleExpand}
       />
 
