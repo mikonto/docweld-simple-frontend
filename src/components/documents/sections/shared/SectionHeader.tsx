@@ -33,6 +33,7 @@ interface SectionHeaderProps {
   onImportDocuments?: (sectionId: string, sectionName: string) => void;
   documentsCount: number;
   dragHandleProps?: any;
+  isDragging?: boolean;
 }
 
 export function SectionHeader({
@@ -48,12 +49,15 @@ export function SectionHeader({
   onImportDocuments,
   documentsCount,
   dragHandleProps,
+  isDragging = false,
 }: SectionHeaderProps) {
   const { t } = useTranslation();
 
   return (
     <div
-      className="flex items-center justify-between p-4 hover:bg-accent/50"
+      className={`flex items-center justify-between p-4 hover:bg-accent/50 cursor-${
+        isDragging ? 'grabbing' : 'grab'
+      }`}
       {...dragHandleProps}
     >
       <div
