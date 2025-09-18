@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlusIcon, MoreHorizontal, AlertCircle, Import } from 'lucide-react';
 import {
@@ -42,6 +43,7 @@ export function SectionsList({
   isLoading,
   error,
   onMoveSection,
+  onReorderSections,
   onAddSection,
   onImportSections,
   onImportDocuments,
@@ -50,6 +52,14 @@ export function SectionsList({
   showImportMenu = false,
 }: SectionsListProps) {
   const { t } = useTranslation();
+
+  // Local state for immediate UI updates during drag
+  const [localSections, setLocalSections] = React.useState(sections);
+
+  // Update local sections when props change
+  React.useEffect(() => {
+    setLocalSections(sections);
+  }, [sections]);
 
   // Configure drag sensors to prevent accidental drags
   const sensors = useSensors(
@@ -63,16 +73,31 @@ export function SectionsList({
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id || !sections) {
+    if (!over || active.id === over.id || !localSections) {
       return;
     }
 
-    const oldIndex = sections.findIndex((s) => s.id === active.id);
-    const newIndex = sections.findIndex((s) => s.id === over.id);
+    const oldIndex = localSections.findIndex((s) => s.id === active.id);
+    const newIndex = localSections.findIndex((s) => s.id === over.id);
 
-    if (oldIndex !== -1 && newIndex !== -1 && onReorderSections) {
-      // Call the reorder function
-      await onReorderSections(oldIndex, newIndex);
+    if (oldIndex !== -1 && newIndex !== -1) {
+      // Create reordered array for immediate UI update
+      const reordered = [...localSections];
+      const [movedSection] = reordered.splice(oldIndex, 1);
+      reordered.splice(newIndex, 0, movedSection);
+
+      // Update local state immediately for smooth animation
+      setLocalSections(reordered);
+
+      // Call the reorder function to update database
+      if (onReorderSections) {
+        try {
+          await onReorderSections(oldIndex, newIndex);
+        } catch (error) {
+          // Revert on error
+          setLocalSections(sections);
+        }
+      }
     }
   };
 
@@ -105,7 +130,7 @@ export function SectionsList({
     );
   }
 
-  if (!sections || sections.length === 0) {
+  if (!localSections || localSections.length === 0) {
     return (
       <Card>
         <CardHeader className="flex flex-row justify-between border-b h-12 pr-6 pl-3">
@@ -171,10 +196,10 @@ export function SectionsList({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={sections.map(s => s.id)}
+            items={localSections.map(s => s.id)}
             strategy={verticalListSortingStrategy}
           >
-            {sections.map((section, index) => (
+            {localSections.map((section, index) => (
               <Section
                 collectionType={collectionType}
                 entityId={entityId}
@@ -183,7 +208,7 @@ export function SectionsList({
                 allDocuments={allDocuments || []}
                 index={index}
                 onMoveSection={onMoveSection}
-                totalSections={sections.length}
+                totalSections={localSections.length}
                 showImportMenu={showImportMenu}
                 onImportDocuments={onImportDocuments}
               />

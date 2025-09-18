@@ -53,7 +53,7 @@ export function SectionHeader({
 
   return (
     <div
-      className="flex items-center justify-between p-4 cursor-move hover:bg-accent/50"
+      className="flex items-center justify-between p-4 hover:bg-accent/50"
       {...dragHandleProps}
     >
       <div
