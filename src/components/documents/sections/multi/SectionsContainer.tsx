@@ -61,7 +61,7 @@ export function SectionsContainer({
     entityId: collectionType === 'project' ? entityId! : entityId || 'main',
   });
 
-  const { sections, sectionsLoading, sectionsError, moveSection, addSection } =
+  const { sections, sectionsLoading, sectionsError, moveSection, addSection, updateSectionOrder } =
     sectionsHook;
   const {
     documents: allDocuments,
@@ -90,6 +90,25 @@ export function SectionsContainer({
       await moveSection(sectionId, direction, sections as Section[]);
       toast.success(t('sections.orderUpdateSuccess'));
     } catch {
+      toast.error(t('sections.orderUpdateError'));
+    }
+  };
+
+  const handleReorderSections = async (oldIndex: number, newIndex: number) => {
+    if (!sections) return;
+
+    try {
+      // Create a new array with the reordered sections
+      const reordered = [...sections];
+      const [movedSection] = reordered.splice(oldIndex, 1);
+      reordered.splice(newIndex, 0, movedSection);
+
+      // Update the order in the database using section IDs
+      const orderedSectionIds = reordered.map(section => section.id);
+      await updateSectionOrder(orderedSectionIds);
+
+      toast.success(t('sections.orderUpdateSuccess'));
+    } catch (error) {
       toast.error(t('sections.orderUpdateError'));
     }
   };
@@ -200,6 +219,7 @@ export function SectionsContainer({
         isLoading={isLoading}
         error={error}
         onMoveSection={handleMoveSection}
+        onReorderSections={handleReorderSections}
         onAddSection={handleAddSection}
         onImportSections={handleOpenImportSections}
         onImportDocuments={handleOpenImportDocuments}

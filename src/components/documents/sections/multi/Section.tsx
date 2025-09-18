@@ -2,6 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import type { DragEndEvent } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { useDocuments } from '@/hooks/documents/useDocuments';
 import { useSections } from '@/hooks/documents/useSections';
@@ -47,6 +49,22 @@ export function Section({
   onImportDocuments,
 }: SectionProps) {
   const { t } = useTranslation();
+
+  // DnD setup
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: sectionData.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+  };
 
   // State
   const [isExpanded, setIsExpanded] = useState(false);
@@ -146,7 +164,11 @@ export function Section({
 
   return (
     <>
-      <div className="w-full border-b">
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="w-full border-b"
+      >
         {/* Section Header */}
         <SectionHeader
           sectionData={sectionData}
@@ -154,6 +176,7 @@ export function Section({
           totalSections={totalSections}
           isExpanded={isExpanded}
           toggleExpand={toggleExpand}
+          dragHandleProps={{ ...attributes, ...listeners }}
           onMoveSection={onMoveSection}
           onRenameSection={() => renameSectionDialog.open(sectionData)}
           onDeleteSection={() =>

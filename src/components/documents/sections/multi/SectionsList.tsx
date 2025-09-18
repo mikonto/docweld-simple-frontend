@@ -1,5 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { PlusIcon, MoreHorizontal, AlertCircle, Import } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +27,7 @@ interface SectionsListProps {
   isLoading: boolean;
   error?: Error | null;
   onMoveSection: (id: string, direction: 'up' | 'down') => void;
+  onReorderSections?: (oldIndex: number, newIndex: number) => Promise<void>;
   onAddSection: () => void;
   onImportSections?: () => void;
   onImportDocuments?: (sectionId: string, sectionName: string) => void;
@@ -40,6 +50,31 @@ export function SectionsList({
   showImportMenu = false,
 }: SectionsListProps) {
   const { t } = useTranslation();
+
+  // Configure drag sensors to prevent accidental drags
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px of drag before activating
+      },
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !sections) {
+      return;
+    }
+
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1 && onReorderSections) {
+      // Call the reorder function
+      await onReorderSections(oldIndex, newIndex);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -130,20 +165,31 @@ export function SectionsList({
       </CardHeader>
 
       <CardContent className="p-0 pt-0 mt-0">
-        {sections.map((section, index) => (
-          <Section
-            collectionType={collectionType}
-            entityId={entityId}
-            key={section.id}
-            sectionData={section}
-            allDocuments={allDocuments || []}
-            index={index}
-            onMoveSection={onMoveSection}
-            totalSections={sections.length}
-            showImportMenu={showImportMenu}
-            onImportDocuments={onImportDocuments}
-          />
-        ))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={sections.map(s => s.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {sections.map((section, index) => (
+              <Section
+                collectionType={collectionType}
+                entityId={entityId}
+                key={section.id}
+                sectionData={section}
+                allDocuments={allDocuments || []}
+                index={index}
+                onMoveSection={onMoveSection}
+                totalSections={sections.length}
+                showImportMenu={showImportMenu}
+                onImportDocuments={onImportDocuments}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
       </CardContent>
     </Card>
   );
