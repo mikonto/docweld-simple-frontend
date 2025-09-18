@@ -2,6 +2,12 @@
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "pickDate": "Pick a date",
+    "time": {
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
     "clearSelection": "Clear selection",
     "delete": "Delete",
     "edit": "Edit",
@@ -891,5 +897,77 @@
     "archiveError": "Failed to archive alloy material",
     "restoreSuccess": "Alloy material restored successfully",
     "restoreError": "Failed to restore alloy material"
+  },
+  "weldEvents": {
+    "sectionTitle": "Weld Events",
+    "sectionSubtitle": "Track inspections, heat treatment, and comments for this weld.",
+    "quickActions": {
+      "logWeld": "Log Weld",
+      "logInspection": "Log Inspection",
+      "logHeatTreatment": "Log Heat Treatment",
+      "addComment": "Add Comment",
+      "logEvent": "Log Event"
+    },
+    "eventType": {
+      "weld": "Weld Performed",
+      "visual-inspection": "Visual Inspection",
+      "heat-treatment": "Heat Treatment",
+      "comment": "Comment",
+      "creation": "Weld Created"
+    },
+    "form": {
+      "title": "Log Event",
+      "subtitle": "Capture activities performed on this weld.",
+      "eventType": "Event Type",
+      "comment": "Comment",
+      "doneAt": "Done At",
+      "cancel": "Cancel",
+      "submit": "Log Event",
+      "submitting": "Logging...",
+      "performerPlaceholder": "Select performer",
+      "doneBy": "Done By",
+      "inspectionResult": "Result",
+      "inspectionResultPlaceholder": "Select result",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "selectDate": "Pick a date",
+      "time": "Time (24h)"
+    },
+    "validation": {
+      "commentRequired": "Please enter a comment.",
+      "doneAtRequired": "Select when the work was done.",
+      "doneAtInvalid": "Enter a valid date and time.",
+      "performerRequired": "Select who performed this work.",
+      "timeInvalid": "Please enter time in 24h format (HH:MM)"
+    },
+    "inspectionResult": {
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "errorTitle": "Unable to load events",
+    "error": "Something went wrong while loading weld events.",
+    "emptyStateTitle": "No events recorded yet",
+    "emptyState": "Start logging weld activity to build the traceability record.",
+    "performedBy": "Performed by {{name}}",
+    "loggedBy": "Logged by {{name}}",
+    "batchCreateSuccess_one": "Logged {{count}} weld event",
+    "batchCreateSuccess_other": "Logged {{count}} weld events",
+    "batchCreateError": "Failed to log events",
+    "creation": {
+      "description": "Weld created"
+    },
+    "performerUnavailable": "No eligible performers are available for this event.",
+    "unknownPerformer": "Unknown performer",
+    "dialogTitles": {
+      "weld": "Log Weld",
+      "heat-treatment": "Log Heat Treatment",
+      "visual-inspection": "Log Inspection",
+      "comment": "Add Comment",
+      "creation": "Log Weld Creation"
+    },
+    "doneLoggedBySame": "Done and logged by {{name}}",
+    "doneLoggedByDifferent": "Done by {{doneName}}, logged by {{loggedName}}",
+    "doneByLine": "Done by {{name}}",
+    "loggedByLine": "Logged by {{name}}"
   }
 }

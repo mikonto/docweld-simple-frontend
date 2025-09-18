@@ -4,15 +4,11 @@ import { screen } from '@testing-library/react';
 import { AppSidebar } from './AppSidebar';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { useApp } from '@/contexts/AppContext';
+import * as AppContextModule from '@/contexts/AppContext';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useProjects } from '@/hooks/useProjects';
 import type { Project } from '@/types';
 import type { Location } from 'react-router-dom';
-
-// Mock hooks
-vi.mock('@/contexts/AppContext', () => ({
-  useApp: vi.fn(),
-}));
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -151,6 +147,8 @@ vi.mock('@/components/ui/sidebar', () => ({
   SidebarRail: () => <div data-testid="sidebar-rail" />,
 }));
 
+const useAppSpy = vi.spyOn(AppContextModule, 'useApp');
+
 describe('AppSidebar', () => {
   const mockNavigate = vi.fn();
   const mockProjects: Project[] = [
@@ -169,16 +167,14 @@ describe('AppSidebar', () => {
       state: null,
       key: 'default',
     } as Location);
-    vi.mocked(useApp).mockReturnValue({
+    useAppSpy.mockReturnValue({
       loggedInUser: {
         uid: 'test-uid',
         displayName: 'Test User',
         email: 'test@example.com',
         role: 'admin',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+      },
+    } as unknown as ReturnType<typeof useApp>);
     vi.mocked(useProjects).mockReturnValue([mockProjects, false, undefined]);
   });
 
@@ -254,16 +250,14 @@ describe('AppSidebar', () => {
     });
 
     it('should hide admin sections for basic users in project context', () => {
-      vi.mocked(useApp).mockReturnValue({
+      useAppSpy.mockReturnValue({
         loggedInUser: {
           uid: 'basic-uid',
           displayName: 'Basic User',
           email: 'basic@example.com',
           role: 'user',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+        },
+      } as unknown as ReturnType<typeof useApp>);
 
       renderWithProviders(<AppSidebar />);
 
@@ -300,4 +294,9 @@ describe('AppSidebar', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  afterAll(() => {
+    useAppSpy.mockRestore();
+  });
+
 });

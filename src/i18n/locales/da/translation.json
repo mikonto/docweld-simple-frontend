@@ -2,6 +2,12 @@
   "common": {
     "save": "Gem",
     "cancel": "Annuller",
+    "pickDate": "Vælg en dato",
+    "time": {
+      "hours": "Timer",
+      "minutes": "Minutter",
+      "seconds": "Sekunder"
+    },
     "delete": "Slet",
     "edit": "Rediger",
     "create": "Opret",
@@ -872,5 +878,77 @@
     "archiveError": "Kunne ikke arkivere legeringsmateriale",
     "restoreSuccess": "Legeringsmateriale gendannet succesfuldt",
     "restoreError": "Kunne ikke gendanne legeringsmateriale"
+  },
+  "weldEvents": {
+    "sectionTitle": "Hændelser for svejsning",
+    "sectionSubtitle": "Registrer inspektioner, varmebehandling og kommentarer for denne svejsning.",
+    "quickActions": {
+      "logWeld": "Registrer svejsning",
+      "logInspection": "Registrer inspektion",
+      "logHeatTreatment": "Registrer varmebehandling",
+      "addComment": "Tilføj kommentar",
+      "logEvent": "Registrer hændelse"
+    },
+    "eventType": {
+      "weld": "Svejsearbejde",
+      "visual-inspection": "Visuel inspektion",
+      "heat-treatment": "Varmebehandling",
+      "comment": "Kommentar",
+      "creation": "Svejsning oprettet"
+    },
+    "form": {
+      "title": "Registrer hændelse",
+      "subtitle": "Registrer aktiviteter udført på denne svejsning.",
+      "eventType": "Hændelsestype",
+      "comment": "Kommentar",
+      "doneAt": "Udført den",
+      "cancel": "Annuller",
+      "submit": "Registrer hændelse",
+      "submitting": "Registrerer...",
+      "performerPlaceholder": "Vælg udførende",
+      "doneBy": "Udført af",
+      "inspectionResult": "Resultat",
+      "inspectionResultPlaceholder": "Vælg resultat",
+      "approved": "Godkendt",
+      "rejected": "Afvist",
+      "selectDate": "Vælg en dato",
+      "time": "Tid (24t)"
+    },
+    "validation": {
+      "commentRequired": "Indtast en kommentar.",
+      "doneAtRequired": "Vælg hvornår arbejdet blev udført.",
+      "doneAtInvalid": "Angiv en gyldig dato og tid.",
+      "performerRequired": "Vælg hvem der udførte arbejdet.",
+      "timeInvalid": "Indtast tid i 24t format (TT:MM)"
+    },
+    "inspectionResult": {
+      "approved": "Godkendt",
+      "rejected": "Afvist"
+    },
+    "errorTitle": "Kan ikke indlæse hændelser",
+    "error": "Noget gik galt under indlæsning af svejsehændelser.",
+    "emptyStateTitle": "Ingen hændelser registreret endnu",
+    "emptyState": "Begynd at registrere svejseaktiviteter for at opbygge sporbarhed.",
+    "performedBy": "Udført af {{name}}",
+    "loggedBy": "Registreret af {{name}}",
+    "batchCreateSuccess_one": "Registrerede {{count}} hændelse",
+    "batchCreateSuccess_other": "Registrerede {{count}} hændelser",
+    "batchCreateError": "Kunne ikke registrere hændelser",
+    "creation": {
+      "description": "Svejsning oprettet"
+    },
+    "performerUnavailable": "Ingen kvalificerede deltagere er tilgængelige for denne hændelse.",
+    "unknownPerformer": "Ukendt udførende",
+    "dialogTitles": {
+      "weld": "Registrer svejsning",
+      "heat-treatment": "Registrer varmebehandling",
+      "visual-inspection": "Registrer inspektion",
+      "comment": "Tilføj kommentar",
+      "creation": "Registrer svejsning"
+    },
+    "doneLoggedBySame": "Udført og registreret af {{name}}",
+    "doneLoggedByDifferent": "Udført af {{doneName}}, registreret af {{loggedName}}",
+    "doneByLine": "Udført af {{name}}",
+    "loggedByLine": "Registreret af {{name}}"
   }
 }

@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach, vi, MockedFunction } from 'vitest';
 import { useDocumentImport } from './useDocumentImport';
 import { setDoc, writeBatch, getDocs } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { useApp } from '@/contexts/AppContext';
+import * as AppContextModule from '@/contexts/AppContext';
 
 // Mock Firebase
 vi.mock('@/firebase', () => ({
@@ -37,13 +39,6 @@ vi.mock('@/components/documents/utils/fileUtils', () => ({
   }),
 }));
 
-// Mock App Provider
-vi.mock('@/contexts/AppProvider', () => ({
-  useApp: vi.fn(() => ({
-    loggedInUser: { id: 'test-user-id' },
-  })),
-}));
-
 // Mock i18n
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -74,9 +69,16 @@ describe('useDocumentImport', () => {
     set: ReturnType<typeof vi.fn>;
     commit: ReturnType<typeof vi.fn>;
   };
+  const useAppSpy = vi.spyOn(AppContextModule, 'useApp');
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useAppSpy.mockReturnValue({
+      loggedInUser: {
+        uid: 'test-user-id',
+        displayName: 'Test User',
+      },
+    } as unknown as ReturnType<typeof useApp>);
 
     // Mock successful copy function
     mockCopyFunction = vi.fn().mockResolvedValue({
@@ -361,5 +363,9 @@ describe('useDocumentImport', () => {
       expect(error).toBeDefined();
       expect(error?.message).toContain('Commit failed');
     });
+  });
+
+  afterAll(() => {
+    useAppSpy.mockRestore();
   });
 });

@@ -120,7 +120,7 @@ export const useUsers = (
     (user) =>
       ({
         ...user,
-        name: `${user.firstName} ${user.lastName}`,
+        name: [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || user.id,
       }) as UserWithName
   );
 

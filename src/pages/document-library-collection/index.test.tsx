@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import DocumentLibraryCollection from './index';
+import { useApp } from '@/contexts/AppContext';
+import * as AppContextModule from '@/contexts/AppContext';
 
 // Mock Firebase
 vi.mock('@/config/firebase', () => ({
@@ -70,7 +72,17 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const useAppSpy = vi.spyOn(AppContextModule, 'useApp');
+
 describe('DocumentLibraryCollection', () => {
+  beforeEach(() => {
+    useAppSpy.mockReturnValue({
+      loggedInUser: {
+        uid: 'test-user',
+        displayName: 'Test User',
+      },
+    } as unknown as ReturnType<typeof useApp>);
+  });
   it('should render without crashing', () => {
     const { container } = render(
       <BrowserRouter>
@@ -117,5 +129,9 @@ describe('DocumentLibraryCollection', () => {
     // Check for the header section
     const header = container.querySelector('h1');
     expect(header).toBeTruthy();
+  });
+
+  afterAll(() => {
+    useAppSpy.mockRestore();
   });
 });

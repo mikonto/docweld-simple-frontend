@@ -267,7 +267,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { toast } from 'sonner';
-import { STATUS } from '@/types/common/status';
+import { STATUS } from '@/types/models/base';
 
 const createBatchEvents = async (
   weldData: Array<{ weldId: string; weldLogId: string; projectId: string }>,

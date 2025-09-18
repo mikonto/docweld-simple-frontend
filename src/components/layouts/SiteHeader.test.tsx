@@ -4,27 +4,11 @@ import { screen } from '@testing-library/react';
 import { SiteHeader } from './SiteHeader';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { useApp } from '@/contexts/AppContext';
+import * as AppContextModule from '@/contexts/AppContext';
 import { useLocation, useParams } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
 
 // Mock hooks
-vi.mock('@/contexts/AppContext', () => ({
-  useApp: vi.fn(),
-}));
-
-vi.mock('react-i18next', async () => {
-  const actual = await vi.importActual('react-i18next');
-  return {
-    ...actual,
-    useTranslation: vi.fn(() => ({
-      t: (key: string) => key,
-      i18n: {
-        language: 'en',
-        changeLanguage: vi.fn(),
-      },
-    })),
-  };
-});
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -60,6 +44,8 @@ vi.mock('@/components/ui/sidebar', () => ({
   SidebarTrigger: () => <button data-testid="sidebar-trigger">Menu</button>,
 }));
 
+const useAppSpy = vi.spyOn(AppContextModule, 'useApp');
+
 describe('SiteHeader', () => {
   const mockUser = {
     uid: 'user123',
@@ -72,11 +58,9 @@ describe('SiteHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useApp).mockReturnValue({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      loggedInUser: mockUser as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    useAppSpy.mockReturnValue({
+      loggedInUser: mockUser,
+    } as unknown as ReturnType<typeof useApp>);
     vi.mocked(useLocation).mockReturnValue({
       pathname: '/',
       search: '',
@@ -113,10 +97,9 @@ describe('SiteHeader', () => {
 
   describe('User States', () => {
     it('should handle missing user gracefully', () => {
-      vi.mocked(useApp).mockReturnValue({
+      useAppSpy.mockReturnValue({
         loggedInUser: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      } as unknown as ReturnType<typeof useApp>);
 
       renderWithProviders(<SiteHeader />);
 
@@ -154,4 +137,9 @@ describe('SiteHeader', () => {
       expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     });
   });
+
+  afterAll(() => {
+    useAppSpy.mockRestore();
+  });
+
 });

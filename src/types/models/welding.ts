@@ -4,6 +4,7 @@
  */
 
 import type { Timestamp } from 'firebase/firestore';
+import type { Status } from '../common/status';
 import { FirestoreBase } from './base';
 import { Material } from './company';
 
@@ -82,3 +83,57 @@ export interface Weld extends FirestoreBase {
   completedAt?: Timestamp;
   inspectedAt?: Timestamp;
 }
+
+/**
+ * Supported weld event types for audit trail logging
+ */
+export type WeldEventType =
+  | 'weld'
+  | 'heat-treatment'
+  | 'visual-inspection'
+  | 'comment';
+
+/**
+ * Audit trail entry for weld activities
+ */
+export interface WeldEvent extends FirestoreBase {
+  status: Status;
+  createdAt: Timestamp;
+  createdBy: string;
+  updatedAt: Timestamp;
+  updatedBy: string;
+
+  weldId: string;
+  weldLogId: string;
+  projectId: string;
+
+  eventType: WeldEventType;
+  description: string;
+  performedAt: Timestamp;
+  performedBy: string;
+  doneById?: string;
+  
+  // For visual inspection events
+  inspectionResult?: 'approved' | 'rejected';
+
+  attachmentIds?: string[];
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Payload for creating a weld event via Firestore operations hook
+ * System fields are injected automatically by the hook
+ */
+export type CreateWeldEventInput = {
+  weldId: string;
+  weldLogId: string;
+  projectId: string;
+  eventType: WeldEventType;
+  description: string;
+  performedAt: Timestamp;
+  performedBy: string;
+  doneById?: string;
+  inspectionResult?: 'approved' | 'rejected';
+  attachmentIds?: string[];
+  metadata?: Record<string, unknown>;
+};

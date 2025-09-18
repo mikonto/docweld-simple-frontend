@@ -9,6 +9,7 @@ import { ErrorLoadingWrapper } from '@/components/shared/ErrorLoadingWrapper';
 import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
 import { WeldDetailsCard } from './WeldDetailsCard';
 import { WeldDocumentsSection } from './WeldDocumentsSection';
+import { WeldEventsSection } from '@/components/weld-events/WeldEventsSection';
 import { WeldFormDialog } from '../weld-log-overview/WeldFormDialog';
 import { useProject } from '@/hooks/useProjects';
 import { useWeldLog } from '@/hooks/useWeldLogs';
@@ -19,6 +20,7 @@ import { ImportDialog } from '@/components/documents/import';
 import { CardDialog } from '@/components/documents/cards';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
 import { Spinner } from '@/components/ui/custom/spinner';
+import { useApp } from '@/contexts/AppContext';
 import type { Weld } from '@/types/models/welding';
 import type { Document } from '@/types/api/firestore';
 import type { SelectedItem } from '@/types/documents';
@@ -42,6 +44,7 @@ type RouteParams = Record<'projectId' | 'weldLogId' | 'weldId', string | undefin
 
 export default function WeldOverview(): ReactElement {
   const { t } = useTranslation();
+  const { loggedInUser } = useApp();
 
   // Get the project ID, weld log ID, and weld ID from the URL parameters
   const { projectId, weldLogId, weldId } = useParams<RouteParams>();
@@ -337,6 +340,18 @@ export default function WeldOverview(): ReactElement {
               onRenameDocument={handleOpenRenameDialog}
               onDeleteDocument={handleOpenDeleteDialog}
             />
+
+            {weld ? (
+              <WeldEventsSection
+                weld={weld}
+                weldId={weldId}
+                weldLogId={weldLogId}
+                projectId={projectId}
+                weldStatus={weld.status}
+                canEdit={Boolean(loggedInUser)}
+                welderName={creator?.displayName}
+              />
+            ) : null}
           </div>
         </ErrorLoadingWrapper>
       </div>

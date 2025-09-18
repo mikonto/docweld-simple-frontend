@@ -3,6 +3,8 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Mock } from 'vitest';
+import { useApp } from '@/contexts/AppContext';
+import * as AppContextModule from '@/contexts/AppContext';
 import WeldOverview from './index';
 import type { Project } from '@/types/models/project';
 import type { Weld, WeldLog } from '@/types/models/welding';
@@ -28,6 +30,7 @@ vi.mock('@/hooks/useWelds', () => ({
 
 vi.mock('@/hooks/useUsers', () => ({
   useUser: vi.fn(),
+  useUsers: vi.fn(() => [[], false, undefined]),
 }));
 
 vi.mock('@/hooks/documents', () => ({
@@ -66,6 +69,12 @@ vi.mock('./WeldDetailsCard', () => ({
 vi.mock('./WeldDocumentsSection', () => ({
   WeldDocumentsSection: () => (
     <div data-testid="weld-documents-section">WeldDocumentsSection</div>
+  ),
+}));
+
+vi.mock('@/components/weld-events/WeldEventsSection', () => ({
+  WeldEventsSection: () => (
+    <div data-testid="weld-events-section">WeldEventsSection</div>
   ),
 }));
 
@@ -112,6 +121,8 @@ import { useWeldLog } from '@/hooks/useWeldLogs';
 import { useWeld } from '@/hooks/useWelds';
 import { useUser } from '@/hooks/useUsers';
 import { useDocuments, useDocumentImport } from '@/hooks/documents';
+
+const useAppSpy = vi.spyOn(AppContextModule, 'useApp');
 
 describe('WeldOverview', () => {
   const mockProject: Project = {
@@ -212,6 +223,12 @@ describe('WeldOverview', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useAppSpy.mockReturnValue({
+      loggedInUser: {
+        uid: 'test-user',
+        displayName: 'Test User',
+      },
+    } as unknown as ReturnType<typeof useApp>);
 
     // Set default mock implementations
     (useProject as Mock).mockReturnValue([mockProject, false, null]);
@@ -326,4 +343,9 @@ describe('WeldOverview', () => {
 
     expect(screen.queryByTestId('page-header')).not.toBeInTheDocument();
   });
+
+  afterAll(() => {
+    useAppSpy.mockRestore();
+  });
+
 });
