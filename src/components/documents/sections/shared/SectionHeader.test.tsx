@@ -70,6 +70,9 @@ describe('SectionHeader', () => {
     showImportMenu: false,
     onImportDocuments: vi.fn(),
     documentsCount: 5,
+    attributes: {},
+    listeners: {},
+    isDragging: false,
   };
 
   beforeEach(() => {

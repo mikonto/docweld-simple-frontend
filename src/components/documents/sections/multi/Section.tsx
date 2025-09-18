@@ -176,7 +176,8 @@ export function Section({
           totalSections={totalSections}
           isExpanded={isExpanded}
           toggleExpand={toggleExpand}
-          dragHandleProps={{ ...attributes, ...listeners }}
+          attributes={attributes}
+          listeners={listeners}
           isDragging={isDragging}
           onMoveSection={onMoveSection}
           onRenameSection={() => renameSectionDialog.open(sectionData)}

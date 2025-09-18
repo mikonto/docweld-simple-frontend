@@ -32,7 +32,8 @@ interface SectionHeaderProps {
   showImportMenu?: boolean;
   onImportDocuments?: (sectionId: string, sectionName: string) => void;
   documentsCount: number;
-  dragHandleProps?: any;
+  attributes?: any;
+  listeners?: any;
   isDragging?: boolean;
 }
 
@@ -48,7 +49,8 @@ export function SectionHeader({
   showImportMenu = false,
   onImportDocuments,
   documentsCount,
-  dragHandleProps,
+  attributes,
+  listeners,
   isDragging = false,
 }: SectionHeaderProps) {
   const { t } = useTranslation();
@@ -57,13 +59,19 @@ export function SectionHeader({
     <div
       className={`flex items-center justify-between p-4 hover:bg-accent/50 cursor-${
         isDragging ? 'grabbing' : 'grab'
-      }`}
-      {...dragHandleProps}
+      } relative`}
+      {...attributes}
     >
+      {/* Draggable Handle - covers most of the header */}
       <div
-        className="flex items-center gap-2 flex-1"
+        {...listeners}
+        className="absolute inset-0 right-12 z-10"
+        aria-label="Drag handle"
+        style={{ cursor: isDragging ? 'grabbing' : 'pointer' }}
         onClick={toggleExpand}
-      >
+      />
+
+      <div className="flex items-center gap-2 flex-1 relative z-0">
         <ChevronRight
           className={`h-4 w-4 transition-transform duration-200 ${
             isExpanded ? 'rotate-90' : ''
@@ -80,7 +88,7 @@ export function SectionHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 relative z-20"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="h-4 w-4" />
