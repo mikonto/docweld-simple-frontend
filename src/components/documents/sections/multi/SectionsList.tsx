@@ -65,7 +65,7 @@ export function SectionsList({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px of drag before activating
+        distance: 3, // Reduced from 8px for more responsive feel
       },
     })
   );
