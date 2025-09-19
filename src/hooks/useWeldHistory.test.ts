@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useWeldEvents, useWeldEventOperations } from './useWeldEvents';
+import { useWeldHistory, useWeldHistoryOperations } from './useWeldHistory';
 // import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations';
 import { useApp } from '@/contexts/AppContext';
 import * as AppContextModule from '@/contexts/AppContext';
 import { STATUS } from '@/types/common/status';
-import type { CreateWeldEventInput, WeldEvent } from '@/types/models/welding';
+import type { CreateWeldHistoryInput, WeldHistoryEntry } from '@/types/models/welding';
 import type { Timestamp } from 'firebase/firestore';
 
 const mockUseCollection = vi.fn();
@@ -75,7 +75,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-describe('useWeldEvents hooks', () => {
+describe('useWeldHistory hooks', () => {
   const useAppSpy = vi.spyOn(AppContextModule, 'useApp');
 
   beforeEach(() => {
@@ -91,7 +91,7 @@ describe('useWeldEvents hooks', () => {
     } as unknown as ReturnType<typeof useApp>);
   });
 
-  describe('useWeldEvents', () => {
+  describe('useWeldHistory', () => {
     it('fetches weld events with correct constraints', () => {
       const weldId = 'weld-123';
       const constraintWhere = { type: 'where' } as const;
@@ -101,7 +101,7 @@ describe('useWeldEvents hooks', () => {
       mockOrderBy.mockReturnValueOnce(constraintOrderBy);
       mockLimit.mockReturnValueOnce(constraintLimit);
 
-      const mockEvents: WeldEvent[] = [
+      const mockEvents: WeldHistoryEntry[] = [
         {
           id: 'event-1',
           weldId,
@@ -126,14 +126,14 @@ describe('useWeldEvents hooks', () => {
         create: mockCreate,
       });
 
-      const { result } = renderHook(() => useWeldEvents(weldId));
+      const { result } = renderHook(() => useWeldHistory(weldId));
 
       expect(mockWhere).toHaveBeenCalledWith('weldId', '==', weldId);
       expect(mockOrderBy).toHaveBeenCalledWith('performedAt', 'desc');
       expect(mockLimit).toHaveBeenCalledWith(100);
 
       expect(mockUseFirestoreOperations).toHaveBeenCalledWith(
-        'weld-events',
+        'weld-history',
         expect.objectContaining({
           constraints: [constraintWhere, constraintOrderBy, constraintLimit],
           disabled: false,
@@ -153,7 +153,7 @@ describe('useWeldEvents hooks', () => {
         create: mockCreate,
       });
 
-      const { result } = renderHook(() => useWeldEvents('weld-456'));
+      const { result } = renderHook(() => useWeldHistory('weld-456'));
 
       expect(result.current.events).toEqual([]);
       expect(result.current.loading).toBe(false);
@@ -161,10 +161,10 @@ describe('useWeldEvents hooks', () => {
     });
 
     it('disables subscription when weldId is null', () => {
-      const { result } = renderHook(() => useWeldEvents(null));
+      const { result } = renderHook(() => useWeldHistory(null));
 
       expect(mockUseFirestoreOperations).toHaveBeenCalledWith(
-        'weld-events',
+        'weld-history',
         expect.objectContaining({
           constraints: [],
           disabled: true,
@@ -176,8 +176,8 @@ describe('useWeldEvents hooks', () => {
     });
   });
 
-  describe('useWeldEventOperations', () => {
-    const defaultInput: CreateWeldEventInput = {
+  describe('useWeldHistoryOperations', () => {
+    const defaultInput: CreateWeldHistoryInput = {
       weldId: 'weld-1',
       weldLogId: 'log-1',
       projectId: 'project-1',
@@ -200,7 +200,7 @@ describe('useWeldEvents hooks', () => {
     it('creates an event with domain fields only', async () => {
       mockCreate.mockResolvedValueOnce('event-id');
 
-      const { result } = renderHook(() => useWeldEventOperations());
+      const { result } = renderHook(() => useWeldHistoryOperations());
 
       await act(async () => {
         await result.current.createEvent(defaultInput);
@@ -216,7 +216,7 @@ describe('useWeldEvents hooks', () => {
         loggedInUser: null,
       } as unknown as ReturnType<typeof useApp>);
 
-      const { result } = renderHook(() => useWeldEventOperations());
+      const { result } = renderHook(() => useWeldHistoryOperations());
 
       await expect(async () => {
         await result.current.createEvent(defaultInput);
@@ -224,10 +224,10 @@ describe('useWeldEvents hooks', () => {
     });
 
     it('initializes firestore operations with disabled subscription', () => {
-      renderHook(() => useWeldEventOperations());
+      renderHook(() => useWeldHistoryOperations());
 
       expect(mockUseFirestoreOperations).toHaveBeenCalledWith(
-        'weld-events',
+        'weld-history',
         expect.objectContaining({
           disabled: true,
         })
@@ -252,7 +252,7 @@ describe('useWeldEvents hooks', () => {
       const now = Symbol('timestamp');
       mockServerTimestamp.mockReturnValue(now);
 
-      const { result } = renderHook(() => useWeldEventOperations());
+      const { result } = renderHook(() => useWeldHistoryOperations());
 
       const weldData = [
         { weldId: 'w1', weldLogId: 'logA', projectId: 'projA' },
@@ -301,14 +301,14 @@ describe('useWeldEvents hooks', () => {
       });
 
       expect(commitMock).toHaveBeenCalled();
-      expect(mockToastSuccess).toHaveBeenCalledWith('weldEvents.batchCreateSuccess.2');
+      expect(mockToastSuccess).toHaveBeenCalledWith('weldHistory.batchCreateSuccess.2');
     });
 
     it('throws when creating batch events without user', async () => {
       useAppSpy.mockReturnValueOnce({
         loggedInUser: null,
       } as unknown as ReturnType<typeof useApp>);
-      const { result } = renderHook(() => useWeldEventOperations());
+      const { result } = renderHook(() => useWeldHistoryOperations());
 
       await expect(async () => {
         await result.current.createBatchEvents([], {
@@ -351,7 +351,7 @@ describe('useWeldEvents hooks', () => {
       mockDoc.mockImplementation(() => ({ id: 'doc-id' }));
       mockServerTimestamp.mockReturnValue(Symbol('timestamp'));
 
-      const { result } = renderHook(() => useWeldEventOperations());
+      const { result } = renderHook(() => useWeldHistoryOperations());
 
       const commonDetails = {
         eventType: 'weld' as const,

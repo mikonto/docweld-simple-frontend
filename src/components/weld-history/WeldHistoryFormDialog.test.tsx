@@ -1,7 +1,7 @@
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '@/test/utils/testUtils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WeldEventFormDialog } from './WeldEventFormDialog';
+import { WeldHistoryFormDialog } from './WeldHistoryFormDialog';
 
 const mockTimestampFromDate = vi.fn();
 
@@ -40,7 +40,7 @@ vi.mock('react-i18next', async () => {
   };
 });
 
-describe('WeldEventFormDialog', () => {
+describe('WeldHistoryFormDialog', () => {
   beforeAll(() => {
     if (!Element.prototype.hasPointerCapture) {
       Element.prototype.hasPointerCapture = () => false;
@@ -65,7 +65,7 @@ describe('WeldEventFormDialog', () => {
     mockTimestampFromDate.mockReturnValue(timestampValue);
 
     render(
-      <WeldEventFormDialog
+      <WeldHistoryFormDialog
         open
         onOpenChange={onOpenChange}
         weldId="weld-1"
@@ -82,14 +82,14 @@ describe('WeldEventFormDialog', () => {
       />
     );
 
-    const commentField = screen.getByLabelText('weldEvents.form.comment');
+    const commentField = screen.getByLabelText('weldHistory.form.comment');
     const performedAtField = screen.getByTestId('date-time-picker');
 
     await user.type(commentField, 'Completed root pass');
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-05-01T10:30');
 
-    await user.click(screen.getByRole('button', { name: /weldEvents\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
@@ -115,7 +115,7 @@ describe('WeldEventFormDialog', () => {
     const onSubmit = vi.fn();
 
     render(
-      <WeldEventFormDialog
+      <WeldHistoryFormDialog
         open
         onOpenChange={vi.fn()}
         weldId="weld-1"
@@ -134,11 +134,11 @@ describe('WeldEventFormDialog', () => {
 
     // For comment event type, comment field is required
     // Try to submit without filling the comment field
-    await user.click(screen.getByRole('button', { name: /weldEvents\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
 
     // Should show validation error for required comment
     expect(
-      await screen.findByText('weldEvents.validation.commentRequired')
+      await screen.findByText('weldHistory.validation.commentRequired')
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -150,7 +150,7 @@ describe('WeldEventFormDialog', () => {
     mockTimestampFromDate.mockReturnValue(timestampValue);
 
     render(
-      <WeldEventFormDialog
+      <WeldHistoryFormDialog
         open
         onOpenChange={vi.fn()}
         weldId="weld-1"
@@ -172,13 +172,13 @@ describe('WeldEventFormDialog', () => {
 
     await user.click(
       await screen.findByRole('combobox', {
-        name: 'weldEvents.form.doneBy',
+        name: 'weldHistory.form.performedBy',
       })
     );
     await user.click(screen.getByRole('option', { name: 'Operator Two' }));
 
     await user.type(
-      screen.getByLabelText('weldEvents.form.comment'),
+      screen.getByLabelText('weldHistory.form.comment'),
       'Heat treatment logged'
     );
 
@@ -186,7 +186,7 @@ describe('WeldEventFormDialog', () => {
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-05-01T12:00');
 
-    await user.click(screen.getByRole('button', { name: /weldEvents\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({

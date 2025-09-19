@@ -898,34 +898,34 @@
     "restoreSuccess": "Alloy material restored successfully",
     "restoreError": "Failed to restore alloy material"
   },
-  "weldEvents": {
-    "sectionTitle": "Weld Events",
-    "sectionSubtitle": "Track inspections, heat treatment, and comments for this weld.",
+  "weldHistory": {
+    "sectionTitle": "Weld History",
+    "sectionSubtitle": "Track all activities, inspections, and treatments for this weld.",
     "quickActions": {
-      "logWeld": "Log Weld",
-      "logInspection": "Log Inspection",
+      "logWeld": "Log Welding Pass",
+      "logInspection": "Log Visual Inspection",
       "logHeatTreatment": "Log Heat Treatment",
       "addComment": "Add Comment",
-      "logEvent": "Log Event"
+      "logEvent": "Log Activity"
     },
-    "eventType": {
-      "weld": "Weld Performed",
+    "activityType": {
+      "weld": "Welding Pass",
       "visual-inspection": "Visual Inspection",
       "heat-treatment": "Heat Treatment",
       "comment": "Comment",
       "creation": "Weld Created"
     },
     "form": {
-      "title": "Log Event",
-      "subtitle": "Capture activities performed on this weld.",
-      "eventType": "Event Type",
+      "title": "Log Activity",
+      "subtitle": "Record activities performed on this weld.",
+      "activityType": "Activity Type",
       "comment": "Comment",
-      "doneAt": "Done At",
+      "performedAt": "Performed At",
       "cancel": "Cancel",
-      "submit": "Log Event",
+      "submit": "Log Activity",
       "submitting": "Logging...",
       "performerPlaceholder": "Select performer",
-      "doneBy": "Done By",
+      "performedBy": "Performed By",
       "inspectionResult": "Result",
       "inspectionResultPlaceholder": "Select result",
       "approved": "Approved",
@@ -935,8 +935,8 @@
     },
     "validation": {
       "commentRequired": "Please enter a comment.",
-      "doneAtRequired": "Select when the work was done.",
-      "doneAtInvalid": "Enter a valid date and time.",
+      "performedAtRequired": "Select when the work was performed.",
+      "performedAtInvalid": "Enter a valid date and time.",
       "performerRequired": "Select who performed this work.",
       "timeInvalid": "Please enter time in 24h format (HH:MM)"
     },
@@ -944,34 +944,34 @@
       "approved": "Approved",
       "rejected": "Rejected"
     },
-    "errorTitle": "Unable to load events",
-    "error": "Something went wrong while loading weld events.",
-    "emptyStateTitle": "No events recorded yet",
-    "emptyState": "Start logging weld activity to build the traceability record.",
-    "performedBy": "Performed by {{name}}",
-    "loggedBy": "Logged by {{name}}",
-    "batchCreateSuccess_one": "Logged {{count}} weld event",
-    "batchCreateSuccess_other": "Logged {{count}} weld events",
-    "batchCreateError": "Failed to log events",
+    "errorTitle": "Unable to load history",
+    "error": "Something went wrong while loading weld history.",
+    "emptyStateTitle": "No history recorded yet",
+    "emptyState": "Start logging activities to build the traceability record.",
+    "performedBy": "By {{name}}",
+    "recordedBy": "Logged {{date}} by {{name}}",
+    "batchCreateSuccess_one": "Logged {{count}} activity",
+    "batchCreateSuccess_other": "Logged {{count}} activities",
+    "batchCreateError": "Failed to log activities",
     "creation": {
       "description": "Weld created"
     },
-    "performerUnavailable": "No eligible performers are available for this event.",
+    "performerUnavailable": "No eligible performers are available for this activity.",
     "unknownPerformer": "Unknown performer",
     "dialogTitles": {
-      "weld": "Log Weld",
+      "weld": "Log Welding Pass",
       "heat-treatment": "Log Heat Treatment",
-      "visual-inspection": "Log Inspection",
+      "visual-inspection": "Log Visual Inspection",
       "comment": "Add Comment",
       "creation": "Log Weld Creation"
     },
-    "doneLoggedBySame": "Done and logged by {{name}}",
-    "doneLoggedByDifferent": "Done by {{doneName}}, logged by {{loggedName}}",
-    "doneByLine": "Done by {{name}}",
-    "loggedByLine": "Logged by {{name}}",
+    "performedRecordedBySame": "By {{name}}",
+    "performedRecordedByDifferent": "By {{performedName}} • Logged {{recordedDate}} by {{recordedName}}",
+    "performedByLine": "By {{name}}",
+    "recordedByLine": "Logged by {{name}}",
     "meta": {
-      "done": "Done {{date}} by {{name}}",
-      "logged": "Logged {{date}} by {{name}}",
+      "performed": "{{date}} by {{name}}",
+      "recorded": "Logged {{date}} by {{name}}",
       "unknownDate": "Unknown date"
     }
   }

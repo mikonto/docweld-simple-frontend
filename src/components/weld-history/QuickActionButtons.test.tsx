@@ -1,7 +1,7 @@
 import userEvent from '@testing-library/user-event';
 import { render, screen } from '@/test/utils/testUtils';
 import { describe, it, expect, vi } from 'vitest';
-import { QuickEventButtons } from './QuickEventButtons';
+import { QuickActionButtons } from './QuickActionButtons';
 
 vi.mock('react-i18next', async () => {
   const actual = await vi.importActual<typeof import('react-i18next')>(
@@ -15,17 +15,17 @@ vi.mock('react-i18next', async () => {
   };
 });
 
-describe('QuickEventButtons', () => {
+describe('QuickActionButtons', () => {
   it('opens menu and calls onSelect with matching event type', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    render(<QuickEventButtons onSelect={onSelect} />);
+    render(<QuickActionButtons onSelect={onSelect} />);
 
-    await user.click(screen.getByRole('button', { name: 'weldEvents.quickActions.logEvent' }));
-    await user.click(screen.getByRole('menuitem', { name: 'weldEvents.quickActions.logWeld' }));
-    await user.click(screen.getByRole('button', { name: 'weldEvents.quickActions.logEvent' }));
-    await user.click(screen.getByRole('menuitem', { name: 'weldEvents.quickActions.logInspection' }));
+    await user.click(screen.getByRole('button', { name: 'weldHistory.quickActions.logEvent' }));
+    await user.click(screen.getByRole('menuitem', { name: 'weldHistory.quickActions.logWeld' }));
+    await user.click(screen.getByRole('button', { name: 'weldHistory.quickActions.logEvent' }));
+    await user.click(screen.getByRole('menuitem', { name: 'weldHistory.quickActions.logInspection' }));
 
     expect(onSelect).toHaveBeenNthCalledWith(1, 'weld');
     expect(onSelect).toHaveBeenNthCalledWith(2, 'visual-inspection');
@@ -35,9 +35,9 @@ describe('QuickEventButtons', () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    render(<QuickEventButtons onSelect={onSelect} disabled />);
+    render(<QuickActionButtons onSelect={onSelect} disabled />);
 
-    const trigger = screen.getByRole('button', { name: 'weldEvents.quickActions.logEvent' });
+    const trigger = screen.getByRole('button', { name: 'weldHistory.quickActions.logEvent' });
     expect(trigger).toBeDisabled();
 
     await user.click(trigger);

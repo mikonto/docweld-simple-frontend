@@ -33,26 +33,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DateTimePickerSimple } from '@/components/ui/custom/date-time-picker';
-import type { CreateWeldEventInput, WeldEventType } from '@/types/models/welding';
+import type { CreateWeldHistoryInput, WeldActivityType } from '@/types/models/welding';
 
 interface PerformerOption {
   value: string;
   label: string;
 }
 
-interface WeldEventFormDialogProps {
+interface WeldHistoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   weldId: string;
   weldLogId: string;
   projectId: string;
-  selectedEventType: WeldEventType;
+  selectedEventType: WeldActivityType;
   allowPerformerSelection: boolean;
   performerOptions: PerformerOption[];
   defaultPerformerId: string | null;
   currentUserId: string | null;
   currentUserName: string;
-  onSubmit: (input: CreateWeldEventInput) => Promise<void>;
+  onSubmit: (input: CreateWeldHistoryInput) => Promise<void>;
   isSubmitting: boolean;
 }
 
@@ -63,14 +63,14 @@ interface WeldEventFormValues {
   inspectionResult?: 'approved' | 'rejected';
 }
 
-const DIALOG_TITLE_KEYS: Record<WeldEventType, string> = {
-  weld: 'weldEvents.dialogTitles.weld',
-  'visual-inspection': 'weldEvents.dialogTitles.visual-inspection',
-  'heat-treatment': 'weldEvents.dialogTitles.heat-treatment',
-  comment: 'weldEvents.dialogTitles.comment',
+const DIALOG_TITLE_KEYS: Record<WeldActivityType, string> = {
+  weld: 'weldHistory.dialogTitles.weld',
+  'visual-inspection': 'weldHistory.dialogTitles.visual-inspection',
+  'heat-treatment': 'weldHistory.dialogTitles.heat-treatment',
+  comment: 'weldHistory.dialogTitles.comment',
 };
 
-export function WeldEventFormDialog({
+export function WeldHistoryFormDialog({
   open,
   onOpenChange,
   weldId,
@@ -84,7 +84,7 @@ export function WeldEventFormDialog({
   currentUserName,
   onSubmit,
   isSubmitting,
-}: WeldEventFormDialogProps): JSX.Element {
+}: WeldHistoryFormDialogProps): JSX.Element {
   const { t, i18n } = useTranslation();
 
   // Get the correct locale for date-fns based on current language
@@ -99,14 +99,14 @@ export function WeldEventFormDialog({
     () =>
       z.object({
         comment: selectedEventType === 'comment'
-          ? z.string().min(1, t('weldEvents.validation.commentRequired'))
+          ? z.string().min(1, t('weldHistory.validation.commentRequired'))
           : z.string().optional(),
         doneAt: z.date({
-          errorMap: () => ({ message: t('weldEvents.validation.doneAtRequired') }),
+          errorMap: () => ({ message: t('weldHistory.validation.performedAtRequired') }),
         }),
         performerId: z
           .string()
-          .min(1, t('weldEvents.validation.performerRequired')),
+          .min(1, t('weldHistory.validation.performerRequired')),
         inspectionResult: selectedEventType === 'visual-inspection'
           ? z.enum(['approved', 'rejected'])
           : z.enum(['approved', 'rejected']).optional(),
@@ -171,7 +171,7 @@ export function WeldEventFormDialog({
   };
 
   const dialogTitle = t(
-    DIALOG_TITLE_KEYS[selectedEventType] ?? 'weldEvents.form.title'
+    DIALOG_TITLE_KEYS[selectedEventType] ?? 'weldHistory.form.title'
   );
 
   const handleSubmit = form.handleSubmit(async (values) => {
@@ -182,8 +182,8 @@ export function WeldEventFormDialog({
     );
 
     const performerName = allowPerformerSelection
-      ? selectedOption?.label || currentUserName || t('weldEvents.unknownPerformer')
-      : currentUserName || t('weldEvents.unknownPerformer');
+      ? selectedOption?.label || currentUserName || t('weldHistory.unknownPerformer')
+      : currentUserName || t('weldHistory.unknownPerformer');
 
     const eventData: any = {
       weldId,
@@ -212,7 +212,7 @@ export function WeldEventFormDialog({
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription className="sr-only">
-            {t('weldEvents.form.subtitle')}
+            {t('weldHistory.form.subtitle')}
           </DialogDescription>
         </DialogHeader>
 
@@ -224,13 +224,13 @@ export function WeldEventFormDialog({
                 name="doneAt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('weldEvents.form.doneAt')}</FormLabel>
+                    <FormLabel>{t('weldHistory.form.performedAt')}</FormLabel>
                     <FormControl>
                       <DateTimePickerSimple
                         value={field.value}
                         onChange={field.onChange}
                         granularity="minute"
-                        placeholder={t('weldEvents.form.selectDate')}
+                        placeholder={t('weldHistory.form.selectDate')}
                         locale={dateLocale}
                       />
                     </FormControl>
@@ -244,7 +244,7 @@ export function WeldEventFormDialog({
                 name="performerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('weldEvents.form.doneBy')}</FormLabel>
+                    <FormLabel>{t('weldHistory.form.performedBy')}</FormLabel>
                     {allowPerformerSelection ? (
                       <Select
                         value={field.value}
@@ -252,9 +252,9 @@ export function WeldEventFormDialog({
                         disabled={isSubmitting || normalizedOptions.length === 0}
                       >
                         <FormControl>
-                          <SelectTrigger aria-label={t('weldEvents.form.doneBy')}>
+                          <SelectTrigger aria-label={t('weldHistory.form.doneBy')}>
                             <SelectValue
-                              placeholder={t('weldEvents.form.performerPlaceholder')}
+                              placeholder={t('weldHistory.form.performerPlaceholder')}
                             />
                           </SelectTrigger>
                         </FormControl>
@@ -285,7 +285,7 @@ export function WeldEventFormDialog({
               name="comment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('weldEvents.form.comment')}</FormLabel>
+                  <FormLabel>{t('weldHistory.form.comment')}</FormLabel>
                   <FormControl>
                     <textarea
                       {...field}
@@ -304,25 +304,25 @@ export function WeldEventFormDialog({
                 name="inspectionResult"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('weldEvents.form.inspectionResult')}</FormLabel>
+                    <FormLabel>{t('weldHistory.form.inspectionResult')}</FormLabel>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
                       disabled={isSubmitting}
                     >
                       <FormControl>
-                        <SelectTrigger aria-label={t('weldEvents.form.inspectionResult')}>
+                        <SelectTrigger aria-label={t('weldHistory.form.inspectionResult')}>
                           <SelectValue
-                            placeholder={t('weldEvents.form.inspectionResultPlaceholder')}
+                            placeholder={t('weldHistory.form.inspectionResultPlaceholder')}
                           />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="approved">
-                          {t('weldEvents.inspectionResult.approved')}
+                          {t('weldHistory.inspectionResult.approved')}
                         </SelectItem>
                         <SelectItem value="rejected">
-                          {t('weldEvents.inspectionResult.rejected')}
+                          {t('weldHistory.inspectionResult.rejected')}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -338,11 +338,11 @@ export function WeldEventFormDialog({
                 variant="outline"
                 onClick={() => handleDialogChange(false)}
               >
-                {t('weldEvents.form.cancel')}
+                {t('weldHistory.form.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting || form.formState.isSubmitting}>
                 {isSubmitting || form.formState.isSubmitting
-                  ? t('weldEvents.form.submitting')
+                  ? t('weldHistory.form.submitting')
                   : dialogTitle}
               </Button>
             </DialogFooter>

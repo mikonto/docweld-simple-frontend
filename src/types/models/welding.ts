@@ -85,18 +85,18 @@ export interface Weld extends FirestoreBase {
 }
 
 /**
- * Supported weld event types for audit trail logging
+ * Supported weld activity types for audit trail logging
  */
-export type WeldEventType =
+export type WeldActivityType =
   | 'weld'
   | 'heat-treatment'
   | 'visual-inspection'
   | 'comment';
 
 /**
- * Audit trail entry for weld activities
+ * Audit trail entry for weld history
  */
-export interface WeldEvent extends FirestoreBase {
+export interface WeldHistoryEntry extends FirestoreBase {
   status: Status;
   createdAt: Timestamp;
   createdBy: string;
@@ -107,7 +107,7 @@ export interface WeldEvent extends FirestoreBase {
   weldLogId: string;
   projectId: string;
 
-  eventType: WeldEventType;
+  eventType: WeldActivityType;
   description: string;
   performedAt: Timestamp;
   performedBy: string;
@@ -121,14 +121,14 @@ export interface WeldEvent extends FirestoreBase {
 }
 
 /**
- * Payload for creating a weld event via Firestore operations hook
+ * Payload for creating a weld history entry via Firestore operations hook
  * System fields are injected automatically by the hook
  */
-export type CreateWeldEventInput = {
+export type CreateWeldHistoryInput = {
   weldId: string;
   weldLogId: string;
   projectId: string;
-  eventType: WeldEventType;
+  eventType: WeldActivityType;
   description: string;
   performedAt: Timestamp;
   performedBy: string;

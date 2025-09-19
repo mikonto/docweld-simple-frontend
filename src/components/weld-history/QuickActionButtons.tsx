@@ -8,42 +8,42 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { WeldEventType } from '@/types/models/welding';
+import type { WeldActivityType } from '@/types/models/welding';
 
-interface QuickEventButtonsProps {
-  onSelect: (eventType: WeldEventType) => void;
+interface QuickActionButtonsProps {
+  onSelect: (eventType: WeldActivityType) => void;
   disabled?: boolean;
 }
 
 const quickActions: Array<{
-  type: WeldEventType;
+  type: WeldActivityType;
   labelKey: string;
 }> = [
-  { type: 'weld', labelKey: 'weldEvents.quickActions.logWeld' },
+  { type: 'weld', labelKey: 'weldHistory.quickActions.logWeld' },
   {
     type: 'visual-inspection',
-    labelKey: 'weldEvents.quickActions.logInspection',
+    labelKey: 'weldHistory.quickActions.logInspection',
   },
   {
     type: 'heat-treatment',
-    labelKey: 'weldEvents.quickActions.logHeatTreatment',
+    labelKey: 'weldHistory.quickActions.logHeatTreatment',
   },
   {
     type: 'comment',
-    labelKey: 'weldEvents.quickActions.addComment',
+    labelKey: 'weldHistory.quickActions.addComment',
   },
 ];
 
-export function QuickEventButtons({
+export function QuickActionButtons({
   onSelect,
   disabled = false,
-}: QuickEventButtonsProps): JSX.Element {
+}: QuickActionButtonsProps): JSX.Element {
   const { t } = useTranslation();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild disabled={disabled}>
-        <Button type="button">{t('weldEvents.quickActions.logEvent')}</Button>
+        <Button type="button">{t('weldHistory.quickActions.logEvent')}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {quickActions.map(({ type, labelKey }) => (

@@ -9,7 +9,7 @@ import { ErrorLoadingWrapper } from '@/components/shared/ErrorLoadingWrapper';
 import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
 import { WeldDetailsCard } from './WeldDetailsCard';
 import { WeldDocumentsSection } from './WeldDocumentsSection';
-import { WeldEventsSection } from '@/components/weld-events/WeldEventsSection';
+import { WeldHistorySection } from '@/components/weld-history/WeldHistorySection';
 import { WeldFormDialog } from '../weld-log-overview/WeldFormDialog';
 import { useProject } from '@/hooks/useProjects';
 import { useWeldLog } from '@/hooks/useWeldLogs';
@@ -342,7 +342,7 @@ export default function WeldOverview(): ReactElement {
             />
 
             {weld ? (
-              <WeldEventsSection
+              <WeldHistorySection
                 weld={weld}
                 weldId={weldId}
                 weldLogId={weldLogId}

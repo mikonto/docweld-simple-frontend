@@ -7,24 +7,24 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { QuickEventButtons } from './QuickEventButtons';
-import { WeldEventFormDialog } from './WeldEventFormDialog';
-import { WeldEventItem } from './WeldEventItem';
-import { useWeldEvents, useWeldEventOperations } from '@/hooks/useWeldEvents';
+import { QuickActionButtons } from './QuickActionButtons';
+import { WeldHistoryFormDialog } from './WeldHistoryFormDialog';
+import { WeldHistoryItem } from './WeldHistoryItem';
+import { useWeldHistory, useWeldHistoryOperations } from '@/hooks/useWeldHistory';
 import { useApp } from '@/contexts/AppContext';
 import { useProjectParticipants } from '@/hooks/useProjectParticipants';
 import { useUsers } from '@/hooks/useUsers';
 import { convertToDate, formatDate } from '@/utils/dateFormatting';
 import { STATUS } from '@/types/common/status';
 import type {
-  CreateWeldEventInput,
+  CreateWeldHistoryInput,
   Weld,
-  WeldEvent,
-  WeldEventType,
+  WeldHistoryEntry,
+  WeldActivityType,
   WeldStatus,
 } from '@/types/models/welding';
 
-interface WeldEventsSectionProps {
+interface WeldHistorySectionProps {
   weld: Weld | null;
   weldId: string;
   weldLogId: string;
@@ -36,17 +36,17 @@ interface WeldEventsSectionProps {
 
 interface GroupedEvents {
   dayLabel: string;
-  events: WeldEvent[];
+  events: WeldHistoryEntry[];
 }
 
-const ROLE_MAP: Record<WeldEventType, string | null> = {
+const ROLE_MAP: Record<WeldActivityType, string | null> = {
   weld: 'welder',
   'heat-treatment': 'heatTreatmentOperator',
   'visual-inspection': null,
   comment: null,
 };
 
-export function WeldEventsSection({
+export function WeldHistorySection({
   weld,
   weldId,
   weldLogId,
@@ -54,13 +54,13 @@ export function WeldEventsSection({
   weldStatus: _weldStatus,
   canEdit,
   welderName,
-}: WeldEventsSectionProps): JSX.Element {
+}: WeldHistorySectionProps): JSX.Element {
   const { t } = useTranslation();
   const { loggedInUser } = useApp();
   const isAdmin = loggedInUser?.role === 'admin';
 
-  const { events, loading, error } = useWeldEvents(weldId);
-  const { createEvent } = useWeldEventOperations();
+  const { events, loading, error } = useWeldHistory(weldId);
+  const { createEvent } = useWeldHistoryOperations();
 
   const [participants, participantsLoading] = useProjectParticipants(projectId);
   const [users, usersLoading] = useUsers('active');
@@ -84,7 +84,7 @@ export function WeldEventsSection({
   const getDisplayName = useCallback(
     (userId: string | null | undefined) => {
       if (!userId) {
-        return t('weldEvents.unknownPerformer');
+        return t('weldHistory.unknownPerformer');
       }
       const entry = performerUserMap.get(userId);
       if (entry?.name) {
@@ -93,13 +93,13 @@ export function WeldEventsSection({
       if (loggedInUser?.uid === userId && loggedInUser.displayName) {
         return loggedInUser.displayName;
       }
-      return t('weldEvents.unknownPerformer');
+      return t('weldHistory.unknownPerformer');
     },
     [performerUserMap, loggedInUser, t]
   );
 
   const filterParticipantsForType = useCallback(
-    (eventType: WeldEventType) => {
+    (eventType: WeldActivityType) => {
       const requiredRole = ROLE_MAP[eventType];
       if (!requiredRole) {
         return participants;
@@ -112,7 +112,7 @@ export function WeldEventsSection({
   );
 
   const buildPerformerOptions = useCallback(
-    (eventType: WeldEventType) => {
+    (eventType: WeldActivityType) => {
       const eligibleParticipants = filterParticipantsForType(eventType);
       const uniqueIds = Array.from(
         new Set(
@@ -123,7 +123,7 @@ export function WeldEventsSection({
       );
       const options = uniqueIds
         .map((id) => ({ value: id, label: getDisplayName(id) }))
-        .filter((option) => option.label && option.label !== t('weldEvents.unknownPerformer'))
+        .filter((option) => option.label && option.label !== t('weldHistory.unknownPerformer'))
         .sort((a, b) => a.label.localeCompare(b.label));
       const defaultId = options[0]?.value ?? null;
       return { options, defaultId };
@@ -132,7 +132,7 @@ export function WeldEventsSection({
   );
 
   const [formOpen, setFormOpen] = useState(false);
-  const [selectedEventType, setSelectedEventType] = useState<WeldEventType>('weld');
+  const [selectedEventType, setSelectedEventType] = useState<WeldActivityType>('weld');
   const [currentPerformerOptions, setCurrentPerformerOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
@@ -147,15 +147,15 @@ export function WeldEventsSection({
     const performerId =
       (weld as Partial<Weld> & { createdBy?: string }).createdBy || weld.welderId || null;
     const performerName =
-      getDisplayName(performerId) || welderName || t('weldEvents.unknownPerformer');
+      getDisplayName(performerId) || welderName || t('weldHistory.unknownPerformer');
 
-    const creation: WeldEvent = {
+    const creation: WeldHistoryEntry = {
       id: `creation-${weld.id}`,
       weldId: weld.id,
       weldLogId,
       projectId,
       eventType: 'weld',
-      description: t('weldEvents.creation.description'),
+      description: t('weldHistory.creation.description'),
       performedAt: weld.createdAt,
       performedBy: performerName,
       doneById: performerId ?? undefined,
@@ -190,7 +190,7 @@ export function WeldEventsSection({
       return [];
     }
 
-    const groups = new Map<string, WeldEvent[]>();
+    const groups = new Map<string, WeldHistoryEntry[]>();
 
     timelineEvents.forEach((event) => {
       const day = formatDate(event.performedAt, 'date');
@@ -208,7 +208,7 @@ export function WeldEventsSection({
     }));
   }, [timelineEvents]);
 
-  const handleQuickSelect = (type: WeldEventType) => {
+  const handleQuickSelect = (type: WeldActivityType) => {
     if (!canEdit || performersLoading) {
       return;
     }
@@ -218,7 +218,7 @@ export function WeldEventsSection({
     if (isAdmin) {
       const { options, defaultId } = buildPerformerOptions(type);
       if (options.length === 0) {
-        toast.error(t('weldEvents.performerUnavailable'));
+        toast.error(t('weldHistory.performerUnavailable'));
         return;
       }
       setCurrentPerformerOptions(options);
@@ -231,7 +231,7 @@ export function WeldEventsSection({
     setFormOpen(true);
   };
 
-  const handleCreateEvent = async (input: CreateWeldEventInput) => {
+  const handleCreateEvent = async (input: CreateWeldHistoryInput) => {
     setIsSubmitting(true);
     try {
       await createEvent(input);
@@ -240,32 +240,52 @@ export function WeldEventsSection({
     }
   };
 
-  const formatTimestampDisplay = (value: unknown) => {
+  const formatTimestampDisplay = (value: unknown, short = false) => {
     const date = convertToDate(value);
-    return date ? format(date, 'dd.MM.yyyy HH:mm') : t('weldEvents.meta.unknownDate');
+    if (!date) return t('weldHistory.meta.unknownDate');
+    return short ? format(date, 'MMM d, HH:mm') : format(date, 'MMMM d, yyyy \'at\' HH:mm');
   };
 
-  const renderDoneLoggedText = (event: WeldEvent) => {
+  const renderDoneLoggedText = (event: WeldHistoryEntry) => {
     const performerName = event.performedBy || getDisplayName(event.doneById);
     const loggerName = getDisplayName(event.createdBy);
-    const performedAtText = formatTimestampDisplay(event.performedAt);
-    const loggedAtText = formatTimestampDisplay(event.createdAt);
+    const performedDate = convertToDate(event.performedAt);
+    const loggedDate = convertToDate(event.createdAt);
 
+    // Check if performed by and logged by are the same person
+    const sameUser = event.createdBy === event.doneById;
+
+    // Check if performed and logged times are close (within 5 minutes)
+    const timeDiff = performedDate && loggedDate
+      ? Math.abs(performedDate.getTime() - loggedDate.getTime()) / 1000 / 60
+      : 999;
+    const closeInTime = timeDiff < 5;
+
+    // Compact format when same person and close in time
+    if (sameUser && closeInTime) {
+      return (
+        <p className="text-xs text-muted-foreground">
+          {t('weldHistory.performedBy', {
+            name: performerName || t('weldHistory.unknownPerformer')
+          })}
+        </p>
+      );
+    }
+
+    // Show both timestamps when different person or significant time gap
     return (
-      <div className="space-y-1">
-        <p>
-          {t('weldEvents.meta.done', {
-            date: performedAtText,
-            name: performerName || t('weldEvents.unknownPerformer'),
-          })}
-        </p>
-        <p>
-          {t('weldEvents.meta.logged', {
-            date: loggedAtText,
-            name: loggerName || t('weldEvents.unknownPerformer'),
-          })}
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground">
+        {sameUser
+          ? t('weldHistory.performedRecordedBySame', {
+              name: performerName || t('weldHistory.unknownPerformer')
+            })
+          : t('weldHistory.performedRecordedByDifferent', {
+              performedName: performerName || t('weldHistory.unknownPerformer'),
+              recordedDate: formatTimestampDisplay(event.createdAt, true),
+              recordedName: loggerName || t('weldHistory.unknownPerformer')
+            })
+        }
+      </p>
     );
   };
 
@@ -273,7 +293,7 @@ export function WeldEventsSection({
     if (loading) {
       return (
         <div
-          data-testid="weld-events-loading"
+          data-testid="weld-history-loading"
           className="space-y-2"
           role="status"
           aria-live="polite"
@@ -288,9 +308,9 @@ export function WeldEventsSection({
     if (error) {
       return (
         <Alert variant="destructive">
-          <AlertTitle>{t('weldEvents.errorTitle')}</AlertTitle>
+          <AlertTitle>{t('weldHistory.errorTitle')}</AlertTitle>
           <AlertDescription>
-            {error.message || t('weldEvents.error')}
+            {error.message || t('weldHistory.error')}
           </AlertDescription>
         </Alert>
       );
@@ -300,7 +320,7 @@ export function WeldEventsSection({
       return (
         <div className="text-center py-6">
           <p className="text-sm text-muted-foreground">
-            {t('weldEvents.emptyState')}
+            {t('weldHistory.emptyState')}
           </p>
         </div>
       );
@@ -320,7 +340,7 @@ export function WeldEventsSection({
                   (event.metadata as Record<string, unknown>).__synthetic === 'creation';
 
                 return (
-                  <WeldEventItem
+                  <WeldHistoryItem
                     key={event.id}
                     event={event}
                     isSyntheticCreation={isSyntheticCreation}
@@ -339,10 +359,10 @@ export function WeldEventsSection({
     <Card className="overflow-hidden gap-4">
       <CardHeader className="flex flex-col gap-2 pb-2 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="text-base font-semibold">
-          {t('weldEvents.sectionTitle')}
+          {t('weldHistory.sectionTitle')}
         </CardTitle>
         {canEdit ? (
-          <QuickEventButtons
+          <QuickActionButtons
             onSelect={handleQuickSelect}
             disabled={!weldId || performersLoading}
           />
@@ -352,7 +372,7 @@ export function WeldEventsSection({
         {timelineContent}
       </CardContent>
 
-      <WeldEventFormDialog
+      <WeldHistoryFormDialog
         open={formOpen && canEdit}
         onOpenChange={setFormOpen}
         weldId={weldId}

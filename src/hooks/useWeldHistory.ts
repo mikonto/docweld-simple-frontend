@@ -17,21 +17,21 @@ import { useFirestoreOperations } from '@/hooks/firebase/useFirestoreOperations'
 import { useApp } from '@/contexts/AppContext';
 import { db } from '@/config/firebase';
 import { STATUS } from '@/types/common/status';
-import type { CreateWeldEventInput, WeldEvent } from '@/types/models/welding';
+import type { CreateWeldHistoryInput, WeldHistoryEntry } from '@/types/models/welding';
 
-interface WeldEventsHookResult {
-  events: WeldEvent[];
+interface WeldHistoryHookResult {
+  events: WeldHistoryEntry[];
   loading: boolean;
   error: FirestoreError | undefined;
 }
 
-interface BatchWeldEventInput {
+interface BatchWeldHistoryInput {
   weldId: string;
   weldLogId: string;
   projectId: string;
 }
 
-export const useWeldEvents = (weldId: string | null): WeldEventsHookResult => {
+export const useWeldHistory = (weldId: string | null): WeldHistoryHookResult => {
   const constraints = useMemo<QueryConstraint[]>(() => {
     if (!weldId) {
       return [];
@@ -44,7 +44,7 @@ export const useWeldEvents = (weldId: string | null): WeldEventsHookResult => {
     ];
   }, [weldId]);
 
-  const { documents, loading, error } = useFirestoreOperations('weld-events', {
+  const { documents, loading, error } = useFirestoreOperations('weld-history', {
     constraints,
     disabled: !weldId,
   });
@@ -58,20 +58,20 @@ export const useWeldEvents = (weldId: string | null): WeldEventsHookResult => {
   }
 
   return {
-    events: documents as WeldEvent[],
+    events: documents as WeldHistoryEntry[],
     loading,
     error,
   };
 };
 
-export const useWeldEventOperations = () => {
+export const useWeldHistoryOperations = () => {
   const { loggedInUser } = useApp();
   const { t } = useTranslation();
-  const { create } = useFirestoreOperations('weld-events', {
+  const { create } = useFirestoreOperations('weld-history', {
     disabled: true,
   });
 
-  const createEvent = async (input: CreateWeldEventInput): Promise<string> => {
+  const createEvent = async (input: CreateWeldHistoryInput): Promise<string> => {
     if (!loggedInUser) {
       throw new Error('User must be logged in to create events');
     }
@@ -80,8 +80,8 @@ export const useWeldEventOperations = () => {
   };
 
   const createBatchEvents = async (
-    weldData: BatchWeldEventInput[],
-    eventDetails: Omit<CreateWeldEventInput, 'weldId' | 'weldLogId' | 'projectId'>
+    weldData: BatchWeldHistoryInput[],
+    eventDetails: Omit<CreateWeldHistoryInput, 'weldId' | 'weldLogId' | 'projectId'>
   ): Promise<void> => {
     if (!loggedInUser) {
       throw new Error('User must be logged in to create events');
@@ -96,7 +96,7 @@ export const useWeldEventOperations = () => {
       const timestamp = serverTimestamp();
 
       weldData.forEach(({ weldId, weldLogId, projectId }) => {
-        const ref = doc(collection(db, 'weld-events'));
+        const ref = doc(collection(db, 'weld-history'));
         batch.set(ref, {
           ...eventDetails,
           weldId,
@@ -112,11 +112,11 @@ export const useWeldEventOperations = () => {
       });
 
       await batch.commit();
-      toast.success(t('weldEvents.batchCreateSuccess', { count: weldData.length }));
+      toast.success(t('weldHistory.batchCreateSuccess', { count: weldData.length }));
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : t('weldEvents.batchCreateError');
-      toast.error(message || t('weldEvents.batchCreateError'));
+        error instanceof Error ? error.message : t('weldHistory.batchCreateError');
+      toast.error(message || t('weldHistory.batchCreateError'));
       throw error;
     }
   };
