@@ -89,7 +89,7 @@ describe('WeldHistoryFormDialog', () => {
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-05-01T10:30');
 
-    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: 'weldHistory.dialogTitles.weld' }));
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
@@ -134,7 +134,7 @@ describe('WeldHistoryFormDialog', () => {
 
     // For comment event type, comment field is required
     // Try to submit without filling the comment field
-    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: 'weldHistory.dialogTitles.comment' }));
 
     // Should show validation error for required comment
     expect(
@@ -186,7 +186,7 @@ describe('WeldHistoryFormDialog', () => {
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-05-01T12:00');
 
-    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: 'weldHistory.dialogTitles.heat-treatment' }));
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({

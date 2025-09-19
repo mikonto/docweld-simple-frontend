@@ -29,6 +29,8 @@ import {
   FirestoreError,
   WriteBatch,
   DocumentReference,
+  serverTimestamp,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useApp } from '@/contexts/AppContext';
@@ -261,6 +263,32 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
     // Use the unified create operation
     // Error toast is already shown by useFirestoreOperations if it fails
     const docId = await weldsOperations.create(newWeld);
+
+    // Create a weld-history entry for the weld creation
+    try {
+      const creationTimestamp = serverTimestamp();
+      const weldHistoryRef = doc(collection(db, 'weld-history'));
+      await setDoc(weldHistoryRef, {
+        id: weldHistoryRef.id,
+        weldId: docId,
+        weldLogId: weldLogId,
+        projectId: projectId,
+        eventType: 'weld',
+        description: t('weldHistory.creation.description'),
+        performedAt: creationTimestamp,
+        performedBy: loggedInUser.displayName || loggedInUser.email || t('weldHistory.unknownPerformer'),
+        doneById: loggedInUser.uid,
+        createdAt: creationTimestamp,
+        updatedAt: creationTimestamp,
+        createdBy: loggedInUser.uid,
+        updatedBy: loggedInUser.uid,
+        status: 'active',
+      });
+    } catch (error) {
+      // Log error but don't fail the weld creation
+      console.error('Failed to create weld history entry:', error);
+    }
+
     return docId;
   };
 
@@ -312,6 +340,7 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
       const batch: WriteBatch = writeBatch(db);
       const createdIds: string[] = [];
       const timestamp = new Date(); // Use the same timestamp for all welds
+      const firestoreTimestamp = serverTimestamp();
 
       for (let i = start; i <= end; i++) {
         const number = i.toString();
@@ -336,6 +365,25 @@ export const useWeldOperations = (): UseWeldOperationsReturn => {
         };
 
         batch.set(newWeldRef, newWeld);
+
+        // Also create a weld-history entry for each weld
+        const weldHistoryRef = doc(collection(db, 'weld-history'));
+        batch.set(weldHistoryRef, {
+          id: weldHistoryRef.id,
+          weldId: docId,
+          weldLogId: weldLogId,
+          projectId: projectId,
+          eventType: 'weld',
+          description: t('weldHistory.creation.description'),
+          performedAt: firestoreTimestamp,
+          performedBy: loggedInUser.displayName || loggedInUser.email || t('weldHistory.unknownPerformer'),
+          doneById: loggedInUser.uid,
+          createdAt: firestoreTimestamp,
+          updatedAt: firestoreTimestamp,
+          createdBy: loggedInUser.uid,
+          updatedBy: loggedInUser.uid,
+          status: 'active',
+        });
       }
 
       // Commit the batch

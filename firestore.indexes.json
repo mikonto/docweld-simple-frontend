@@ -701,6 +701,24 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "weld-history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "weldId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "performedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

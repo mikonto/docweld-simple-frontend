@@ -15,23 +15,19 @@ import { useApp } from '@/contexts/AppContext';
 import { useProjectParticipants } from '@/hooks/useProjectParticipants';
 import { useUsers } from '@/hooks/useUsers';
 import { convertToDate, formatDate } from '@/utils/dateFormatting';
-import { STATUS } from '@/types/common/status';
 import type {
   CreateWeldHistoryInput,
-  Weld,
   WeldHistoryEntry,
   WeldActivityType,
   WeldStatus,
 } from '@/types/models/welding';
 
 interface WeldHistorySectionProps {
-  weld: Weld | null;
   weldId: string;
   weldLogId: string;
   projectId: string;
   weldStatus: WeldStatus;
   canEdit: boolean;
-  welderName?: string;
 }
 
 interface GroupedEvents {
@@ -47,13 +43,11 @@ const ROLE_MAP: Record<WeldActivityType, string | null> = {
 };
 
 export function WeldHistorySection({
-  weld,
   weldId,
   weldLogId,
   projectId,
   weldStatus: _weldStatus,
   canEdit,
-  welderName,
 }: WeldHistorySectionProps): JSX.Element {
   const { t } = useTranslation();
   const { loggedInUser } = useApp();
@@ -139,51 +133,13 @@ export function WeldHistorySection({
   const [currentDefaultPerformerId, setCurrentDefaultPerformerId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const creationEvent = useMemo(() => {
-    if (!weld || !weld.createdAt) {
-      return null;
-    }
-
-    const performerId =
-      (weld as Partial<Weld> & { createdBy?: string }).createdBy || weld.welderId || null;
-    const performerName =
-      getDisplayName(performerId) || welderName || t('weldHistory.unknownPerformer');
-
-    const creation: WeldHistoryEntry = {
-      id: `creation-${weld.id}`,
-      weldId: weld.id,
-      weldLogId,
-      projectId,
-      eventType: 'weld',
-      description: t('weldHistory.creation.description'),
-      performedAt: weld.createdAt,
-      performedBy: performerName,
-      doneById: performerId ?? undefined,
-      createdAt: weld.createdAt,
-      updatedAt: weld.createdAt,
-      createdBy: performerId ?? 'system',
-      updatedBy: performerId ?? 'system',
-      status: STATUS.ACTIVE,
-      metadata: { __synthetic: 'creation' },
-    };
-
-    return creation;
-  }, [weld, weldLogId, projectId, getDisplayName, welderName, t]);
-
   const timelineEvents = useMemo(() => {
-    if (!creationEvent) {
-      return events;
-    }
-
-    const hasCreationEvent = events.some((event) => event.id === creationEvent.id);
-    const merged = hasCreationEvent ? events : [...events, creationEvent];
-
-    return merged.slice().sort((a, b) => {
+    return events.slice().sort((a, b) => {
       const aDate = convertToDate(a.performedAt) ?? new Date(0);
       const bDate = convertToDate(b.performedAt) ?? new Date(0);
       return bDate.getTime() - aDate.getTime();
     });
-  }, [events, creationEvent]);
+  }, [events]);
 
   const groupedEvents = useMemo<GroupedEvents[]>(() => {
     if (timelineEvents.length === 0) {
@@ -334,20 +290,14 @@ export function WeldHistorySection({
               {dayLabel}
             </div>
             <div className="space-y-3">
-              {dayEvents.map((event) => {
-                const isSyntheticCreation =
-                  !!event.metadata &&
-                  (event.metadata as Record<string, unknown>).__synthetic === 'creation';
-
-                return (
-                  <WeldHistoryItem
-                    key={event.id}
-                    event={event}
-                    isSyntheticCreation={isSyntheticCreation}
-                    renderDoneLoggedText={renderDoneLoggedText}
-                  />
-                );
-              })}
+              {dayEvents.map((event) => (
+                <WeldHistoryItem
+                  key={event.id}
+                  event={event}
+                  isSyntheticCreation={false}
+                  renderDoneLoggedText={renderDoneLoggedText}
+                />
+              ))}
             </div>
           </section>
         ))}

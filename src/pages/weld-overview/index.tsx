@@ -343,13 +343,11 @@ export default function WeldOverview(): ReactElement {
 
             {weld ? (
               <WeldHistorySection
-                weld={weld}
                 weldId={weldId}
                 weldLogId={weldLogId}
                 projectId={projectId}
                 weldStatus={weld.status}
                 canEdit={Boolean(loggedInUser)}
-                welderName={creator?.displayName}
               />
             ) : null}
           </div>

@@ -221,13 +221,11 @@ describe('WeldHistorySection', () => {
   });
 
   const baseProps = {
-    weld: baseWeld,
     weldId: 'weld-1',
     weldLogId: 'log-1',
     projectId: 'project-1',
     weldStatus: 'in-progress' as const,
     canEdit: true,
-    welderName: 'Welder One',
   };
 
   it('shows loading state when fetching events', () => {
@@ -255,7 +253,7 @@ describe('WeldHistorySection', () => {
     expect(screen.getByText('Failed to load')).toBeInTheDocument();
   });
 
-  it('renders creation event when no additional events exist', () => {
+  it('renders empty state when no events exist', () => {
     mockUseWeldHistory.mockReturnValueOnce({
       events: [],
       loading: false,
@@ -265,11 +263,11 @@ describe('WeldHistorySection', () => {
     render(<WeldHistorySection {...baseProps} />);
 
     expect(
-      screen.getByText('weldHistory.creation.description')
+      screen.getByText('weldHistory.emptyState')
     ).toBeInTheDocument();
   });
 
-  it('renders timeline with fetched events and creation entry', () => {
+  it('renders timeline with fetched events', () => {
     const events = [
       createMockEvent({ id: '1', description: 'Event A' }),
       createMockEvent({
@@ -295,10 +293,6 @@ describe('WeldHistorySection', () => {
     expect(
       screen.getByText('weldHistory.activityType.visual-inspection')
     ).toBeInTheDocument();
-    // Synthetic creation event
-    expect(
-      screen.getByText('weldHistory.creation.description')
-    ).toBeInTheDocument();
   });
 
   it('allows creating a new event through quick actions for basic user', async () => {
@@ -323,7 +317,7 @@ describe('WeldHistorySection', () => {
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-06-01T12:30');
     await user.click(
-      screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ })
+      screen.getByRole('button', { name: 'weldHistory.dialogTitles.weld' })
     );
 
     await waitFor(() => {
@@ -408,7 +402,7 @@ describe('WeldHistorySection', () => {
     const performedAtField = screen.getByLabelText('weldHistory.form.performedAt');
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-06-02T09:15');
-    await user.click(screen.getByRole('button', { name: /weldHistory\.dialogTitles\./ }));
+    await user.click(screen.getByRole('button', { name: 'weldHistory.dialogTitles.heat-treatment' }));
 
     await waitFor(() => {
       expect(mockCreateEvent).toHaveBeenCalledWith({
