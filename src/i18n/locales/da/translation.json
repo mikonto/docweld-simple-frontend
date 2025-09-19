@@ -949,6 +949,11 @@
     "doneLoggedBySame": "Udført og registreret af {{name}}",
     "doneLoggedByDifferent": "Udført af {{doneName}}, registreret af {{loggedName}}",
     "doneByLine": "Udført af {{name}}",
-    "loggedByLine": "Registreret af {{name}}"
+    "loggedByLine": "Registreret af {{name}}",
+    "meta": {
+      "done": "Udført {{date}} af {{name}}",
+      "logged": "Logget {{date}} af {{name}}",
+      "unknownDate": "Ukendt dato"
+    }
   }
 }

@@ -123,8 +123,8 @@ describe('SectionHeader', () => {
     it('should call toggleExpand when header is clicked', () => {
       render(<SectionHeader {...mockProps} />);
 
-      const header = screen.getByText('Test Section').parentElement;
-      fireEvent.click(header!);
+      const dragHandle = screen.getByLabelText('Drag handle');
+      fireEvent.click(dragHandle);
 
       expect(mockProps.toggleExpand).toHaveBeenCalledTimes(1);
     });

@@ -968,6 +968,11 @@
     "doneLoggedBySame": "Done and logged by {{name}}",
     "doneLoggedByDifferent": "Done by {{doneName}}, logged by {{loggedName}}",
     "doneByLine": "Done by {{name}}",
-    "loggedByLine": "Logged by {{name}}"
+    "loggedByLine": "Logged by {{name}}",
+    "meta": {
+      "done": "Done {{date}} by {{name}}",
+      "logged": "Logged {{date}} by {{name}}",
+      "unknownDate": "Unknown date"
+    }
   }
 }

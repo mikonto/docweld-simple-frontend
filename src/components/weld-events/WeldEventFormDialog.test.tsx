@@ -17,7 +17,11 @@ vi.mock('@/components/ui/custom/date-time-picker', () => ({
       type="datetime-local"
       data-testid="date-time-picker"
       onChange={(e) => onChange(new Date(e.target.value))}
-      value={value ? value.toISOString().slice(0, 16) : ''}
+      value={
+        value && value instanceof Date && !isNaN(value.getTime())
+          ? value.toISOString().slice(0, 16)
+          : ''
+      }
     />
   ),
 }));
@@ -168,7 +172,7 @@ describe('WeldEventFormDialog', () => {
 
     await user.click(
       await screen.findByRole('combobox', {
-        name: 'weldEvents.form.performer',
+        name: 'weldEvents.form.doneBy',
       })
     );
     await user.click(screen.getByRole('option', { name: 'Operator Two' }));

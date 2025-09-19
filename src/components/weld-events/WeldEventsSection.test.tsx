@@ -1,6 +1,7 @@
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '@/test/utils/testUtils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useEffect, useState } from 'react';
 import { WeldEventsSection } from './WeldEventsSection';
 import type { Weld, WeldEvent } from '@/types/models/welding';
 import type { Timestamp } from 'firebase/firestore';
@@ -32,6 +33,45 @@ vi.mock('@/hooks/useUsers', () => ({
 vi.mock('firebase/firestore', () => ({
   Timestamp: {
     fromDate: (...args: unknown[]) => mockTimestampFromDate(...args),
+  },
+}));
+
+vi.mock('@/components/ui/custom/date-time-picker', () => ({
+  DateTimePickerSimple: ({ value, onChange, ...props }: any) => {
+    const formattedValue =
+      value instanceof Date && !Number.isNaN(value.getTime())
+        ? value.toISOString().slice(0, 16)
+        : '';
+
+    const [inputValue, setInputValue] = useState(formattedValue);
+
+    useEffect(() => {
+      setInputValue(formattedValue);
+    }, [formattedValue]);
+
+    return (
+      <input
+        type="datetime-local"
+        value={inputValue}
+        onChange={(event) => {
+          const nextValue = event.target.value;
+          setInputValue(nextValue);
+
+          if (!nextValue) {
+            onChange?.(undefined);
+            return;
+          }
+
+          if (nextValue.length === 16) {
+            const parsed = new Date(nextValue);
+            if (!Number.isNaN(parsed.getTime())) {
+              onChange?.(parsed);
+            }
+          }
+        }}
+        {...props}
+      />
+    );
   },
 }));
 
@@ -276,10 +316,10 @@ describe('WeldEventsSection', () => {
     );
 
     await user.type(
-      await screen.findByLabelText('weldEvents.form.description'),
+      await screen.findByLabelText('weldEvents.form.comment'),
       'New weld logged'
     );
-    const performedAtField = screen.getByLabelText('weldEvents.form.performedAt');
+    const performedAtField = screen.getByLabelText('weldEvents.form.doneAt');
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-06-01T12:30');
     await user.click(
@@ -299,7 +339,8 @@ describe('WeldEventsSection', () => {
         performedBy: 'Default User',
         doneById: 'user-1',
       });
-      expect(screen.getAllByText('weldEvents.doneLoggedBySame')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('weldEvents.meta.done')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('weldEvents.meta.logged')[0]).toBeInTheDocument();
     });
   });
 
@@ -361,10 +402,10 @@ describe('WeldEventsSection', () => {
     await user.click(screen.getByRole('option', { name: 'Operator Two' }));
 
     await user.type(
-      screen.getByLabelText('weldEvents.form.description'),
+      screen.getByLabelText('weldEvents.form.comment'),
       'Heat treatment performed'
     );
-    const performedAtField = screen.getByLabelText('weldEvents.form.performedAt');
+    const performedAtField = screen.getByLabelText('weldEvents.form.doneAt');
     await user.clear(performedAtField);
     await user.type(performedAtField, '2024-06-02T09:15');
     await user.click(screen.getByRole('button', { name: /weldEvents\.dialogTitles\./ }));
@@ -424,7 +465,7 @@ describe('WeldEventsSection', () => {
       expect(mockToastError).toHaveBeenCalledWith('weldEvents.performerUnavailable');
     });
     expect(
-      screen.queryByLabelText('weldEvents.form.description')
+      screen.queryByLabelText('weldEvents.form.comment')
     ).not.toBeInTheDocument();
   });
 

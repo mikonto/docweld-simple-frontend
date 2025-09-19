@@ -4,14 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
 import { QuickEventButtons } from './QuickEventButtons';
 import { WeldEventFormDialog } from './WeldEventFormDialog';
 import { WeldEventItem } from './WeldEventItem';
@@ -245,25 +240,32 @@ export function WeldEventsSection({
     }
   };
 
+  const formatTimestampDisplay = (value: unknown) => {
+    const date = convertToDate(value);
+    return date ? format(date, 'dd.MM.yyyy HH:mm') : t('weldEvents.meta.unknownDate');
+  };
+
   const renderDoneLoggedText = (event: WeldEvent) => {
     const performerName = event.performedBy || getDisplayName(event.doneById);
     const loggerName = getDisplayName(event.createdBy);
-    const sameActor =
-      (event.doneById && event.doneById === event.createdBy) ||
-      performerName === loggerName;
-
-    if (sameActor) {
-      return (
-        <span>
-          {t('weldEvents.doneLoggedBySame', { name: performerName })}
-        </span>
-      );
-    }
+    const performedAtText = formatTimestampDisplay(event.performedAt);
+    const loggedAtText = formatTimestampDisplay(event.createdAt);
 
     return (
-      <span>
-        {t('weldEvents.doneByLine', { name: performerName })} • {t('weldEvents.loggedByLine', { name: loggerName })}
-      </span>
+      <div className="space-y-1">
+        <p>
+          {t('weldEvents.meta.done', {
+            date: performedAtText,
+            name: performerName || t('weldEvents.unknownPerformer'),
+          })}
+        </p>
+        <p>
+          {t('weldEvents.meta.logged', {
+            date: loggedAtText,
+            name: loggerName || t('weldEvents.unknownPerformer'),
+          })}
+        </p>
+      </div>
     );
   };
 
@@ -307,11 +309,11 @@ export function WeldEventsSection({
     return (
       <div className="space-y-6">
         {groupedEvents.map(({ dayLabel, events: dayEvents }) => (
-          <div key={dayLabel}>
-            <div className="text-xs font-medium text-muted-foreground mb-3">
+          <section key={dayLabel} className="space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {dayLabel}
             </div>
-            <div className="relative">
+            <div className="space-y-3">
               {dayEvents.map((event) => {
                 const isSyntheticCreation =
                   !!event.metadata &&
@@ -327,16 +329,18 @@ export function WeldEventsSection({
                 );
               })}
             </div>
-          </div>
+          </section>
         ))}
       </div>
     );
   })();
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <CardTitle className="text-lg font-semibold">{t('weldEvents.sectionTitle')}</CardTitle>
+    <Card className="overflow-hidden gap-4">
+      <CardHeader className="flex flex-col gap-2 pb-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardTitle className="text-base font-semibold">
+          {t('weldEvents.sectionTitle')}
+        </CardTitle>
         {canEdit ? (
           <QuickEventButtons
             onSelect={handleQuickSelect}
@@ -344,7 +348,7 @@ export function WeldEventsSection({
           />
         ) : null}
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="space-y-6 px-6 pb-6 pt-2">
         {timelineContent}
       </CardContent>
 
